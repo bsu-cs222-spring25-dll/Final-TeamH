@@ -8,9 +8,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class TestSearchStreamers {
 
-    //implement some mock of searching for streamer names on Twitch
+    //implement some mock of searching for streamer names on Twitch or YouTube
     @Test
-    void searchTwitchStreamerByName() {
+    void searchStreamerByName() {
         StreamerSearchService service = Mockito.mock(StreamerSearchService.class);
 
         List<String> mockResult = List.of("Gamer1", "Streamer2");
@@ -19,6 +19,13 @@ public class TestSearchStreamers {
         List<String> result = service.searchTwitchStreamer("gamer1");
 
         assertTrue(result.contains("Gamer1"));
+    }
+
+    @Test
+    void verifyTestCall() {
+        StreamerSearchService service = Mockito.mock(StreamerSearchService.class);
+
+        service.searchTwitchStreamer("gamer1");
 
         Mockito.verify(service).searchTwitchStreamer("gamer1");
     }
