@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class TestSearchStreamers {
 
     //implement some mock of searching for streamer names on Twitch or YouTube
+    //we only need one test of each for both streaming platforms due to similar calls
     @Test
     void searchStreamerByName() {
         StreamerSearchService service = Mockito.mock(StreamerSearchService.class);
@@ -30,5 +31,5 @@ public class TestSearchStreamers {
         Mockito.verify(service).searchTwitchStreamer("gamer1");
     }
 
-    //we should implement a test class for a offline connection that represents an actual api call
+    //we should implement a test class for an offline connection that represents an actual api call
 }
