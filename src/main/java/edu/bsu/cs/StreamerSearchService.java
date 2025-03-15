@@ -1,12 +1,12 @@
 package edu.bsu.cs;
 
 import com.github.twitch4j.ITwitchClient;
-import com.github.twitch4j.helix.domain.ChannelSearchResult;
 import com.github.twitch4j.helix.domain.UserList;
 import com.google.api.services.youtube.YouTube;
-import com.github.twitch4j.helix.domain.ChannelSearchList;
+import com.google.api.services.youtube.model.ChannelListResponse;
+import com.google.api.services.youtube.model.Channel;
 
-import java.util.ArrayList;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
@@ -39,6 +39,24 @@ public class StreamerSearchService {
     }
 
     public List<String> searchYoutubeStreamer(String username) {
-        return null;
+        try {
+            YouTube.Channels.List channelRequest = youtubeService.channels()
+                    .list(List.of("snippet")) //request ONLY snippet field (contains title and other channel details)
+                    .setKey(youtubeApiKey)
+                    .setForHandle("@" + username);
+
+            ChannelListResponse response = channelRequest.execute();
+            //returns an empty list if channel does not exist
+            if (response.getItems().isEmpty()) {
+                return Collections.emptyList();
+            }
+
+            Channel channel = response.getItems().get(0);
+            return Collections.singletonList(channel.getSnippet().getTitle());
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            return Collections.emptyList();
+        }
     }
 }
