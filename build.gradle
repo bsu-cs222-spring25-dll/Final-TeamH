@@ -7,8 +7,8 @@ apply plugin: 'java'
 apply plugin: 'application'
 
 mainClassName = 'ApiExample'
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
+sourceCompatibility = 1.11
+targetCompatibility = 1.11
 
 version = '1.0'
 group = 'org.example'
