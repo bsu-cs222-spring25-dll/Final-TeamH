@@ -2,10 +2,12 @@ package edu.bsu.cs;
 
 import com.github.twitch4j.ITwitchClient;
 import com.github.twitch4j.helix.domain.ChannelSearchResult;
+import com.github.twitch4j.helix.domain.UserList;
 import com.google.api.services.youtube.YouTube;
 import com.github.twitch4j.helix.domain.ChannelSearchList;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class StreamerSearchService {
@@ -23,14 +25,16 @@ public class StreamerSearchService {
     }
 
     //Placeholder for implementing search for a twitch streamer
-    public List<String> searchTwitchStreamer(String name) {
-        ChannelSearchList searchResults = twitchClient.getHelix().searchChannels(twitchAuthToken, name, null).execute();
-        List<String> streamerNames = new ArrayList<>();
+    public List<String> searchTwitchStreamer(String username) {
+        //Get the user ID for the given username
+        UserList userList = twitchClient.getHelix()
+                .getUsers(twitchAuthToken, null, Collections.singletonList(username))
+                .execute();
 
-        for(ChannelSearchResult result : searchResults.getChannels()) {
-            streamerNames.add(result.getDisplayName());
+        if (userList.getUsers().isEmpty()) {
+            return null; //No user found
         }
-
-        return streamerNames;
+        //return only the broadcaster display name
+        return Collections.singletonList(userList.getUsers().get(0).getDisplayName());
     }
 }

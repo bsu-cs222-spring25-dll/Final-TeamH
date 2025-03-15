@@ -1,30 +1,33 @@
 package edu.bsu.cs;
 
+import com.github.twitch4j.ITwitchClient;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class TestSearchStreamers {
 
-    //implement some mock of searching for streamer names on Twitch or YouTube
-    //we only need one test of each for both streaming platforms due to similar calls
+    //implement some mock of searching for streamer names on Twitch and YouTube
     @Test
-    void searchStreamerByName() {
-        StreamerSearchService service = Mockito.mock(StreamerSearchService.class);
+    void searchTwitchStreamerByName() {
+        StreamerSearchService twitchSearchService =  mock(StreamerSearchService.class);
 
         List<String> mockResult = List.of("Gamer1", "Streamer2");
-        Mockito.when(service.searchTwitchStreamer("gamer1")).thenReturn(mockResult);
+        when(twitchSearchService.searchTwitchStreamer("gamer1")).thenReturn(mockResult);
 
-        List<String> result = service.searchTwitchStreamer("gamer1");
+        List<String> result = twitchSearchService.searchTwitchStreamer("gamer1");
 
-        assertTrue(result.contains("Gamer1"));
+        assertEquals(mockResult, result);
     }
+
 
     @Test
     void verifyTestCall() {
-        StreamerSearchService service = Mockito.mock(StreamerSearchService.class);
+        StreamerSearchService service = mock(StreamerSearchService.class);
 
         service.searchTwitchStreamer("gamer1");
 
