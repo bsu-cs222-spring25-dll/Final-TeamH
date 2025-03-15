@@ -1,6 +1,5 @@
 package edu.bsu.cs;
 
-import com.github.twitch4j.ITwitchClient;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import java.util.List;
@@ -11,7 +10,7 @@ import static org.mockito.Mockito.when;
 
 public class TestSearchStreamers {
 
-    //implement some mock of searching for streamer names on Twitch and YouTube
+    //implement some mock of searching for streamer names on Twitch
     @Test
     void searchTwitchStreamerByName() {
         StreamerSearchService twitchSearchService =  mock(StreamerSearchService.class);
@@ -24,15 +23,16 @@ public class TestSearchStreamers {
         assertEquals(mockResult, result);
     }
 
-
+    //implement some sort of mock for testing getting youtube names
     @Test
-    void verifyTestCall() {
-        StreamerSearchService service = mock(StreamerSearchService.class);
+    void searchYoutubeStreamerByName() {
+        StreamerSearchService youtubeSearchService = mock(StreamerSearchService.class);
 
-        service.searchTwitchStreamer("gamer1");
+        List<String> mockResult = List.of("IShowSpeed");
+        when(youtubeSearchService.searchYoutubeStreamer("IShowSpeed")).thenReturn(mockResult);
 
-        Mockito.verify(service).searchTwitchStreamer("gamer1");
+        List<String> result = youtubeSearchService.searchYoutubeStreamer("IShowSpeed");
+
+        assertEquals(mockResult, result);
     }
-
-    //we should implement a test class for an offline connection that represents an actual api call
 }

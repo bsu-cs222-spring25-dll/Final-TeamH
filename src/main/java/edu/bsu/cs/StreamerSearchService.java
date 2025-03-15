@@ -37,4 +37,8 @@ public class StreamerSearchService {
         //return only the broadcaster display name
         return Collections.singletonList(userList.getUsers().get(0).getDisplayName());
     }
+
+    public List<String> searchYoutubeStreamer(String username) {
+        return null;
+    }
 }
