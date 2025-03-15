@@ -23,6 +23,16 @@ public class TestSearchStreamers {
         assertEquals(mockResult, result);
     }
 
+    //verify that the searchTwitchStreamer method is called for mock
+    @Test
+    void verifyTwitchSearchCall() {
+        StreamerSearchService service = Mockito.mock(StreamerSearchService.class);
+
+        service.searchTwitchStreamer("gamer1");
+
+        Mockito.verify(service).searchTwitchStreamer("gamer1");
+    }
+
     //implement some sort of mock for testing getting youtube names
     @Test
     void searchYoutubeStreamerByName() {
@@ -34,5 +44,15 @@ public class TestSearchStreamers {
         List<String> result = youtubeSearchService.searchYoutubeStreamer("IShowSpeed");
 
         assertEquals(mockResult, result);
+    }
+
+    //verify that the searchYoutubeStreamer method is called for mock
+    @Test
+    void verifyYoutubeSearchCall() {
+        StreamerSearchService service = Mockito.mock(StreamerSearchService.class);
+
+        service.searchYoutubeStreamer("IShowSpeed");
+
+        Mockito.verify(service).searchYoutubeStreamer("IShowSpeed");
     }
 }
