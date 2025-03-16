@@ -1,6 +1,7 @@
 package edu.bsu.cs;
 
 import java.util.Scanner;
+import java.util.List;
 
 public class Main {
 
@@ -33,13 +34,26 @@ public class Main {
         System.out.println("\n===== Streamer Search Service =====");
         System.out.println("1. Search for a Twitch Streamer");
         System.out.println("2. Search for a Youtuber");
-        System.out.println("3. Exit");
-        System.out.print("Enter your choice");
+        System.out.print("3. Exit\n>>");
 
         return scanner.nextInt();
     }
 
     private static void searchTwitch(Scanner scanner) {
+        if(searchService == null) {
+            searchService = new StreamerSearchService(ApiInitializer.initializeTwitch(), null, ApiInitializer.TwitchAuthToken, null);
+        }
+
+        scanner.nextLine();
+        System.out.print("Enter Twitch Username: \n>>");
+        String twitchUsername = scanner.nextLine();
+        List<String> twitchResult = searchService.searchTwitchStreamer(twitchUsername);
+
+        if(twitchResult == null || twitchResult.isEmpty()) {
+            System.out.println("Twitch streamer not found.");
+        } else {
+            System.out.println("Twitch streamer found: " + twitchResult.get(0));
+        }
 
     }
 
