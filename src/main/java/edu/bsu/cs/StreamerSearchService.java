@@ -41,12 +41,14 @@ public class StreamerSearchService {
     public List<String> searchYoutubeStreamer(String username) {
         try {
             YouTube.Channels.List channelRequest = youtubeService.channels()
-                    .list(List.of("snippet")) //request ONLY snippet field (contains title and other channel details)
+                    .list(Collections.singletonList("snippet"))//request ONLY snippet field (contains title and other channel details)
                     .setKey(youtubeApiKey)
                     .setForHandle("@" + username);
 
             ChannelListResponse response = channelRequest.execute();
             //returns an empty list if channel does not exist
+            assert response != null;
+            assert response.getItems() != null;
             if (response.getItems().isEmpty()) {
                 return Collections.emptyList();
             }
@@ -55,7 +57,7 @@ public class StreamerSearchService {
             return Collections.singletonList(channel.getSnippet().getTitle());
 
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("Error while searching youtube: " + e.getMessage());
             return Collections.emptyList();
         }
     }

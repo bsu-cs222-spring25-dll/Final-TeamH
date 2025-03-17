@@ -30,13 +30,26 @@ public class Main {
     }
 
     public static int displayMenu(Scanner scanner) {
+        int choice = -1;
+        while(true) {
+            System.out.println("\n===== Streamer Search Service =====");
+            System.out.println("1. Search for a Twitch Streamer");
+            System.out.println("2. Search for a Youtuber");
+            System.out.print("3. Exit\n>>");
 
-        System.out.println("\n===== Streamer Search Service =====");
-        System.out.println("1. Search for a Twitch Streamer");
-        System.out.println("2. Search for a Youtuber");
-        System.out.print("3. Exit\n>>");
-
-        return scanner.nextInt();
+            if(scanner.hasNextInt()) {
+                choice = scanner.nextInt();
+                if(choice >= 1 && choice <= 3) {
+                    break;
+                } else {
+                    System.out.println("Invalid choice! Please enter 1, 2, or 3.");
+                }
+            } else {
+                System.out.println("Invalid choice! Please enter a number between 1 and 3.");
+                scanner.next();
+            }
+        }
+        return choice;
     }
 
     private static void searchTwitch(Scanner scanner) {
@@ -65,12 +78,18 @@ public class Main {
         scanner.nextLine();
         System.out.print("Enter Youtube Username: \n>>");
         String youtubeUsername = scanner.nextLine();
-        List<String> youtubeResult = searchService.searchYoutubeStreamer(youtubeUsername);
 
-        if(youtubeResult == null || youtubeResult.isEmpty()) {
+        try {
+            List<String> youtubeResult = searchService.searchYoutubeStreamer(youtubeUsername);
+
+            if(youtubeResult == null || youtubeResult.isEmpty()) {
+                System.out.println("Youtuber not found.");
+            } else {
+                System.out.println("Youtube Streamer Found: " + youtubeResult.get(0));
+            }
+        } catch (Exception e) {
             System.out.println("Youtuber not found.");
-        } else {
-            System.out.println("Youtube Streamer Found: " + youtubeResult.get(0));
         }
+
     }
 }
