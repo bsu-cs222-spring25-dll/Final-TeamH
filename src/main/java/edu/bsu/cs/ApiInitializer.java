@@ -2,6 +2,7 @@ package edu.bsu.cs;
 
 import com.github.twitch4j.ITwitchClient;
 import com.github.twitch4j.TwitchClientBuilder;
+import com.google.api.services.youtube.YouTube;
 
 public class ApiInitializer {
     public static final String TwitchAuthToken = "x4bbracgz61vqbzgkccm7ed41evvjy";
@@ -11,5 +12,9 @@ public class ApiInitializer {
         return TwitchClientBuilder.builder()
                 .withEnableHelix(true)
                 .build();
+    }
+
+    public static YouTube initializeYoutube() {
+
     }
 }

@@ -58,6 +58,19 @@ public class Main {
     }
 
     private static void searchYoutube(Scanner scanner) {
+        if(searchService == null) {
+            searchService = new StreamerSearchService(null, ApiInitializer.initializeYoutube(), null, ApiInitializer.YoutubeAuthToken);
+        }
 
+        scanner.nextLine();
+        System.out.print("Enter Youtube Username: \n>>");
+        String youtubeUsername = scanner.nextLine();
+        List<String> youtubeResult = searchService.searchYoutubeStreamer(youtubeUsername);
+
+        if(youtubeResult == null || youtubeResult.isEmpty()) {
+            System.out.println("Youtuber not found.");
+        } else {
+            System.out.println("Youtube Streamer Found: " + youtubeResult.get(0));
+        }
     }
 }
