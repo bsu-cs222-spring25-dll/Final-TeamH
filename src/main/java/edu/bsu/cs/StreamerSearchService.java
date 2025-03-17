@@ -24,7 +24,6 @@ public class StreamerSearchService {
         this.youtubeApiKey = youtubeApiKey;
     }
 
-    //Placeholder for implementing search for a twitch streamer
     public List<String> searchTwitchStreamer(String username) {
         //Get the user ID for the given username
         UserList userList = twitchClient.getHelix()

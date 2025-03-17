@@ -26,8 +26,6 @@ public class TestRetrieveStreams {
     void setUp() {
         twitchClient = mock(ITwitchClient.class);
         youtubeService = mock(YouTube.class);
-
-        streamerStreamsService = new StreamerStreamsService(twitchClient, youtubeService, twitchAuthToken, "YouTubeApiKey");
     }
 
     @Test
