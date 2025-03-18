@@ -3,15 +3,17 @@ package edu.bsu.cs;
 import java.util.Scanner;
 import java.util.List;
 
+import java.io.IOException;
+
 public class Main {
 
     private static StreamerSearchService searchService;
     private static StreamerStreamsService streamService;
     static String username = "";
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         Scanner scanner = new Scanner(System.in);
-        streamService = new StreamerStreamsService(ApiInitializer.initializeTwitch(), ApiInitializer.TwitchAuthToken);
+        streamService = new StreamerStreamsService(ApiInitializer.initializeTwitch(), ApiInitializer.initializeYoutube(), ApiInitializer.TwitchAuthToken, ApiInitializer.YoutubeAuthToken);
 
 
         while(true) {
@@ -24,7 +26,12 @@ public class Main {
                         printTwitchMenu(scanner, username);
                     }
                 }
-                case 2 -> searchYoutube(scanner);
+                case 2 -> {
+                    username = searchYoutube(scanner);
+                    if(!username.isEmpty()) {
+                        printYoutubeMenu(scanner, username);
+                    }
+                }
                 case 3 -> {
                     System.out.println("Exiting Program...");
                     scanner.close();
@@ -49,6 +56,20 @@ public class Main {
         int choice = scanner.nextInt();
         if(choice == 1) {
             streamService.getTwitchStreams(username);
+        }
+    }
+
+    private static void printYoutubeMenu(Scanner scanner, String username) throws IOException {
+        System.out.println("----- Youtube Services -----");
+        System.out.println("1) Print the 10 most recent streams");
+        System.out.println("2) View Live Status");
+        System.out.println("3) View Past Streams");
+        System.out.println("4) View Subscriber Count");
+        System.out.println("5) View Bio Information");
+        System.out.print(">>");
+        int choice = scanner.nextInt();
+        if(choice == 1) {
+            streamService.getYoutubeStreams(username);
         }
     }
 
@@ -95,7 +116,7 @@ public class Main {
 
     }
 
-    private static void searchYoutube(Scanner scanner) {
+    private static String searchYoutube(Scanner scanner) {
         if(searchService == null) {
             searchService = new StreamerSearchService(null, ApiInitializer.initializeYoutube(), null, ApiInitializer.YoutubeAuthToken);
         }
@@ -107,6 +128,7 @@ public class Main {
         try {
             List<String> youtubeResult = searchService.searchYoutubeStreamer(youtubeUsername);
 
+
             if(youtubeResult == null || youtubeResult.isEmpty()) {
                 System.out.println("Youtuber not found.");
             } else {
@@ -116,5 +138,6 @@ public class Main {
             System.out.println("Youtuber not found.");
         }
 
+        return youtubeUsername;
     }
 }

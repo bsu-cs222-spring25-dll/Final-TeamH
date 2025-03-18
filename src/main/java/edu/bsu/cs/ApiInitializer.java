@@ -16,6 +16,7 @@ public class ApiInitializer {
     public static final String YoutubeAuthToken = "AIzaSyBoizCiqHj1I7MMT6j3Z96sVAw92OygejM";
     public static ITwitchClient twitchClient;
 
+
     public static ITwitchClient initializeTwitch() {
         twitchClient = TwitchClientBuilder.builder()
                 .withEnableHelix(true)
@@ -31,6 +32,7 @@ public class ApiInitializer {
             return new YouTube.Builder(GoogleNetHttpTransport.newTrustedTransport(), jsonFactory, request -> {})
                     .setApplicationName("StreamerSearchApp")
                     .build();
+
         } catch (GeneralSecurityException | IOException e) {
             throw new RuntimeException("Failed to initialize YouTube API.", e);
         }
