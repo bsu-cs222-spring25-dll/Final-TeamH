@@ -19,7 +19,7 @@ public class TestRetrieveStreams {
 
     private ITwitchClient twitchClient;
     private YouTube youtubeService;
-    private StreamerStreamsService streamerStreamsService;
+    private RetrieveStreamsService retrieveStreamsService;
     private String twitchAuthToken = "TwitchAuthToken";
 
     @BeforeEach
@@ -42,7 +42,7 @@ public class TestRetrieveStreams {
         PrintStream printStream = new PrintStream(outputStream);
         System.setOut(printStream);
 
-        streamerStreamsService.getTwitchStreams("testUsername");
+        retrieveStreamsService.getTwitchStreams("testUsername");
 
         String output = outputStream.toString();
         assertTrue(output.contains("Test Stream Title"));
