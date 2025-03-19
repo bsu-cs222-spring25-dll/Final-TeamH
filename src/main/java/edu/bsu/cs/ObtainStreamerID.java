@@ -9,7 +9,6 @@ import com.google.api.services.youtube.model.ChannelListResponse;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 public class ObtainStreamerID {
 
@@ -26,31 +25,53 @@ public class ObtainStreamerID {
     }
 
     public String getTwitchUserId(String username) {
-        UserList userList = twitchClient.getHelix()
-                .getUsers(twitchAuthToken, null, List.of(username))
-                .execute();
+        try {
+            // Ensure username is not null or empty
+            if (username == null || username.trim().isEmpty()) {
+                System.out.println("Invalid username provided.");
+                return null;
+            }
 
-        Optional<User> user = userList.getUsers().stream().findFirst();
-        String userId = user.map(User::getId).orElse(null);
+            UserList userList = twitchClient.getHelix()
+                    .getUsers(twitchAuthToken, null, List.of(username))
+                    .execute();
 
-        System.out.println("Retrieved Twitch User ID: " + userId); // Debugging line
-        return userId;
+            if (userList == null || userList.getUsers().isEmpty()) {
+                System.out.println("No user found with username: " + username);
+                return null;
+            }
+
+            String userId = userList.getUsers().get(0).getId();
+            System.out.println("Retrieved Twitch User ID: " + userId);
+            return userId;
+
+        } catch (Exception e) {
+            System.out.println("Failed to retrieve Twitch user ID: " + e.getMessage());
+            e.printStackTrace();
+            return null; // Return null if the user is not found or an error occurs
+        }
     }
 
     public String getYoutubeUserId(String username) throws IOException {
+        if (username == null || username.trim().isEmpty()) {
+            System.out.println("Invalid YouTube username provided.");
+            return null;
+        }
+
         YouTube.Channels.List channelRequest = youtubeService.channels()
-                .list(Collections.singletonList("snippet")) // Request only snippet field
+                .list(Collections.singletonList("snippet"))
                 .setKey(youtubeApiKey)
                 .setForHandle("@" + username);
 
         ChannelListResponse response = channelRequest.execute();
 
         if (response.getItems().isEmpty()) {
-            return null; // No channel found
+            System.out.println("No YouTube channel found for username: " + username);
+            return null;
         }
 
         String userId = response.getItems().get(0).getId();
-        System.out.println("Retrieved YouTube Channel ID: " + userId); // Debugging line
+        System.out.println("Retrieved YouTube Channel ID: " + userId);
         return userId;
     }
 }

@@ -11,6 +11,7 @@ public class Main {
     private static RetrieveStreamsService streamService;
     private static ChannelInfoService infoService;
     private static RetrieveVideosService videoService;
+    private static RetrieveClips clipService;
 
 
     static String username = "";
@@ -20,7 +21,7 @@ public class Main {
         streamService = new RetrieveStreamsService(ApiInitializer.initializeTwitch(), ApiInitializer.initializeYoutube(), ApiInitializer.TwitchAuthToken, ApiInitializer.YoutubeAuthToken);
         infoService = new ChannelInfoService(ApiInitializer.initializeTwitch(), ApiInitializer.initializeYoutube(), ApiInitializer.TwitchAuthToken, ApiInitializer.YoutubeAuthToken);
         videoService = new RetrieveVideosService(ApiInitializer.initializeTwitch(), ApiInitializer.initializeYoutube(), ApiInitializer.TwitchAuthToken, ApiInitializer.YoutubeAuthToken);
-
+        clipService = new RetrieveClips(ApiInitializer.initializeTwitch(), ApiInitializer.TwitchAuthToken);
 
         while(true) {
             int choice = displayMenu(scanner);
@@ -55,14 +56,34 @@ public class Main {
         System.out.println("----- Twitch Services -----");
         System.out.println("1) Print the 10 most recent streams");
         System.out.println("2) Print the 10 most recent clips");
-        System.out.println("3) View Follower Count");
-        System.out.println("4) View Bio Information");
+        System.out.println("3) View Account Information");
+        System.out.println("4) View Live Status");
         System.out.print(">>");
-        int choice = scanner.nextInt();
-        if(choice == 1) {
-            streamService.getTwitchStreams(username);
+
+        int choice = -1;
+        while (true) {
+            if(scanner.hasNextInt()) {
+                choice = scanner.nextInt();
+                scanner.nextLine();  // Consume the newline
+                if (choice >= 1 && choice <= 4) {
+                    break;
+                } else {
+                    System.out.println("Invalid choice! Please enter a number between 1 and 4.");
+                }
+            } else {
+                System.out.println("Invalid input! Please enter a number.");
+                scanner.next();  // Consume the invalid input
+            }
+        }
+
+        switch (choice) {
+            case 1 -> streamService.getTwitchStreams(username);
+            case 2 -> clipService.getTwitchClips(username);
+            case 3, 4 -> System.out.println("Feature not implemented yet.");
+            default -> System.out.println("Invalid choice.");
         }
     }
+
 
     private static void printYoutubeMenu(Scanner scanner, String username) throws IOException {
         System.out.println("----- Youtube Services -----");
