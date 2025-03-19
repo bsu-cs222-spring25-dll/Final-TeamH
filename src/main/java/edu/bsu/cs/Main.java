@@ -14,7 +14,6 @@ public class Main {
     private static RetrieveClips clipService;
     private static LiveStatusService statusService;
 
-
     static String username = "";
 
     public static void main(String[] args) throws IOException {
@@ -24,7 +23,6 @@ public class Main {
         videoService = new RetrieveVideosService(ApiInitializer.initializeTwitch(), ApiInitializer.initializeYoutube(), ApiInitializer.TwitchAuthToken, ApiInitializer.YoutubeAuthToken);
         clipService = new RetrieveClips(ApiInitializer.initializeTwitch(), ApiInitializer.TwitchAuthToken);
         statusService = new LiveStatusService(ApiInitializer.initializeTwitch(), ApiInitializer.initializeYoutube(), ApiInitializer.TwitchAuthToken, ApiInitializer.YoutubeAuthToken);
-
 
         while(true) {
             int choice = displayMenu(scanner);
@@ -59,8 +57,8 @@ public class Main {
         System.out.println("----- Twitch Services -----");
         System.out.println("1) Print the 10 most recent streams");
         System.out.println("2) Print the 10 most recent clips");
-        System.out.println("3) View Account Information");
-        System.out.println("4) View Live Status");
+        System.out.println("3) View Live Status");
+        System.out.println("4) View Channel Information");
         System.out.print(">>");
 
         int choice = -1;
@@ -82,7 +80,8 @@ public class Main {
         switch (choice) {
             case 1 -> streamService.getTwitchStreams(username);
             case 2 -> clipService.getTwitchClips(username);
-            case 3, 4 -> System.out.println("Feature not implemented yet.");
+            case 3 -> System.out.println("Feature not implemented yet.");
+            case 4 -> infoService.getTwitchStreamerInfo(username);
             default -> System.out.println("Invalid choice.");
         }
     }
