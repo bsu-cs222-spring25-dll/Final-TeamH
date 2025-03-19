@@ -12,6 +12,7 @@ public class Main {
     private static ChannelInfoService infoService;
     private static RetrieveVideosService videoService;
     private static RetrieveClips clipService;
+    private static LiveStatusService statusService;
 
 
     static String username = "";
@@ -22,6 +23,8 @@ public class Main {
         infoService = new ChannelInfoService(ApiInitializer.initializeTwitch(), ApiInitializer.initializeYoutube(), ApiInitializer.TwitchAuthToken, ApiInitializer.YoutubeAuthToken);
         videoService = new RetrieveVideosService(ApiInitializer.initializeTwitch(), ApiInitializer.initializeYoutube(), ApiInitializer.TwitchAuthToken, ApiInitializer.YoutubeAuthToken);
         clipService = new RetrieveClips(ApiInitializer.initializeTwitch(), ApiInitializer.TwitchAuthToken);
+        statusService = new LiveStatusService(ApiInitializer.initializeTwitch(), ApiInitializer.initializeYoutube(), ApiInitializer.TwitchAuthToken, ApiInitializer.YoutubeAuthToken);
+
 
         while(true) {
             int choice = displayMenu(scanner);
@@ -97,6 +100,8 @@ public class Main {
             streamService.getYoutubeStreams(username);
         }else if (choice == 2) {
             videoService.getYoutubeVideos(username);
+        }else if (choice == 3) {
+            statusService.getLiveStatus(username);
         }else if (choice == 4) {
             infoService.getYoutuberInfo(username);
         }

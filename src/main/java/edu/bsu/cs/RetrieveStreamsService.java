@@ -80,7 +80,9 @@ public class RetrieveStreamsService {
         final int[] i = {0};
         results.forEach(result -> {
             i[0]++;
-            System.out.println(i[0] + ". " + result.getSnippet().getTitle());
+            System.out.println(i[0] + ". " + result.getSnippet().getTitle()+"\n" + "Published At: " + result.getSnippet().getPublishedAt());
+            System.out.println("Watch here: https://www.youtube.com/watch?v=" + result.getId().getVideoId());
+            System.out.println("----------------------");
         });
     }
 }

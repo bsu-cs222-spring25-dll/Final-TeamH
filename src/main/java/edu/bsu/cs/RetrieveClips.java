@@ -59,9 +59,9 @@ public class RetrieveClips {
             for (Clip clip : clips) {
                 index++;
                 System.out.println(index + ". " + clip.getTitle());
-                System.out.println("   ➝ URL: " + clip.getUrl());
-                System.out.println("   ➝ Created by: " + clip.getCreatorName());
-                System.out.println("   ➝ Views: " + clip.getViewCount());
+                System.out.println("    URL: " + clip.getUrl());
+                System.out.println("    Created by: " + clip.getCreatorName());
+                System.out.println("    Views: " + clip.getViewCount());
                 System.out.println();
             }
 

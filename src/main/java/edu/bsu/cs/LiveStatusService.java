@@ -10,23 +10,22 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-public class RetrieveVideosService {
+public class LiveStatusService {
     private final ITwitchClient twitchClient;
     private final String twitchAuthToken;
     private final String youtubeApiKey;
     private final YouTube youtubeService;
     private final ObtainStreamerID obtainStreamerID;
 
-    public RetrieveVideosService(ITwitchClient twitchClient, YouTube youtubeService, String twitchAuthToken, String youtubeApiKey) {
+    public LiveStatusService(ITwitchClient twitchClient, YouTube youtubeService, String twitchAuthToken, String youtubeApiKey) {
         this.twitchClient = twitchClient;
         this.twitchAuthToken = twitchAuthToken;
         this.youtubeApiKey = youtubeApiKey;
         this.youtubeService = youtubeService;
         this.obtainStreamerID = new ObtainStreamerID(twitchClient, youtubeService, twitchAuthToken, youtubeApiKey);
-
     }
 
-    public void getYoutubeVideos(String username) throws IOException {
+    public void getLiveStatus(String username) throws IOException {
         String userId = obtainStreamerID.getYoutubeUserId(username);
 
         if (userId == null) {
@@ -34,34 +33,24 @@ public class RetrieveVideosService {
             return;
         }
 
-
-        YouTube.Search.List pastVideosRequest = youtubeService.search()
+        YouTube.Search.List searchRequest = youtubeService.search()
                 .list(Arrays.asList("id,snippet"))
                 .setKey(youtubeApiKey)
                 .setChannelId(userId)
-                .setType(Collections.singletonList("video"))
-                .setOrder("date") // Order by date
-                .setMaxResults(10L); // Fetch up to 10 results
+                .setEventType("live")
+                .setType(Arrays.asList(("video")));
 
-        SearchListResponse pastVideosInformation = pastVideosRequest.execute();
-        List<SearchResult> results = pastVideosInformation.getItems();
+        SearchListResponse searchResponse = searchRequest.execute();
+        List<SearchResult> Results = searchResponse.getItems();
 
-        if (results.isEmpty()) {
-            System.out.println("No recent videos found for " + username);
-            return;
+        if (!Results.isEmpty()) {
+            System.out.println("This Youtuber is live!");
+            for (SearchResult result : Results) {
+                System.out.println("Live Stream Title: " + result.getSnippet().getTitle());
+                System.out.println("Watch here: https://www.youtube.com/watch?v=" + result.getId().getVideoId());
+            }
+        } else {
+            System.out.println("This YouTuber is NOT live.");
         }
-
-        System.out.println("\nStart of list:");
-        final int[] i = {0};
-        results.forEach(result -> {
-            i[0]++;
-            System.out.println(i[0] + ". " + result.getSnippet().getTitle()+ "\n" + "Published At: " + result.getSnippet().getPublishedAt());
-            System.out.println("Watch here: https://www.youtube.com/watch?v=" + result.getId().getVideoId());
-            System.out.println("----------------------");
-        });
-
-
-
-
     }
 }
