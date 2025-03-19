@@ -92,7 +92,7 @@ public class Main {
     private static void printYoutubeMenu(Scanner scanner, String username) throws IOException {
         System.out.println("----- Youtube Services -----");
         System.out.println("1) Print the 10 most recent streams");
-        System.out.println("2) Print the 10 most recent videos");
+        System.out.println("2) Print the 10 most streamed videos");
         System.out.println("3) View live status");
         System.out.println("4) View Channel Information");
         System.out.print(">>");
