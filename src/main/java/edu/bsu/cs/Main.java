@@ -9,11 +9,14 @@ public class Main {
 
     private static StreamerSearchService searchService;
     private static RetrieveStreamsService streamService;
+    private static ChannelInfoService infoService;
+
     static String username = "";
 
     public static void main(String[] args) throws IOException {
         Scanner scanner = new Scanner(System.in);
         streamService = new RetrieveStreamsService(ApiInitializer.initializeTwitch(), ApiInitializer.initializeYoutube(), ApiInitializer.TwitchAuthToken, ApiInitializer.YoutubeAuthToken);
+        infoService = new ChannelInfoService(ApiInitializer.initializeTwitch(), ApiInitializer.initializeYoutube(), ApiInitializer.TwitchAuthToken, ApiInitializer.YoutubeAuthToken);
 
 
         while(true) {
@@ -61,14 +64,15 @@ public class Main {
     private static void printYoutubeMenu(Scanner scanner, String username) throws IOException {
         System.out.println("----- Youtube Services -----");
         System.out.println("1) Print the 10 most recent streams");
-        System.out.println("2) View Live Status");
-        System.out.println("3) View Past Streams");
-        System.out.println("4) View Subscriber Count");
-        System.out.println("5) View Bio Information");
+        System.out.println("2) Print the 10 most recent videos");
+        System.out.println("3) View live status");
+        System.out.println("4) View Channel Information");
         System.out.print(">>");
         int choice = scanner.nextInt();
         if(choice == 1) {
             streamService.getYoutubeStreams(username);
+        }else if (choice == 4) {
+            infoService.getYoutuberInfo(username);
         }
     }
 
