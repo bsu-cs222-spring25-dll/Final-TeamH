@@ -57,6 +57,7 @@ public class StreamerSearchService {
 
         } catch (IOException e) {
             System.out.println("Error while searching youtube: " + e.getMessage());
+
             return Collections.emptyList();
         }
     }

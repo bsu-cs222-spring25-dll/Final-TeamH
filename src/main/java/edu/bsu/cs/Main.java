@@ -14,6 +14,7 @@ public class Main {
     private static RetrieveClips clipService;
     private static LiveStatusService statusService;
 
+
     static String username = "";
 
     public static void main(String[] args) throws IOException {
@@ -23,6 +24,7 @@ public class Main {
         videoService = new RetrieveVideosService(ApiInitializer.initializeTwitch(), ApiInitializer.initializeYoutube(), ApiInitializer.TwitchAuthToken, ApiInitializer.YoutubeAuthToken);
         clipService = new RetrieveClips(ApiInitializer.initializeTwitch(), ApiInitializer.TwitchAuthToken);
         statusService = new LiveStatusService(ApiInitializer.initializeTwitch(), ApiInitializer.initializeYoutube(), ApiInitializer.TwitchAuthToken, ApiInitializer.YoutubeAuthToken);
+
 
         while(true) {
             int choice = displayMenu(scanner);
@@ -57,8 +59,8 @@ public class Main {
         System.out.println("----- Twitch Services -----");
         System.out.println("1) Print the 10 most recent streams");
         System.out.println("2) Print the 10 most recent clips");
-        System.out.println("3) View Live Status");
-        System.out.println("4) View Channel Information");
+        System.out.println("3) View Account Information");
+        System.out.println("4) View Live Status");
         System.out.print(">>");
 
         int choice = -1;
@@ -80,8 +82,8 @@ public class Main {
         switch (choice) {
             case 1 -> streamService.getTwitchStreams(username);
             case 2 -> clipService.getTwitchClips(username);
-            case 3 -> System.out.println("Feature not implemented yet.");
-            case 4 -> infoService.getTwitchStreamerInfo(username);
+            case 3 -> infoService.getTwitchStreamerInfo(username);
+            case 4 -> statusService.getTwitchLiveStatus(username);
             default -> System.out.println("Invalid choice.");
         }
     }
@@ -100,7 +102,7 @@ public class Main {
         }else if (choice == 2) {
             videoService.getYoutubeVideos(username);
         }else if (choice == 3) {
-            statusService.getLiveStatus(username);
+            statusService.getYoutubeLiveStatus(username);
         }else if (choice == 4) {
             infoService.getYoutuberInfo(username);
         }
@@ -135,42 +137,63 @@ public class Main {
         }
 
         scanner.nextLine();
-        System.out.print("Enter Twitch Username: \n>>");
-        username = scanner.nextLine();
-        List<String> twitchResult = searchService.searchTwitchStreamer(username);
+        while (true) {
+            System.out.print("Enter Twitch Username (no spaces allowed): \n>> ");
+            username = scanner.nextLine().trim();  // Remove leading and trailing spaces
 
-        if(twitchResult == null || twitchResult.isEmpty()) {
+            if (username.contains(" ")) {
+                System.out.println("Error: Username cannot contain spaces. Please try again.");
+            } else {
+                break;  // Valid input, exit loop
+            }
+        }
+
+        List<String> twitchResult = searchService.searchTwitchStreamer(username);
+        if (twitchResult == null || twitchResult.isEmpty()) {
             System.out.println("Twitch streamer not found.");
             return "";
         } else {
             System.out.println("Twitch streamer found: " + twitchResult.get(0));
             return username;
         }
-
     }
 
+
     private static String searchYoutube(Scanner scanner) {
-        if(searchService == null) {
+        if (searchService == null) {
             searchService = new StreamerSearchService(null, ApiInitializer.initializeYoutube(), null, ApiInitializer.YoutubeAuthToken);
         }
 
         scanner.nextLine();
-        System.out.print("Enter Youtube Username: \n>>");
-        String youtubeUsername = scanner.nextLine();
+        String youtubeUsername;
+
+        while (true) {
+            System.out.print("Enter YouTube Username (no spaces allowed): \n>> ");
+            youtubeUsername = scanner.nextLine().trim();  // Remove leading/trailing spaces
+
+            if (youtubeUsername.contains(" ")) {
+                System.out.println("Error: Username cannot contain spaces. Please try again.");
+            } else {
+                break;  // Valid input, exit loop
+            }
+        }
 
         try {
             List<String> youtubeResult = searchService.searchYoutubeStreamer(youtubeUsername);
 
-
-            if(youtubeResult == null || youtubeResult.isEmpty()) {
-                System.out.println("Youtuber not found.");
+            if (youtubeResult != null && !youtubeResult.isEmpty()) {
+                System.out.println("YouTube Streamer Found: " + youtubeResult.get(0));
             } else {
-                System.out.println("Youtube Streamer Found: " + youtubeResult.get(0));
+                System.out.println("YouTuber not found.");
+                return "";
             }
+
         } catch (Exception e) {
-            System.out.println("Youtuber not found.");
+            System.out.println("Youtuber not found (crash prevention)");
+            return "";
         }
 
         return youtubeUsername;
     }
+
 }
