@@ -1,9 +1,13 @@
 package edu.bsu.cs;
 
+import com.google.api.services.youtube.YouTube;
+
 import java.util.Scanner;
 import java.util.List;
 
 import java.io.IOException;
+
+import static edu.bsu.cs.ApiInitializer.twitchClient;
 
 public class Main {
 
@@ -31,12 +35,18 @@ public class Main {
 
             switch(choice) {
                 case 1 -> {
+                    twitchClient = ApiInitializer.initializeTwitch();
+                    searchService = new StreamerSearchService(twitchClient, null, ApiInitializer.TwitchAuthToken, null);
+
                     username = searchTwitch(scanner);
                     if(!username.isEmpty()) {
                         printTwitchMenu(scanner, username);
                     }
                 }
                 case 2 -> {
+                    YouTube youtubeClient = ApiInitializer.initializeYoutube();
+                    searchService = new StreamerSearchService(null, youtubeClient, null, ApiInitializer.YoutubeAuthToken);
+
                     username = searchYoutube(scanner);
                     if(!username.isEmpty()) {
                         printYoutubeMenu(scanner, username);
