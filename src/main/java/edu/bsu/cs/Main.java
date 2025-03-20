@@ -8,6 +8,7 @@ import java.util.List;
 import java.io.IOException;
 
 import static edu.bsu.cs.ApiInitializer.twitchClient;
+import static edu.bsu.cs.NetCheck.networkAvailable;
 
 public class Main {
 
@@ -29,8 +30,7 @@ public class Main {
         clipService = new RetrieveClips(ApiInitializer.initializeTwitch(), ApiInitializer.TwitchAuthToken);
         statusService = new LiveStatusService(ApiInitializer.initializeTwitch(), ApiInitializer.initializeYoutube(), ApiInitializer.TwitchAuthToken, ApiInitializer.YoutubeAuthToken);
 
-
-        while(true) {
+        while(networkAvailable()) {
             int choice = displayMenu(scanner);
 
             switch(choice) {
@@ -157,15 +157,20 @@ public class Main {
                 break;  // Valid input, exit loop
             }
         }
-
-        List<String> twitchResult = searchService.searchTwitchStreamer(username);
-        if (twitchResult == null || twitchResult.isEmpty()) {
-            System.out.println("Twitch streamer not found.");
+        try {
+            List<String> twitchResult = searchService.searchTwitchStreamer(username);
+            if (twitchResult == null || twitchResult.isEmpty()) {
+                System.out.println("Twitch streamer not found.");
+                return "";
+            } else {
+                System.out.println("Twitch streamer found: " + twitchResult.get(0));
+                return username;
+            }
+        } catch (Exception e) {
+            System.out.println("Twitch User not found (crash prevention)");
             return "";
-        } else {
-            System.out.println("Twitch streamer found: " + twitchResult.get(0));
-            return username;
         }
+
     }
 
 
