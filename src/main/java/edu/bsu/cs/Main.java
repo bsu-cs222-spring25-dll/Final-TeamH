@@ -8,7 +8,6 @@ import java.util.List;
 import java.io.IOException;
 
 import static edu.bsu.cs.ApiInitializer.twitchClient;
-import static edu.bsu.cs.NetCheck.networkAvailable;
 
 public class Main {
 
@@ -30,7 +29,7 @@ public class Main {
         clipService = new RetrieveClips(ApiInitializer.initializeTwitch(), ApiInitializer.TwitchAuthToken);
         statusService = new LiveStatusService(ApiInitializer.initializeTwitch(), ApiInitializer.initializeYoutube(), ApiInitializer.TwitchAuthToken, ApiInitializer.YoutubeAuthToken);
 
-        while(networkAvailable()) {
+        while(true) {
             int choice = displayMenu(scanner);
 
             switch(choice) {
