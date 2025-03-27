@@ -31,7 +31,4 @@
     </root>
 </configuration>
 
-<root level="info">
-    <appender-ref ref="CONSOLE"/>
-    <appender-ref ref="FILE"/>
-</root>
+
