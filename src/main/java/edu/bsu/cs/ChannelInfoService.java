@@ -13,17 +13,13 @@ import java.util.Collections;
 
 public class ChannelInfoService {
     private final ITwitchClient twitchClient;
-    private final String twitchAuthToken;
     private final String youtubeApiKey;
     private final YouTube youtubeService;
-    private final ObtainStreamerID obtainStreamerID;
 
-    public ChannelInfoService(ITwitchClient twitchClient, YouTube youtubeService, String twitchAuthToken, String youtubeApiKey) {
+    public ChannelInfoService(ITwitchClient twitchClient, YouTube youtubeService, String youtubeApiKey) {
         this.twitchClient = twitchClient;
-        this.twitchAuthToken = twitchAuthToken;
         this.youtubeApiKey = youtubeApiKey;
         this.youtubeService = youtubeService;
-        this.obtainStreamerID = new ObtainStreamerID(twitchClient, null, twitchAuthToken, null);
     }
 
     public void getYoutuberInfo(String username) throws IOException {

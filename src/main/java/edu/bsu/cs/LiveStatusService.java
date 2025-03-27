@@ -2,7 +2,6 @@ package edu.bsu.cs;
 
 import com.github.twitch4j.ITwitchClient;
 import com.github.twitch4j.helix.TwitchHelix;
-import com.github.twitch4j.helix.domain.ClipList;
 import com.google.api.services.youtube.YouTube;
 import com.google.api.services.youtube.model.SearchListResponse;
 import com.google.api.services.youtube.model.SearchResult;

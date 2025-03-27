@@ -1,6 +1,5 @@
 package edu.bsu.cs;
 
-import com.github.twitch4j.ITwitchClient;
 import com.google.api.services.youtube.YouTube;
 import com.google.api.services.youtube.model.SearchListResponse;
 import com.google.api.services.youtube.model.SearchResult;
@@ -11,18 +10,14 @@ import java.util.Collections;
 import java.util.List;
 
 public class RetrieveVideosService {
-    private final ITwitchClient twitchClient;
-    private final String twitchAuthToken;
     private final String youtubeApiKey;
     private final YouTube youtubeService;
     private final ObtainStreamerID obtainStreamerID;
 
-    public RetrieveVideosService(ITwitchClient twitchClient, YouTube youtubeService, String twitchAuthToken, String youtubeApiKey) {
-        this.twitchClient = twitchClient;
-        this.twitchAuthToken = twitchAuthToken;
+    public RetrieveVideosService(YouTube youtubeService, String youtubeApiKey) {
         this.youtubeApiKey = youtubeApiKey;
         this.youtubeService = youtubeService;
-        this.obtainStreamerID = new ObtainStreamerID(twitchClient, youtubeService, twitchAuthToken, youtubeApiKey);
+        this.obtainStreamerID = new ObtainStreamerID(null, youtubeService, null, youtubeApiKey);
 
     }
 

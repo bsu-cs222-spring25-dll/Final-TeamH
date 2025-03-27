@@ -2,7 +2,6 @@ package edu.bsu.cs;
 
 import com.github.twitch4j.ITwitchClient;
 import com.github.twitch4j.helix.domain.UserList;
-import com.github.twitch4j.helix.domain.User;
 import com.google.api.services.youtube.YouTube;
 import com.google.api.services.youtube.model.ChannelListResponse;
 
