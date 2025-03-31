@@ -21,14 +21,13 @@ import static org.mockito.Mockito.*;
 
 class TestSearchStreamers {
 
-    private ITwitchClient twitchClient;
     private TwitchHelix twitchHelix;
     private YouTube youtubeService;
-    private StreamerSearchService searchService = new StreamerSearchService(twitchClient, youtubeService, null, null);
+    private StreamerSearchService searchService = new StreamerSearchService(null, null, null, null);
 
     @BeforeEach
     void setUp() {
-        twitchClient = mock(ITwitchClient.class);
+        ITwitchClient twitchClient = mock(ITwitchClient.class);
         twitchHelix = mock(TwitchHelix.class);
         youtubeService = mock(YouTube.class);
 
@@ -37,7 +36,7 @@ class TestSearchStreamers {
     }
 
     @Test
-    void searchTwitchStreamer_ShouldReturnUsername_WhenUserExists() throws Exception {
+    void searchTwitchStreamer_ShouldReturnUsername_WhenUserExists() {
         UserList mockUserList = mock(UserList.class);
         User mockUser = mock(User.class);
 
@@ -55,7 +54,7 @@ class TestSearchStreamers {
     }
 
     @Test
-    void searchTwitchStreamer_ShouldReturnNull_WhenUserNotFound() throws Exception {
+    void searchTwitchStreamer_ShouldReturnNull_WhenUserNotFound() {
         UserList mockUserList = mock(UserList.class);
         when(mockUserList.getUsers()).thenReturn(Collections.emptyList());
 
