@@ -1,58 +1,127 @@
 package edu.bsu.cs;
 
+import com.github.twitch4j.ITwitchClient;
+import com.github.twitch4j.helix.TwitchHelix;
+import com.github.twitch4j.helix.domain.User;
+import com.github.twitch4j.helix.domain.UserList;
+import com.google.api.services.youtube.YouTube;
+import com.google.api.services.youtube.model.Channel;
+import com.google.api.services.youtube.model.ChannelListResponse;
+import com.google.api.services.youtube.model.ChannelSnippet;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
+import com.netflix.hystrix.HystrixCommand;
+
+import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
-public class TestSearchStreamers {
+class TestSearchStreamers {
 
-    //implement some mock of searching for streamer names on Twitch
-    @Test
-    void searchTwitchStreamerByName() {
-        StreamerSearchService twitchSearchService =  mock(StreamerSearchService.class);
+    private ITwitchClient twitchClient;
+    private TwitchHelix twitchHelix;
+    private YouTube youtubeService;
+    private StreamerSearchService searchService = new StreamerSearchService(twitchClient, youtubeService, null, null);
 
-        List<String> mockResult = List.of("Gamer1", "Streamer2");
-        when(twitchSearchService.searchTwitchStreamer("gamer1")).thenReturn(mockResult);
+    @BeforeEach
+    void setUp() {
+        twitchClient = mock(ITwitchClient.class);
+        twitchHelix = mock(TwitchHelix.class);
+        youtubeService = mock(YouTube.class);
 
-        List<String> result = twitchSearchService.searchTwitchStreamer("gamer1");
-
-        assertEquals(mockResult, result);
+        when(twitchClient.getHelix()).thenReturn(twitchHelix);
+        searchService = new StreamerSearchService(twitchClient, youtubeService, "mockToken", "mockApiKey");
     }
 
-    //verify that the searchTwitchStreamer method is called for mock
     @Test
-    void verifyTwitchSearchCall() {
-        StreamerSearchService service = Mockito.mock(StreamerSearchService.class);
+    void searchTwitchStreamer_ShouldReturnUsername_WhenUserExists() throws Exception {
+        UserList mockUserList = mock(UserList.class);
+        User mockUser = mock(User.class);
 
-        service.searchTwitchStreamer("gamer1");
+        when(mockUser.getDisplayName()).thenReturn("TestStreamer");
+        when(mockUserList.getUsers()).thenReturn(List.of(mockUser));
 
-        Mockito.verify(service).searchTwitchStreamer("gamer1");
+        HystrixCommand<UserList> mockCommand = mock(HystrixCommand.class);
+        when(mockCommand.execute()).thenReturn(mockUserList);
+
+        when(twitchHelix.getUsers(any(), any(), any())).thenReturn(mockCommand);
+
+        List<String> result = searchService.searchTwitchStreamer("TestStreamer");
+
+        assertEquals("TestStreamer", result.get(0));
     }
 
-    //implement some sort of mock for testing getting youtube names
     @Test
-    void searchYoutubeStreamerByName() {
-        StreamerSearchService youtubeSearchService = mock(StreamerSearchService.class);
+    void searchTwitchStreamer_ShouldReturnNull_WhenUserNotFound() throws Exception {
+        UserList mockUserList = mock(UserList.class);
+        when(mockUserList.getUsers()).thenReturn(Collections.emptyList());
 
-        List<String> mockResult = List.of("IShowSpeed");
-        when(youtubeSearchService.searchYoutubeStreamer("IShowSpeed")).thenReturn(mockResult);
+        HystrixCommand<UserList> mockCommand = mock(HystrixCommand.class);
+        when(mockCommand.execute()).thenReturn(mockUserList);
 
-        List<String> result = youtubeSearchService.searchYoutubeStreamer("IShowSpeed");
+        when(twitchHelix.getUsers(any(), any(), any())).thenReturn(mockCommand);
 
-        assertEquals(mockResult, result);
+        List<String> result = searchService.searchTwitchStreamer("UnknownUser");
+
+        assertNull(result);
     }
 
-    //verify that the searchYoutubeStreamer method is called for mock
     @Test
-    void verifyYoutubeSearchCall() {
-        StreamerSearchService service = Mockito.mock(StreamerSearchService.class);
+    void searchYoutubeStreamer_ShouldReturnChannelName_WhenChannelExists() throws IOException {
+        YouTube.Channels mockChannels = mock(YouTube.Channels.class);
+        YouTube.Channels.List mockRequest = mock(YouTube.Channels.List.class);
+        ChannelListResponse mockResponse = mock(ChannelListResponse.class);
+        Channel mockChannel = mock(Channel.class);
+        ChannelSnippet mockSnippet = mock(ChannelSnippet.class);
 
-        service.searchYoutubeStreamer("IShowSpeed");
+        when(youtubeService.channels()).thenReturn(mockChannels);
+        when(mockChannels.list(any())).thenReturn(mockRequest);
+        when(mockRequest.setKey(any())).thenReturn(mockRequest);
+        when(mockRequest.setForHandle(any())).thenReturn(mockRequest);
+        when(mockRequest.execute()).thenReturn(mockResponse);
+        when(mockResponse.getItems()).thenReturn(List.of(mockChannel));
+        when(mockChannel.getSnippet()).thenReturn(mockSnippet);
+        when(mockSnippet.getTitle()).thenReturn("TestChannel");
 
-        Mockito.verify(service).searchYoutubeStreamer("IShowSpeed");
+        List<String> result = searchService.searchYoutubeStreamer("TestChannel");
+
+        assertEquals("TestChannel", result.get(0));
+    }
+
+    @Test
+    void searchYoutubeStreamer_ShouldReturnEmptyList_WhenChannelNotFound() throws IOException {
+        YouTube.Channels mockChannels = mock(YouTube.Channels.class);
+        YouTube.Channels.List mockRequest = mock(YouTube.Channels.List.class);
+        ChannelListResponse mockResponse = mock(ChannelListResponse.class);
+
+        when(youtubeService.channels()).thenReturn(mockChannels);
+        when(mockChannels.list(any())).thenReturn(mockRequest);
+        when(mockRequest.setKey(any())).thenReturn(mockRequest);
+        when(mockRequest.setForHandle(any())).thenReturn(mockRequest);
+        when(mockRequest.execute()).thenReturn(mockResponse);
+        when(mockResponse.getItems()).thenReturn(Collections.emptyList());
+
+        List<String> result = searchService.searchYoutubeStreamer("UnknownChannel");
+
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void searchYoutubeStreamer_ShouldHandleIOException_Gracefully() throws IOException {
+        YouTube.Channels mockChannels = mock(YouTube.Channels.class);
+        YouTube.Channels.List mockRequest = mock(YouTube.Channels.List.class);
+
+        when(youtubeService.channels()).thenReturn(mockChannels);
+        when(mockChannels.list(any())).thenReturn(mockRequest);
+        when(mockRequest.setKey(any())).thenReturn(mockRequest);
+        when(mockRequest.setForHandle(any())).thenReturn(mockRequest);
+        when(mockRequest.execute()).thenThrow(new IOException("API error"));
+
+        List<String> result = searchService.searchYoutubeStreamer("TestChannel");
+
+        assertNotNull(result);
     }
 }

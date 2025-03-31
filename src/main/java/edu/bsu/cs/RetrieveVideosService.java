@@ -29,7 +29,6 @@ public class RetrieveVideosService {
             return;
         }
 
-
         YouTube.Search.List pastVideosRequest = youtubeService.search()
                 .list(Arrays.asList("id,snippet"))
                 .setKey(youtubeApiKey)
@@ -54,9 +53,6 @@ public class RetrieveVideosService {
             System.out.println("Watch here: https://www.youtube.com/watch?v=" + result.getId().getVideoId());
             System.out.println("----------------------");
         });
-
-
-
 
     }
 }
