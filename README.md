@@ -6,7 +6,9 @@ The streamer tracker project is a program designed to fetch and present informat
 Twitch and YouTube. By using the API’s of both platforms, this project will let users search for streamers, view their live stream statuses, 
 and grab data about recent streams, videos, clips, and general streamer data. 
 
-For **iteration 1**, our main objective is establishing a foundation for the features that allow for searching of streamers and the retrieval of basic information about them.
+For **Iteration 1**, our main objective is establishing a foundation for the features that allow for searching of streamers and the retrieval of basic information about them.
+
+For **Iteration 2**, our main objective is establishing a Graphical User Interface to help enhance a user's experience.
 
 ## Needed Build Instructions:
 
