@@ -1,6 +1,5 @@
 package edu.bsu.cs;
 
-
 import java.util.Scanner;
 
 import java.io.IOException;

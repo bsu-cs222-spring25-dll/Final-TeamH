@@ -7,7 +7,7 @@ plugins {
 apply plugin: 'java'
 apply plugin: 'application'
 
-mainClassName = 'ApiExample'
+mainClassName = 'edu.bsu.cs.GUI'
 sourceCompatibility = 1.14
 targetCompatibility = 1.14
 
