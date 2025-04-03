@@ -26,12 +26,10 @@ public class GUI extends Application {
     public void start(Stage primaryStage) {
         primaryStage.setTitle("Streamer Tracker");
 
-        ITwitchClient twitchClient = ApiInitializer.initializeTwitch();
-        YouTube youtubeService = ApiInitializer.initializeYoutube();
-        String youtubeApiKey = ApiInitializer.YoutubeAuthToken;
+        StreamerSearchService searchService = new StreamerSearchService(ApiInitializer.initializeTwitch(), ApiInitializer.initializeYoutube(), ApiInitializer.TwitchAuthToken, ApiInitializer.YoutubeAuthToken);
 
-        ChannelInfoService channelInfoService = new ChannelInfoService(twitchClient, youtubeService, youtubeApiKey);
-        guiStreamerInfo = new GUIStreamerInfo(channelInfoService);
+        guiSearchHandler = new GUISearchHandler(searchService);
+        guiStreamerInfo = new GUIStreamerInfo(new ChannelInfoService(ApiInitializer.initializeTwitch(), ApiInitializer.initializeYoutube(), ApiInitializer.YoutubeAuthToken));
 
         Label titleLabel = new Label("Streamer Tracker");
         titleLabel.setStyle("-fx-font-size: 24px; -fx-font-weight: bold;");
@@ -65,7 +63,7 @@ public class GUI extends Application {
             String result = guiSearchHandler.GUISearchStreamer(username, platform);
 
             if (!result.isEmpty()) {
-                resultLabel.setText("Streamer Found: " + result);
+                showStreamerScene(primaryStage, username, platform);
             } else {
                 resultLabel.setText("Streamer not found.");
             }
@@ -78,12 +76,10 @@ public class GUI extends Application {
         layout.setPadding(new Insets(20));
         layout.setAlignment(Pos.CENTER);
 
-        Scene scene = new Scene(layout, 600, 300);
-        primaryStage.setScene(scene);
+        Scene searchScene = new Scene(layout, 600, 300);
+        primaryStage.setScene(searchScene);
         primaryStage.show();
     }
-
-
 
     private void showError(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
@@ -92,4 +88,27 @@ public class GUI extends Application {
         alert.setContentText(message);
         alert.showAndWait();
     }
+
+    private void showStreamerScene(Stage primaryStage, String username, String platform) {
+        Label titleLabel = new Label("Streamer Tracker");
+        titleLabel.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
+
+        Button returnButton = new Button("Return");
+        returnButton.setOnAction(e -> start(primaryStage));
+
+        HBox topBar = new HBox(10, titleLabel, returnButton);
+        topBar.setAlignment(Pos.TOP_LEFT);
+        topBar.setPadding(new Insets(10));
+
+        Label streamerInfo = new Label("Now viewing: " + username + " on " + platform);
+        streamerInfo.setStyle("-fx-font-size: 16px;");
+
+        VBox layout = new VBox(20, topBar, streamerInfo);
+        layout.setPadding(new Insets(20));
+        layout.setAlignment(Pos.TOP_LEFT);
+
+        Scene streamerScene = new Scene(layout, 600, 300);
+        primaryStage.setScene(streamerScene);
+    }
+
 }

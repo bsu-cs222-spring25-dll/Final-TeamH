@@ -4,7 +4,6 @@ import java.util.List;
 
 public class GUISearchHandler {
     private final StreamerSearchService searchService;
-    private String lastValidUsername = null;
 
     public GUISearchHandler(StreamerSearchService searchService) {
         this.searchService = searchService;
@@ -27,8 +26,7 @@ public class GUISearchHandler {
             }
 
             System.out.println(platform + " streamer found: " + result.get(0));
-            lastValidUsername = result.get(0);  // Store the correct username
-            return lastValidUsername;
+            return result.get(0);
 
         } catch (IllegalArgumentException e) {
             System.err.println("Invalid platform: " + e.getMessage());
@@ -37,9 +35,5 @@ public class GUISearchHandler {
             System.err.println("Error searching for " + platform + " user: " + e.getMessage());
             return "";
         }
-    }
-
-    public String getLastValidUsername() {
-        return lastValidUsername;
     }
 }
