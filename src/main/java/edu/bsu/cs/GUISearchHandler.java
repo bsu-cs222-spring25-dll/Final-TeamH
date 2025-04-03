@@ -5,29 +5,33 @@ import java.util.List;
 public class GUISearchHandler {
     private final StreamerSearchService searchService;
 
-    public GUISearchHandler(StreamerSearchService searchService) {
-        this.searchService = searchService;
+    public GUISearchHandler() {
+        this.searchService = new StreamerSearchService(
+                ApiInitializer.initializeTwitch(),
+                ApiInitializer.initializeYoutube(),
+                ApiInitializer.TwitchAuthToken,
+                ApiInitializer.YoutubeAuthToken
+        );
     }
 
-    public boolean GUISearchStreamer(String username) {
+    public String GUISearchStreamer(String platform, String username) {
+        List<String> result;
         try {
-            List<String> twitchResults = searchService.searchTwitchStreamer(username);
-            if (!twitchResults.isEmpty()) {
-                System.out.println("Twitch streamer found: " + username);
-                return true;
+            if (platform.equalsIgnoreCase("Twitch")) {
+                result = searchService.searchTwitchStreamer(username);
+            } else if (platform.equalsIgnoreCase("YouTube")) {
+                result = searchService.searchYoutubeStreamer(username);
+            } else {
+                throw new IllegalArgumentException("Unsupported platform: " + platform);
             }
 
-            List<String> youtubeResults = searchService.searchYoutubeStreamer(username);
-            if (!youtubeResults.isEmpty()) {
-                System.out.println("YouTube streamer found: " + username);
-                return true;
+            if (result.isEmpty()) {
+                return "";
+            } else {
+                return result.get(0);
             }
-
-            System.out.println("Streamer not found.");
-            return false;
         } catch (Exception e) {
-            System.err.println("Error searching for streamer: " + e.getMessage());
-            return false;
+            return "";
         }
     }
 }
