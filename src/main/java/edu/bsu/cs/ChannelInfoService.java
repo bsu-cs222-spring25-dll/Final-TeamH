@@ -22,53 +22,42 @@ public class ChannelInfoService {
         this.youtubeService = youtubeService;
     }
 
-    public void getYoutuberInfo(String username) throws IOException {
+    public String getYoutuberInfo(String username) throws IOException {
         YouTube.Channels.List channelRequest = youtubeService.channels()
                 .list(Arrays.asList("snippet", "statistics", "brandingSettings"))
                 .setKey(youtubeApiKey)
                 .setForHandle("@" + username);
 
         ChannelListResponse response = channelRequest.execute();
-        Channel channel = response.getItems().get(0);
-
-
-        String bio = channel.getBrandingSettings().getChannel().getDescription();
-        System.out.println("Bio:\n"+bio);
-        if (bio.isEmpty()) {
-            System.out.println("There is no bio for this channel " + username);
-            return;
+        if (response.getItems().isEmpty()) {
+            return "YouTube channel not found for: " + username;
         }
 
+        Channel channel = response.getItems().get(0);
+        String bio = channel.getBrandingSettings().getChannel().getDescription();
         String subscriberCount = String.valueOf(channel.getStatistics().getSubscriberCount());
-        System.out.println("Current Subscriber Count: "+subscriberCount);
+
+        if (bio.isEmpty()) {
+            bio = "No bio available.";
+        }
+
+        return "Bio:\n" + bio + "\nSubscribers: " + subscriberCount;
     }
 
-    public void getTwitchStreamerInfo(String username){
+    public String getTwitchStreamerInfo(String username) {
         UserList userList = twitchClient.getHelix().getUsers(null, null, Collections.singletonList(username)).execute();
         if (userList.getUsers().isEmpty()) {
-            System.out.println("Channel not found!");
-            return;
+            return "Twitch channel not found for: " + username;
         }
 
         User user = userList.getUsers().get(0);
         String userId = user.getId();
         String bio = user.getDescription();
-
         if (bio == null || bio.isEmpty()) {
-            System.out.println("Bio is empty for: " + username);
-            return;
-        }
-
-        System.out.println("Bio:\n" + bio);
-
-        if (userId == null || userId.isEmpty()) {
-            System.out.println("Error: Could not retrieve the user ID for " + username);
-            return;
+            bio = "No bio available.";
         }
 
         long followerCount = twitchClient.getHelix().getChannelFollowers(null, userId, null, null, null).execute().getTotal();
-        System.out.println("\nFollower count: " + followerCount);
+        return "Bio:\n" + bio + "\nFollowers: " + followerCount;
     }
-
-
 }
