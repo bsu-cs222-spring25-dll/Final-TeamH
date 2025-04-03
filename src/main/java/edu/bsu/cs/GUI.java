@@ -1,7 +1,5 @@
 package edu.bsu.cs;
 
-import com.github.twitch4j.ITwitchClient;
-import com.google.api.services.youtube.YouTube;
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
