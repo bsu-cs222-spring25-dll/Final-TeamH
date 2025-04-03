@@ -9,72 +9,65 @@ import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
-import java.util.Scanner;
-
 public class GUI extends Application {
-    private StreamerSearchHandler searchHandler;
+    private GUISearchHandler guiSearchHandler;
+    private TextField usernameInput;
+    private Button searchButton;
+
+    public static void main(String[] args) {
+        launch(args);
+    }
 
     @Override
     public void start(Stage primaryStage) {
         primaryStage.setTitle("Streamer Tracker");
 
-        // UI Elements
-        TextField usernameField = new TextField();
-        usernameField.setPromptText("Enter Streamer Username");
+        ITwitchClient twitchClient = ApiInitializer.initializeTwitch();
+        YouTube youtubeClient = ApiInitializer.initializeYoutube();
 
-        ComboBox<String> platformBox = new ComboBox<>();
-        platformBox.getItems().addAll("Twitch", "YouTube");
-        platformBox.setValue("Twitch");
+        StreamerSearchService searchService = new StreamerSearchService(
+                twitchClient, youtubeClient, ApiInitializer.TwitchAuthToken, ApiInitializer.YoutubeAuthToken
+        );
+        guiSearchHandler = new GUISearchHandler(searchService);
 
-        Button searchButton = new Button("Search");
+        usernameInput = new TextField();
+        usernameInput.setPromptText("Enter Streamer Username...");
+
         Label resultLabel = new Label();
         TextArea outputArea = new TextArea();
         outputArea.setEditable(false);
         outputArea.setWrapText(true);
 
-        // Initialize API clients using ApiInitializer
-        ITwitchClient twitchClient = ApiInitializer.initializeTwitch();
-        YouTube youtubeClient = ApiInitializer.initializeYoutube();
-
-        // Initialize StreamerSearchHandler with API clients
-        StreamerSearchService searchService = new StreamerSearchService(
-                twitchClient,
-                youtubeClient,
-                ApiInitializer.TwitchAuthToken,
-                ApiInitializer.YoutubeAuthToken
-        );
-        searchHandler = new StreamerSearchHandler(new Scanner(System.in), searchService);
-
-        // Search button action
+        searchButton = new Button("Search");
         searchButton.setOnAction(e -> {
-            String username = usernameField.getText().trim();
-            String platform = platformBox.getValue();
-
-            if (username.isEmpty()) {
-                resultLabel.setText("Error: Please enter a valid username.");
-                outputArea.clear();
+            String username = usernameInput.getText().trim();
+            if (username.isEmpty() || username.contains(" ")) {
+                showErrorDialog("Invalid Username", "Please enter a valid username without spaces.");
                 return;
             }
 
-            String result = searchHandler.searchStreamer(platform);
-            if (!result.isEmpty()) {
-                resultLabel.setText("Streamer Found: " + result);
-                outputArea.setText("Displaying details for " + result);
+            boolean isFound = guiSearchHandler.GUISearchStreamer(username);
+            if (isFound) {
+                resultLabel.setText("Success!");
+                outputArea.setText("Streamer Found: " + username);
             } else {
-                resultLabel.setText("Streamer not found.");
-                outputArea.clear();
+                showErrorDialog("Streamer Not Found", "The entered streamer does not exist.");
             }
         });
 
-        // Layout
-        VBox layout = new VBox(10, usernameField, platformBox, searchButton, resultLabel, outputArea);
+        VBox layout = new VBox(10, usernameInput, searchButton, resultLabel, outputArea);
         layout.setPadding(new Insets(15));
 
-        primaryStage.setScene(new Scene(layout, 400, 300));
+        Scene scene = new Scene(layout, 400, 300);
+        primaryStage.setScene(scene);
         primaryStage.show();
     }
 
-    public static void main(String[] args) {
-        launch(args);
+    private void showErrorDialog(String title, String message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
     }
 }
