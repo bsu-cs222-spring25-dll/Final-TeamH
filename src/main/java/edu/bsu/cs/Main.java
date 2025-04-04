@@ -49,7 +49,7 @@ public class Main {
             int choice = getUserInput(Menu::printMainMenu);
 
             switch (choice) {
-                case 1 -> { // Twitch Services
+                case 1 -> {
                     twitchClient = ApiInitializer.initializeTwitch();
                     username = searchHandler.searchStreamer("Twitch");
 
@@ -85,7 +85,10 @@ public class Main {
                     String result = infoService.getTwitchStreamerInfo(username);
                     System.out.println(result);
                 }
-                case 4 -> statusService.getTwitchLiveStatus(username);
+                case 4 -> {
+                    String liveStatus = statusService.getTwitchLiveStatus(username);
+                    System.out.println(liveStatus);
+                }
                 case 5 -> {
                     return;
                 }
@@ -101,7 +104,10 @@ public class Main {
             switch (choice) {
                 case 1 -> streamService.getYoutubeStreams(username);
                 case 2 -> videoService.getYoutubeVideos(username);
-                case 3 -> statusService.getYoutubeLiveStatus(username);
+                case 3 -> {
+                    String liveStatus = statusService.getYoutubeLiveStatus(username);
+                    System.out.println(liveStatus);
+                }
                 case 4 -> {
                     String result = infoService.getYoutuberInfo(username);
                     System.out.println(result);

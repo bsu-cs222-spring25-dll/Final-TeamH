@@ -26,50 +26,42 @@ public class LiveStatusService {
         this.obtainStreamerID = new ObtainStreamerID(twitchClient, youtubeService, twitchAuthToken, youtubeApiKey);
     }
 
-    public void getTwitchLiveStatus(String username) {
+    public String getTwitchLiveStatus(String username) {
         try {
-            // Obtain the TwitchHelix instance (ensure it's initialized)
             TwitchHelix helix = twitchClient.getHelix();
             if (helix == null) {
-                System.out.println("Error: TwitchHelix API client not initialized.");
-                return;
+                return "Error: TwitchHelix API client not initialized.";
             }
 
-            // Call the updated getStreams method with user_login
             var response = helix.getStreams(
-                    twitchAuthToken, // OAuth token (ensure it has necessary scopes)
-                    null, // Pagination cursor (after)
-                    null, // Pagination cursor (before)
-                    1,    // Limit results to 1
-                    null, // Game IDs (not needed)
-                    null, // Language (not needed)
-                    null, // User IDs (not using IDs here)
-                    Collections.singletonList(username) // Pass the login name
+                    twitchAuthToken,
+                    null,
+                    null,
+                    1,
+                    null,
+                    null,
+                    null,
+                    Collections.singletonList(username)
             ).execute();
 
-            // Check if the response contains an active stream
             if (response != null && response.getStreams() != null && !response.getStreams().isEmpty()) {
                 var stream = response.getStreams().get(0);
-                System.out.println(username + " is LIVE on Twitch!");
-                System.out.println("Stream Title: " + stream.getTitle());
-                System.out.println("Watch: https://www.twitch.tv/" + username);
+                return username + " is LIVE on Twitch!\n" +
+                        "Stream Title: " + stream.getTitle() + "\n" +
+                        "Watch: https://www.twitch.tv/" + username;
             } else {
-                System.out.println(username + " is NOT live on Twitch.");
+                return username + " is NOT live on Twitch.";
             }
         } catch (Exception e) {
-            System.out.println("Error checking Twitch live status: " + e.getMessage());
-            e.printStackTrace();
+            return "Error checking Twitch live status: " + e.getMessage();
         }
     }
 
-
-
-    public void getYoutubeLiveStatus(String username) throws IOException {
+    public String getYoutubeLiveStatus(String username) throws IOException {
         String userId = obtainStreamerID.getYoutubeUserId(username);
 
         if (userId == null) {
-            System.out.println("Error: Could not retrieve YouTube Channel ID for " + username);
-            return;
+            return "Error: Could not retrieve YouTube Channel ID for " + username;
         }
 
         YouTube.Search.List searchRequest = youtubeService.search()
@@ -80,16 +72,17 @@ public class LiveStatusService {
                 .setType(Arrays.asList(("video")));
 
         SearchListResponse searchResponse = searchRequest.execute();
-        List<SearchResult> Results = searchResponse.getItems();
+        List<SearchResult> results = searchResponse.getItems();
 
-        if (!Results.isEmpty()) {
-            System.out.println("This Youtuber is live!");
-            for (SearchResult result : Results) {
-                System.out.println("Live Stream Title: " + result.getSnippet().getTitle());
-                System.out.println("Watch here: https://www.youtube.com/watch?v=" + result.getId().getVideoId());
+        if (!results.isEmpty()) {
+            StringBuilder liveStreams = new StringBuilder("This Youtuber is live!\n");
+            for (SearchResult result : results) {
+                liveStreams.append("Live Stream Title: ").append(result.getSnippet().getTitle()).append("\n")
+                        .append("Watch here: https://www.youtube.com/watch?v=").append(result.getId().getVideoId()).append("\n");
             }
+            return liveStreams.toString();
         } else {
-            System.out.println("This YouTuber is NOT live.");
+            return "This YouTuber is NOT live.";
         }
     }
 }

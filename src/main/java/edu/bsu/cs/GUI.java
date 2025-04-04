@@ -30,7 +30,7 @@ public class GUI extends Application {
         StreamerSearchService searchService = new StreamerSearchService(ApiInitializer.initializeTwitch(), ApiInitializer.initializeYoutube(), ApiInitializer.TwitchAuthToken, ApiInitializer.YoutubeAuthToken);
 
         guiSearchHandler = new GUISearchHandler(searchService);
-        guiStreamerInfo = new GUIStreamerInfo(new ChannelInfoService(ApiInitializer.initializeTwitch(), ApiInitializer.initializeYoutube(), ApiInitializer.YoutubeAuthToken), new ProfilePictureService(ApiInitializer.initializeTwitch(), ApiInitializer.initializeYoutube()));
+        guiStreamerInfo = new GUIStreamerInfo(new ChannelInfoService(ApiInitializer.initializeTwitch(), ApiInitializer.initializeYoutube(), ApiInitializer.YoutubeAuthToken), new ProfilePictureService(ApiInitializer.initializeTwitch(), ApiInitializer.initializeYoutube()), new LiveStatusService(ApiInitializer.initializeTwitch(), ApiInitializer.initializeYoutube(), ApiInitializer.TwitchAuthToken, ApiInitializer.YoutubeAuthToken));
 
         Label titleLabel = new Label("Streamer Tracker");
         titleLabel.setStyle("-fx-font-size: 24px; -fx-font-weight: bold;");
@@ -104,21 +104,34 @@ public class GUI extends Application {
         Label streamerInfo = new Label("Now viewing: " + username + " on " + platform);
         streamerInfo.setStyle("-fx-font-size: 16px;");
 
+        // Get Streamer Info (Profile Picture, Bio, Followers, Live Status)
         String profilePictureUrl = guiStreamerInfo.fetchProfilePicture(username, platform);
-        ImageView profileImageView = new ImageView();
+        String liveStatus = guiStreamerInfo.fetchLiveStatus(username, platform);
+        String channelInfo = guiStreamerInfo.fetchStreamerDetails(username, platform);
 
+        // Profile Picture
+        ImageView profileImageView = new ImageView();
         if (profilePictureUrl != null) {
             Image profileImage = new Image(profilePictureUrl, 100, 100, true, true);
             profileImageView.setImage(profileImage);
         } else {
-            profileImageView.setImage(new Image("default-profile.png")); // Fallback image
+            profileImageView.setImage(new Image("default-profile.png"));
         }
 
-        VBox layout = new VBox(20, topBar, streamerInfo, profileImageView);
+        HBox profileBox = new HBox(20);
+        VBox channelInfoBox = new VBox(10);
+        channelInfoBox.getChildren().add(new Label(channelInfo));
+
+        profileBox.getChildren().addAll(profileImageView, channelInfoBox);
+
+        Label liveStatusLabel = new Label("Status: " + liveStatus);
+        liveStatusLabel.setStyle("-fx-font-size: 16px;");
+
+        VBox layout = new VBox(20, topBar, streamerInfo, profileBox, liveStatusLabel);
         layout.setPadding(new Insets(20));
         layout.setAlignment(Pos.TOP_LEFT);
 
-        Scene streamerScene = new Scene(layout, 600, 400); // Increased height to fit image
+        Scene streamerScene = new Scene(layout, 600, 400);
         primaryStage.setScene(streamerScene);
     }
 
