@@ -1,8 +1,8 @@
 package edu.bsu.cs;
 
 import com.github.twitch4j.ITwitchClient;
+import com.github.twitch4j.helix.domain.User;
 import com.google.api.services.youtube.YouTube;
-import com.google.api.services.youtube.model.Channel;
 import com.google.api.services.youtube.model.ChannelListResponse;
 
 import java.io.IOException;
@@ -33,25 +33,43 @@ public class ProfilePictureService {
                 .getUsers()
                 .stream()
                 .findFirst()
-                .map(user -> user.getProfileImageUrl())
+                .map(User::getProfileImageUrl)
                 .orElse(null);
     }
 
     private String getYouTubeProfilePicture(String username) {
         try {
-            YouTube.Channels.List request = youtubeService.channels()
-                    .list(Collections.singletonList("snippet"))
-                    .setForUsername(username)
+            YouTube.Search.List searchRequest = youtubeService.search()
+                    .list(Collections.singletonList("id"))
+                    .setQ(username)
+                    .setType(Collections.singletonList("channel"))
+                    .setMaxResults(1L)
                     .setKey(ApiInitializer.YoutubeAuthToken);
-            ChannelListResponse response = request.execute();
-            List<Channel> channels = response.getItems();
 
-            if (!channels.isEmpty()) {
-                return channels.get(0).getSnippet().getThumbnails().getHigh().getUrl();
+            var searchResponse = searchRequest.execute();
+            if (searchResponse == null || searchResponse.getItems() == null || searchResponse.getItems().isEmpty()) {
+                System.err.println("Error: No YouTube channel found for user: " + username);
+                return null;
             }
+
+            String channelId = searchResponse.getItems().get(0).getId().getChannelId();
+
+            YouTube.Channels.List channelRequest = youtubeService.channels()
+                    .list(Collections.singletonList("snippet"))
+                    .setId(Collections.singletonList(channelId))
+                    .setKey(ApiInitializer.YoutubeAuthToken);
+
+            ChannelListResponse channelResponse = channelRequest.execute();
+
+            if (channelResponse == null || channelResponse.getItems() == null || channelResponse.getItems().isEmpty()) {
+                System.err.println("Error: No channel details found for user: " + username);
+                return null;
+            }
+
+            return channelResponse.getItems().get(0).getSnippet().getThumbnails().getHigh().getUrl();
         } catch (IOException e) {
-            e.printStackTrace();
+            System.err.println("Error fetching YouTube profile picture for " + username + ": " + e.getMessage());
+            return null;
         }
-        return null;
     }
 }

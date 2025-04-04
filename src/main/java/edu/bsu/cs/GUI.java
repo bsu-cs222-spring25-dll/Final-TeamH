@@ -9,6 +9,9 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+
 public class GUI extends Application {
     private GUISearchHandler guiSearchHandler;
     private GUIStreamerInfo guiStreamerInfo;
@@ -27,7 +30,7 @@ public class GUI extends Application {
         StreamerSearchService searchService = new StreamerSearchService(ApiInitializer.initializeTwitch(), ApiInitializer.initializeYoutube(), ApiInitializer.TwitchAuthToken, ApiInitializer.YoutubeAuthToken);
 
         guiSearchHandler = new GUISearchHandler(searchService);
-        guiStreamerInfo = new GUIStreamerInfo(new ChannelInfoService(ApiInitializer.initializeTwitch(), ApiInitializer.initializeYoutube(), ApiInitializer.YoutubeAuthToken));
+        guiStreamerInfo = new GUIStreamerInfo(new ChannelInfoService(ApiInitializer.initializeTwitch(), ApiInitializer.initializeYoutube(), ApiInitializer.YoutubeAuthToken), new ProfilePictureService(ApiInitializer.initializeTwitch(), ApiInitializer.initializeYoutube()));
 
         Label titleLabel = new Label("Streamer Tracker");
         titleLabel.setStyle("-fx-font-size: 24px; -fx-font-weight: bold;");
@@ -101,11 +104,21 @@ public class GUI extends Application {
         Label streamerInfo = new Label("Now viewing: " + username + " on " + platform);
         streamerInfo.setStyle("-fx-font-size: 16px;");
 
-        VBox layout = new VBox(20, topBar, streamerInfo);
+        String profilePictureUrl = guiStreamerInfo.fetchProfilePicture(username, platform);
+        ImageView profileImageView = new ImageView();
+
+        if (profilePictureUrl != null) {
+            Image profileImage = new Image(profilePictureUrl, 100, 100, true, true);
+            profileImageView.setImage(profileImage);
+        } else {
+            profileImageView.setImage(new Image("default-profile.png")); // Fallback image
+        }
+
+        VBox layout = new VBox(20, topBar, streamerInfo, profileImageView);
         layout.setPadding(new Insets(20));
         layout.setAlignment(Pos.TOP_LEFT);
 
-        Scene streamerScene = new Scene(layout, 600, 300);
+        Scene streamerScene = new Scene(layout, 600, 400); // Increased height to fit image
         primaryStage.setScene(streamerScene);
     }
 
