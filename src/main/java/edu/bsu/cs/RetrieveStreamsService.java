@@ -26,63 +26,70 @@ public class RetrieveStreamsService {
         this.obtainStreamerID = new ObtainStreamerID(twitchClient, youtubeService, twitchAuthToken, youtubeApiKey);
     }
 
-    public void getTwitchStreams(String username) {
+    public String getTwitchStreams(String username) {
         String userId = obtainStreamerID.getTwitchUserId(username);
 
         if (userId == null) {
-            System.out.println("Error: Could not retrieve user ID for " + username);
-            return;
+            return "Error: Could not retrieve user ID for " + username;
         }
 
-        VideoList resultList = twitchClient.getHelix()
-                .getVideos(twitchAuthToken, null, userId, null, null, null, null, null, 10, null, null)
-                .execute();
+        try {
+            VideoList resultList = twitchClient.getHelix()
+                    .getVideos(twitchAuthToken, null, userId, null, null, null, null, null, 10, null, null)
+                    .execute();
 
-        if (resultList == null || resultList.getVideos().isEmpty()) {
-            System.out.println("No recent streams found for " + username);
-            return;
+            if (resultList == null || resultList.getVideos().isEmpty()) {
+                return "No recent streams found for " + username;
+            }
+
+            StringBuilder streams = new StringBuilder("\nStart of list:\n");
+            final int[] i = {0};
+            resultList.getVideos().forEach(video -> {
+                i[0]++;
+                streams.append(i[0]).append(". ").append(video.getTitle()).append(" - ").append(video.getUserName()).append("\n");
+            });
+            return streams.toString();
+        } catch (Exception e) {
+            return "Error retrieving Twitch streams: " + e.getMessage();
         }
-
-        System.out.println("\nStart of list:");
-        final int[] i = {0};
-        resultList.getVideos().forEach(video -> {
-            i[0]++;
-            System.out.println(i[0] + ". " + video.getTitle() + " - " + video.getUserName());
-        });
     }
 
-    public void getYoutubeStreams(String username) throws IOException {
+    public String getYoutubeStreams(String username) throws IOException {
         String userId = obtainStreamerID.getYoutubeUserId(username);
 
         if (userId == null) {
-            System.out.println("Error: Could not retrieve YouTube Channel ID for " + username);
-            return;
+            return "Error: Could not retrieve YouTube Channel ID for " + username;
         }
 
-        YouTube.Search.List pastStreamsRequest = youtubeService.search()
-                .list(Arrays.asList("id,snippet"))
-                .setKey(youtubeApiKey)
-                .setChannelId(userId)
-                .setType(Arrays.asList("video"))
-                .setEventType("completed")
-                .setOrder("date") // Order by date
-                .setMaxResults(10L); // Fetch up to 10 results
+        try {
+            YouTube.Search.List pastStreamsRequest = youtubeService.search()
+                    .list(Arrays.asList("id,snippet"))
+                    .setKey(youtubeApiKey)
+                    .setChannelId(userId)
+                    .setType(Arrays.asList("video"))
+                    .setEventType("completed")
+                    .setOrder("date") // Order by date
+                    .setMaxResults(10L); // Fetch up to 10 results
 
-        SearchListResponse pastStreamsInformation = pastStreamsRequest.execute();
-        List<SearchResult> results = pastStreamsInformation.getItems();
+            SearchListResponse pastStreamsInformation = pastStreamsRequest.execute();
+            List<SearchResult> results = pastStreamsInformation.getItems();
 
-        if (results.isEmpty()) {
-            System.out.println("No recent streams found for " + username);
-            return;
+            if (results.isEmpty()) {
+                return "No recent streams found for " + username;
+            }
+
+            StringBuilder streams = new StringBuilder("\nStart of list:\n");
+            final int[] i = {0};
+            results.forEach(result -> {
+                i[0]++;
+                streams.append(i[0]).append(". ").append(result.getSnippet().getTitle()).append("\n")
+                        .append("Published At: ").append(result.getSnippet().getPublishedAt()).append("\n")
+                        .append("Watch here: https://www.youtube.com/watch?v=").append(result.getId().getVideoId()).append("\n")
+                        .append("----------------------\n");
+            });
+            return streams.toString();
+        } catch (Exception e) {
+            return "Error retrieving YouTube streams: " + e.getMessage();
         }
-
-        System.out.println("\nStart of list:");
-        final int[] i = {0};
-        results.forEach(result -> {
-            i[0]++;
-            System.out.println(i[0] + ". " + result.getSnippet().getTitle()+"\n" + "Published At: " + result.getSnippet().getPublishedAt());
-            System.out.println("Watch here: https://www.youtube.com/watch?v=" + result.getId().getVideoId());
-            System.out.println("----------------------");
-        });
     }
 }

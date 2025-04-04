@@ -79,7 +79,10 @@ public class Main {
             int choice = getUserInput(Menu::printTwitchMenu);
 
             switch (choice) {
-                case 1 -> streamService.getTwitchStreams(username);
+                case 1 -> {
+                    String result = streamService.getTwitchStreams(username);
+                    System.out.println(result);
+                }
                 case 2 -> clipService.getTwitchClips(username);
                 case 3 -> {
                     String result = infoService.getTwitchStreamerInfo(username);
@@ -102,7 +105,10 @@ public class Main {
             int choice = getUserInput(Menu::printYoutubeMenu);
 
             switch (choice) {
-                case 1 -> streamService.getYoutubeStreams(username);
+                case 1 -> {
+                    String result = streamService.getYoutubeStreams(username);
+                    System.out.println(result);
+                }
                 case 2 -> videoService.getYoutubeVideos(username);
                 case 3 -> {
                     String liveStatus = statusService.getYoutubeLiveStatus(username);
@@ -126,8 +132,8 @@ public class Main {
                 return scanner.nextInt();
             } catch (java.util.InputMismatchException e) {
                 System.out.println("Invalid input! Please enter a valid number.");
-                scanner.nextLine(); // Clear the invalid input
-                printMenu.run(); // Reprint the menu
+                scanner.nextLine();
+                printMenu.run();
             }
         }
     }
