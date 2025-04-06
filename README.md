@@ -13,11 +13,11 @@ For **Iteration 2**, our main objective is establishing a Graphical User Interfa
 ## Suppression:
 
 **Inside ApiInitializer**
-We have suppressed deprecation due to the implemented method and system we have currently that works just fine versus what may eventually come or is already deprecated inside the API.
+We have suppressed deprecation due to the implemented method and system we have currently that works just fine versus what may eventually come or is already deprecated inside the API. This is specifically referring to the YouTube API method.
 
 ## Needed Build Instructions:
 
-This project runs from gradle on IntelliJ but the main program will work in most java cases.
+This project runs from gradle on IntelliJ but the main program will work in most Java cases.
 
 This build depends on API's and a stable network connection.
 
