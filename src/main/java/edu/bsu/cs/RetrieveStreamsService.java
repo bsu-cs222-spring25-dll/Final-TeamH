@@ -68,8 +68,8 @@ public class RetrieveStreamsService {
                     .setChannelId(userId)
                     .setType(Arrays.asList("video"))
                     .setEventType("completed")
-                    .setOrder("date") // Order by date
-                    .setMaxResults(10L); // Fetch up to 10 results
+                    .setOrder("date")
+                    .setMaxResults(10L);
 
             SearchListResponse pastStreamsInformation = pastStreamsRequest.execute();
             List<SearchResult> results = pastStreamsInformation.getItems();

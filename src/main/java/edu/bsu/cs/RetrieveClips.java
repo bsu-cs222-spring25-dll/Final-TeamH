@@ -30,24 +30,21 @@ public class RetrieveClips {
         System.out.println("Fetched Broadcaster ID: " + broadcasterId);
 
         try {
-            // Get Helix API instance
             TwitchHelix helix = twitchClient.getHelix();
 
-            // Fetch clips (Corrected API call)
             ClipList clipList = helix.getClips(
-                    twitchAuthToken, // Auth token must be passed in headers internally
-                    broadcasterId, // Broadcaster ID
-                    null, // Game ID
-                    null, //Ids
-                    null, // After
-                    null, // Before
-                    10, // Number of clips
-                    null, // Started At
-                    null, // Ended At
-                    null // Is featured
-            ).execute(); // Execute synchronous call
+                    twitchAuthToken,
+                    broadcasterId,
+                    null,
+                    null,
+                    null,
+                    null,
+                    10,
+                    null,
+                    null,
+                    null
+            ).execute();
 
-            // Check if clips were retrieved
             List<Clip> clips = clipList.getData();
             if (clips.isEmpty()) {
                 System.out.println("No clips found for " + username);

@@ -25,27 +25,24 @@ public class StreamerSearchService {
     }
 
     public List<String> searchTwitchStreamer(String username) {
-        //Get the user ID for the given username
         UserList userList = twitchClient.getHelix()
                 .getUsers(twitchAuthToken, null, Collections.singletonList(username))
                 .execute();
 
         if (userList.getUsers().isEmpty()) {
-            return null; //No user found
+            return null;
         }
-        //return only the broadcaster display name
         return Collections.singletonList(userList.getUsers().get(0).getDisplayName());
     }
 
     public List<String> searchYoutubeStreamer(String username) {
         try {
             YouTube.Channels.List channelRequest = youtubeService.channels()
-                    .list(Collections.singletonList("snippet"))//request ONLY snippet field (contains title and other channel details)
+                    .list(Collections.singletonList("snippet"))
                     .setKey(youtubeApiKey)
                     .setForHandle("@" + username);
 
             ChannelListResponse response = channelRequest.execute();
-            //returns an empty list if channel does not exist
             assert response != null;
             assert response.getItems() != null;
             if (response.getItems().isEmpty()) {

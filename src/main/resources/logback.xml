@@ -4,6 +4,9 @@
     <!-- Configure Twitch4J logger level -->
     <logger name="com.github.twitch4j" level="INFO"/>
 
+    <!-- Suppress only the specific Archaius warning -->
+    <logger name="com.netflix.config.source.URLConfigurationSource" level="OFF"/>
+
     <!-- Appender Configuration [Console] -->
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
@@ -26,7 +29,7 @@
     </appender>
 
     <!-- Appender Output Configuration -->
-    <root level="info">
+    <root level="OFF">
         <appender-ref ref="CONSOLE"/>
     </root>
 </configuration>

@@ -104,12 +104,10 @@ public class GUI extends Application {
         Label streamerInfo = new Label("Now viewing: " + username + " on " + platform);
         streamerInfo.setStyle("-fx-font-size: 16px;");
 
-        // Get Streamer Info (Profile Picture, Bio, Followers, Live Status)
         String profilePictureUrl = guiStreamerInfo.fetchProfilePicture(username, platform);
         String liveStatus = guiStreamerInfo.fetchLiveStatus(username, platform);
         String channelInfo = guiStreamerInfo.fetchStreamerDetails(username, platform);
 
-        // Profile Picture
         ImageView profileImageView = new ImageView();
         if (profilePictureUrl != null) {
             Image profileImage = new Image(profilePictureUrl, 100, 100, true, true);

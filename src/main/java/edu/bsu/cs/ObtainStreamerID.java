@@ -25,7 +25,6 @@ public class ObtainStreamerID {
 
     public String getTwitchUserId(String username) {
         try {
-            // Ensure username is not null or empty
             if (username == null || username.trim().isEmpty()) {
                 System.out.println("Invalid username provided.");
                 return null;
@@ -47,7 +46,7 @@ public class ObtainStreamerID {
         } catch (Exception e) {
             System.out.println("Failed to retrieve Twitch user ID: " + e.getMessage());
             e.printStackTrace();
-            return null; // Return null if the user is not found or an error occurs
+            return null;
         }
     }
 

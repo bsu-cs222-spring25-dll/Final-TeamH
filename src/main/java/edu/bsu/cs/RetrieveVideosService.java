@@ -34,8 +34,8 @@ public class RetrieveVideosService {
                 .setKey(youtubeApiKey)
                 .setChannelId(userId)
                 .setType(Collections.singletonList("video"))
-                .setOrder("date") // Order by date
-                .setMaxResults(10L); // Fetch up to 10 results
+                .setOrder("date")
+                .setMaxResults(10L);
 
         SearchListResponse pastVideosInformation = pastVideosRequest.execute();
         List<SearchResult> results = pastVideosInformation.getItems();

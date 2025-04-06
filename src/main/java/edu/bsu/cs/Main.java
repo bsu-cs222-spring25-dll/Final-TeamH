@@ -57,13 +57,13 @@ public class Main {
                         twitchAccess(username);
                     }
                 }
-                case 2 -> { // YouTube Services
+                case 2 -> {
                     username = searchHandler.searchStreamer("YouTube");
                     if (!username.isEmpty()) {
                         youtubeAccess(username);
                     }
                 }
-                case 3 -> { // Exit the Program
+                case 3 -> {
                     System.out.println("Exiting Program...");
                     scanner.close();
                     return;

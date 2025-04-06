@@ -14,7 +14,7 @@ public class StreamerSearchHandler {
     }
 
     public String getValidatedUsername(String platform) {
-        scanner.nextLine(); // Consume leftover newline
+        scanner.nextLine();
         String username;
 
         while (true) {
