@@ -10,6 +10,11 @@ For **Iteration 1**, our main objective is establishing a foundation for the fea
 
 For **Iteration 2**, our main objective is establishing a Graphical User Interface to help enhance a user's experience.
 
+## Suppression:
+
+**Inside ApiInitializer**
+We have suppressed deprecation due to the implemented method and system we have currently that works just fine versus what may eventually come or is already deprecated inside the API.
+
 ## Needed Build Instructions:
 
 This project runs from gradle on IntelliJ but the main program will work in most java cases.
