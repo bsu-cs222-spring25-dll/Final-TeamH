@@ -29,22 +29,25 @@ public class RetrieveVideosService {
         try {
             List<SearchResult> streams = fetchRecentVideos(userId);
             if (streams.isEmpty()) {
-                return "No recent streams found for " + username;
+                return "No recent videos found for " + username;
             }
 
             return formatVideoList(streams);
         } catch (Exception e) {
-            return "Error retrieving YouTube streams: " + e.getMessage();
+            return "Error retrieving YouTube videos: " + e.getMessage();
         }
     }
-    private List<SearchResult> fetchRecentVideos(String userId) throws IOException {
+    public List<SearchResult> fetchRecentVideos(String username) throws IOException {
+        String userId = getUserIdForVideos(username); // or your own logic
+        if (userId == null) return Collections.emptyList();
+
         YouTube.Search.List request = youtubeService.search()
                 .list(Arrays.asList("id", "snippet"))
                 .setKey(youtubeApiKey)
                 .setChannelId(userId)
-                .setType(Collections.singletonList("video"))
-                .setOrder("date")
-                .setMaxResults(10L);
+                .setType(Collections.singletonList("video")) // Gets all videos
+                .setOrder("date") // Sorted by newest
+                .setMaxResults(10L); // Adjust as needed
 
         SearchListResponse response = request.execute();
         return response.getItems();

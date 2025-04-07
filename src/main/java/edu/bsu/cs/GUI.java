@@ -11,6 +11,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.web.WebView;
 import javafx.stage.Stage;
 
 import javafx.scene.image.Image;
@@ -38,7 +39,7 @@ public class GUI extends Application {
 
         guiSearchHandler = new GUISearchHandler(searchService);
         guiStreamerInfo = new GUIStreamerInfo(new ChannelInfoService(ApiInitializer.initializeTwitch(), ApiInitializer.initializeYoutube(), ApiInitializer.YoutubeAuthToken), new ProfilePictureService(ApiInitializer.initializeTwitch(), ApiInitializer.initializeYoutube()), new LiveStatusService(ApiInitializer.initializeTwitch(), ApiInitializer.initializeYoutube(), ApiInitializer.TwitchAuthToken, ApiInitializer.YoutubeAuthToken));
-        guiYoutubeInfo = new GUIYoutubeInfo(new RetrieveStreamsService(ApiInitializer.initializeTwitch(), ApiInitializer.initializeYoutube(), ApiInitializer.TwitchAuthToken, ApiInitializer.YoutubeAuthToken));
+        guiYoutubeInfo = new GUIYoutubeInfo(new RetrieveStreamsService(ApiInitializer.initializeTwitch(), ApiInitializer.initializeYoutube(), ApiInitializer.TwitchAuthToken, ApiInitializer.YoutubeAuthToken), new RetrieveVideosService(ApiInitializer.initializeYoutube(), ApiInitializer.YoutubeAuthToken));
 
         Label titleLabel = new Label("Streamer Tracker");
         titleLabel.setStyle("-fx-font-size: 24px; -fx-font-weight: bold;");
@@ -106,10 +107,14 @@ public class GUI extends Application {
         returnButton.setOnAction(e -> start(primaryStage));
 
         Button recentStreamsButton = new Button("Recent Streams");
-        if (platform.equalsIgnoreCase("Twitch")) {
-            Object o = null;
-        } else if (platform.equalsIgnoreCase("YouTube")) {
-            recentStreamsButton.setOnAction(e -> showYoutubeStreams(primaryStage, username, platform));
+        Button recentVideosButton = new Button("Recent Uploads");
+
+        if (platform.equalsIgnoreCase("YouTube")) {
+            recentStreamsButton.setOnAction(e -> showYoutubeContent(primaryStage, username, platform, "stream"));
+            recentVideosButton.setOnAction(e -> showYoutubeContent(primaryStage, username, platform, "video")); // fixed
+        } else if (platform.equalsIgnoreCase("Twitch")) {
+            recentStreamsButton.setDisable(true);
+            recentVideosButton.setDisable(true);
         }
 
         HBox topBar = new HBox(10, titleLabel, returnButton);
@@ -140,16 +145,16 @@ public class GUI extends Application {
         Label liveStatusLabel = new Label("Status: " + liveStatus);
         liveStatusLabel.setStyle("-fx-font-size: 16px;");
 
-        VBox layout = new VBox(20, topBar, streamerInfo, profileBox, liveStatusLabel, recentStreamsButton);
+        VBox layout = new VBox(20, topBar, streamerInfo, profileBox, liveStatusLabel, recentStreamsButton, recentVideosButton);
 
         layout.setPadding(new Insets(20));
         layout.setAlignment(Pos.TOP_LEFT);
 
-        Scene streamerScene = new Scene(layout, 600, 400);
+        Scene streamerScene = new Scene(layout, 700, 500);
         primaryStage.setScene(streamerScene);
     }
 
-    public void showYoutubeStreams(Stage primaryStage, String username, String platform) {
+    public void showYoutubeContent(Stage primaryStage, String username, String platform, String uploadType) {
         Label titleLabel = new Label("Streamer Tracker - Recent Streams");
         titleLabel.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
 
@@ -161,7 +166,16 @@ public class GUI extends Application {
         topBar.setPadding(new Insets(10));
 
         try {
-            List<SearchResult> streams = guiYoutubeInfo.fetchYoutubeStreamDetails(username);
+            List<SearchResult> streams;
+
+            if (uploadType.equals("stream")) {
+                streams = guiYoutubeInfo.fetchYoutubeStreamDetails(username);
+            } else if (uploadType.equals("video")) { // fixed match
+                streams = guiYoutubeInfo.fetchYoutubeVideoDetails(username);
+            } else {
+                showError("Error", "Unsupported upload type: " + uploadType);
+                return;
+            }
 
             VBox streamsBox = new VBox(10);
             streamsBox.setAlignment(Pos.TOP_LEFT);
@@ -170,7 +184,6 @@ public class GUI extends Application {
                 String title = stream.getSnippet().getTitle();
                 String videoId = stream.getId().getVideoId();
                 String thumbnailUrl = stream.getSnippet().getThumbnails().getHigh().getUrl();
-
 
                 HBox streamBox = new HBox(10);
                 ImageView thumbnailImageView = new ImageView(new Image(thumbnailUrl));
@@ -182,23 +195,48 @@ public class GUI extends Application {
 
                 Button watchButton = new Button("Watch");
                 watchButton.setOnAction(e1 -> {
-
-                    getHostServices().showDocument("https://www.youtube.com/watch?v=" + videoId);
+                    showEmbeddedVideo(primaryStage, videoId, username, platform, uploadType);
                 });
 
                 streamBox.getChildren().addAll(thumbnailImageView, streamTitle, watchButton);
                 streamsBox.getChildren().add(streamBox);
             }
 
-            VBox layout = new VBox(20, topBar, streamsBox);
+            ScrollPane scrollPane = new ScrollPane(streamsBox);
+            scrollPane.setFitToWidth(true);
+            scrollPane.setPannable(true);
+            scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+            scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+
+            VBox layout = new VBox(20, topBar, streamsBox, scrollPane);
             layout.setPadding(new Insets(20));
             layout.setAlignment(Pos.TOP_LEFT);
 
             Scene streamsScene = new Scene(layout, 600, 500);
             primaryStage.setScene(streamsScene);
+
         } catch (Exception e) {
             showError("Error", "Could not fetch streams: " + e.getMessage());
         }
+    }
+
+    private void showEmbeddedVideo(Stage primaryStage, String videoId, String username, String platform, String uploadType) {
+        String embedUrl = "https://www.youtube.com/embed/" + videoId + "?autoplay=1";
+
+        WebView webView = new WebView();
+        webView.getEngine().load(embedUrl);
+        webView.setPrefSize(640, 390);
+
+        Button returnButton = new Button("Return");
+        webView.getEngine().load(null);
+        returnButton.setOnAction(e -> showStreamerScene(primaryStage, username, platform));
+
+        VBox layout = new VBox(10, returnButton, webView);
+        layout.setAlignment(Pos.TOP_CENTER);
+        layout.setPadding(new Insets(20));
+
+        Scene videoScene = new Scene(layout, 700, 500);
+        primaryStage.setScene(videoScene);
     }
 
 }
