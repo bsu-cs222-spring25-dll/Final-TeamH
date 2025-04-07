@@ -38,16 +38,16 @@ public class RetrieveVideosService {
         }
     }
     public List<SearchResult> fetchRecentVideos(String username) throws IOException {
-        String userId = getUserIdForVideos(username); // or your own logic
+        String userId = getUserIdForVideos(username);
         if (userId == null) return Collections.emptyList();
 
         YouTube.Search.List request = youtubeService.search()
                 .list(Arrays.asList("id", "snippet"))
                 .setKey(youtubeApiKey)
                 .setChannelId(userId)
-                .setType(Collections.singletonList("video")) // Gets all videos
-                .setOrder("date") // Sorted by newest
-                .setMaxResults(10L); // Adjust as needed
+                .setType(Collections.singletonList("video"))
+                .setOrder("date")
+                .setMaxResults(10L);
 
         SearchListResponse response = request.execute();
         return response.getItems();
