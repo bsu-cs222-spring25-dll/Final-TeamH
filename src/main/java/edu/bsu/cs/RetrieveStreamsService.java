@@ -8,6 +8,7 @@ import com.google.api.services.youtube.model.SearchResult;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class RetrieveStreamsService {
@@ -55,41 +56,53 @@ public class RetrieveStreamsService {
     }
 
     public String getYoutubeStreams(String username) throws IOException {
-        String userId = obtainStreamerID.getYoutubeUserId(username);
-
-        if (userId == null) {
-            return "Error: Could not retrieve YouTube Channel ID for " + username;
-        }
+        String userId = getUserIdOrReturnError(username);
+        if (userId == null) return "Error: Could not retrieve YouTube Channel ID for " + username;
 
         try {
-            YouTube.Search.List pastStreamsRequest = youtubeService.search()
-                    .list(Arrays.asList("id,snippet"))
-                    .setKey(youtubeApiKey)
-                    .setChannelId(userId)
-                    .setType(Arrays.asList("video"))
-                    .setEventType("completed")
-                    .setOrder("date")
-                    .setMaxResults(10L);
-
-            SearchListResponse pastStreamsInformation = pastStreamsRequest.execute();
-            List<SearchResult> results = pastStreamsInformation.getItems();
-
-            if (results.isEmpty()) {
+            List<SearchResult> streams = fetchCompletedStreams(userId);
+            if (streams.isEmpty()) {
                 return "No recent streams found for " + username;
             }
 
-            StringBuilder streams = new StringBuilder("\nStart of list:\n");
-            final int[] i = {0};
-            results.forEach(result -> {
-                i[0]++;
-                streams.append(i[0]).append(". ").append(result.getSnippet().getTitle()).append("\n")
-                        .append("Published At: ").append(result.getSnippet().getPublishedAt()).append("\n")
-                        .append("Watch here: https://www.youtube.com/watch?v=").append(result.getId().getVideoId()).append("\n")
-                        .append("----------------------\n");
-            });
-            return streams.toString();
+            return formatStreamList(streams);
         } catch (Exception e) {
             return "Error retrieving YouTube streams: " + e.getMessage();
         }
+    }
+
+    private String getUserIdOrReturnError(String username) throws IOException {
+        return obtainStreamerID.getYoutubeUserId(username);
+    }
+
+    public List<SearchResult> fetchCompletedStreams(String username) throws IOException {
+        String userId = getUserIdOrReturnError(username); // or your own logic
+        if (userId == null) return Collections.emptyList();
+
+        YouTube.Search.List request = youtubeService.search()
+                .list(Arrays.asList("id", "snippet"))
+                .setKey(youtubeApiKey)
+                .setChannelId(userId)
+                .setType(Collections.singletonList("video"))
+                .setEventType("completed")
+                .setOrder("date")
+                .setMaxResults(10L);
+
+        SearchListResponse response = request.execute();
+        return response.getItems();
+    }
+
+
+    private String formatStreamList(List<SearchResult> streams) {
+        StringBuilder builder = new StringBuilder("\nStart of list:\n");
+        int index = 1;
+        for (SearchResult stream : streams) {
+            builder.append(index++).append(". ").append(stream.getSnippet().getTitle()).append("\n")
+                    .append("Published At: ").append(stream.getSnippet().getPublishedAt()).append("\n")
+                    .append("Watch here: https://www.youtube.com/watch?v=")
+                    .append(stream.getId().getVideoId()).append("\n")
+                    .append("----------------------\n");
+        }
+        return builder.toString();
     }
 }

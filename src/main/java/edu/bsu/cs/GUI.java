@@ -1,10 +1,14 @@
 package edu.bsu.cs;
 
+import com.google.api.services.youtube.model.SearchResult;
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
@@ -12,12 +16,15 @@ import javafx.stage.Stage;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
+import java.util.List;
+
 public class GUI extends Application {
     private GUISearchHandler guiSearchHandler;
     private GUIStreamerInfo guiStreamerInfo;
     private TextField usernameInput;
     private Label resultLabel;
     private ChoiceBox<String> platformSelector;
+    private GUIYoutubeInfo guiYoutubeInfo;
 
     public static void main(String[] args) {
         launch(args);
@@ -31,6 +38,7 @@ public class GUI extends Application {
 
         guiSearchHandler = new GUISearchHandler(searchService);
         guiStreamerInfo = new GUIStreamerInfo(new ChannelInfoService(ApiInitializer.initializeTwitch(), ApiInitializer.initializeYoutube(), ApiInitializer.YoutubeAuthToken), new ProfilePictureService(ApiInitializer.initializeTwitch(), ApiInitializer.initializeYoutube()), new LiveStatusService(ApiInitializer.initializeTwitch(), ApiInitializer.initializeYoutube(), ApiInitializer.TwitchAuthToken, ApiInitializer.YoutubeAuthToken));
+        guiYoutubeInfo = new GUIYoutubeInfo(new RetrieveStreamsService(ApiInitializer.initializeTwitch(), ApiInitializer.initializeYoutube(), ApiInitializer.TwitchAuthToken, ApiInitializer.YoutubeAuthToken));
 
         Label titleLabel = new Label("Streamer Tracker");
         titleLabel.setStyle("-fx-font-size: 24px; -fx-font-weight: bold;");
@@ -97,6 +105,13 @@ public class GUI extends Application {
         Button returnButton = new Button("Return");
         returnButton.setOnAction(e -> start(primaryStage));
 
+        Button recentStreamsButton = new Button("Recent Streams");
+        if (platform.equalsIgnoreCase("Twitch")) {
+            Object o = null;
+        } else if (platform.equalsIgnoreCase("YouTube")) {
+            recentStreamsButton.setOnAction(e -> showYoutubeStreams(primaryStage, username, platform));
+        }
+
         HBox topBar = new HBox(10, titleLabel, returnButton);
         topBar.setAlignment(Pos.TOP_LEFT);
         topBar.setPadding(new Insets(10));
@@ -125,12 +140,65 @@ public class GUI extends Application {
         Label liveStatusLabel = new Label("Status: " + liveStatus);
         liveStatusLabel.setStyle("-fx-font-size: 16px;");
 
-        VBox layout = new VBox(20, topBar, streamerInfo, profileBox, liveStatusLabel);
+        VBox layout = new VBox(20, topBar, streamerInfo, profileBox, liveStatusLabel, recentStreamsButton);
+
         layout.setPadding(new Insets(20));
         layout.setAlignment(Pos.TOP_LEFT);
 
         Scene streamerScene = new Scene(layout, 600, 400);
         primaryStage.setScene(streamerScene);
+    }
+
+    public void showYoutubeStreams(Stage primaryStage, String username, String platform) {
+        Label titleLabel = new Label("Streamer Tracker - Recent Streams");
+        titleLabel.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
+
+        Button returnButton = new Button("Return");
+        returnButton.setOnAction(e -> showStreamerScene(primaryStage, username, platform));
+
+        HBox topBar = new HBox(10, titleLabel, returnButton);
+        topBar.setAlignment(Pos.TOP_LEFT);
+        topBar.setPadding(new Insets(10));
+
+        try {
+            List<SearchResult> streams = guiYoutubeInfo.fetchYoutubeStreamDetails(username);
+
+            VBox streamsBox = new VBox(10);
+            streamsBox.setAlignment(Pos.TOP_LEFT);
+
+            for (SearchResult stream : streams) {
+                String title = stream.getSnippet().getTitle();
+                String videoId = stream.getId().getVideoId();
+                String thumbnailUrl = stream.getSnippet().getThumbnails().getHigh().getUrl();
+
+
+                HBox streamBox = new HBox(10);
+                ImageView thumbnailImageView = new ImageView(new Image(thumbnailUrl));
+                thumbnailImageView.setFitWidth(120);
+                thumbnailImageView.setFitHeight(90);
+
+                Label streamTitle = new Label(title);
+                streamTitle.setStyle("-fx-font-size: 14px;");
+
+                Button watchButton = new Button("Watch");
+                watchButton.setOnAction(e1 -> {
+
+                    getHostServices().showDocument("https://www.youtube.com/watch?v=" + videoId);
+                });
+
+                streamBox.getChildren().addAll(thumbnailImageView, streamTitle, watchButton);
+                streamsBox.getChildren().add(streamBox);
+            }
+
+            VBox layout = new VBox(20, topBar, streamsBox);
+            layout.setPadding(new Insets(20));
+            layout.setAlignment(Pos.TOP_LEFT);
+
+            Scene streamsScene = new Scene(layout, 600, 500);
+            primaryStage.setScene(streamsScene);
+        } catch (Exception e) {
+            showError("Error", "Could not fetch streams: " + e.getMessage());
+        }
     }
 
 }
