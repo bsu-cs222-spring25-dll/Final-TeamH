@@ -134,7 +134,14 @@ public class Main {
                 System.out.println("Invalid input! Please enter a valid number.");
                 scanner.nextLine();
                 printMenu.run();
+            } catch (java.util.NoSuchElementException e) {
+                System.out.println("No input received. Exiting program.");
+                break;
+            } catch (Exception e) {
+                System.out.println("An unexpected error occurred: " + e.getMessage());
+                break;
             }
         }
+        return 0;
     }
 }
