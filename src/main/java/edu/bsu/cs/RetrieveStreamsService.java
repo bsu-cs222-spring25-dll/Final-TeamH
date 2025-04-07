@@ -56,7 +56,7 @@ public class RetrieveStreamsService {
     }
 
     public String getYoutubeStreams(String username) throws IOException {
-        String userId = getUserIdOrReturnError(username);
+        String userId = getUserIdForStreams(username);
         if (userId == null) return "Error: Could not retrieve YouTube Channel ID for " + username;
 
         try {
@@ -71,12 +71,12 @@ public class RetrieveStreamsService {
         }
     }
 
-    private String getUserIdOrReturnError(String username) throws IOException {
+    private String getUserIdForStreams(String username) throws IOException {
         return obtainStreamerID.getYoutubeUserId(username);
     }
 
     public List<SearchResult> fetchCompletedStreams(String username) throws IOException {
-        String userId = getUserIdOrReturnError(username); // or your own logic
+        String userId = getUserIdForStreams(username); // or your own logic
         if (userId == null) return Collections.emptyList();
 
         YouTube.Search.List request = youtubeService.search()
