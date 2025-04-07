@@ -7,37 +7,19 @@ import static edu.bsu.cs.ApiInitializer.twitchClient;
 
 public class Main {
 
-    private static final StreamerSearchService searchService = new StreamerSearchService(
+    private static final ApiContext context = new ApiContext(
             ApiInitializer.initializeTwitch(),
             ApiInitializer.initializeYoutube(),
             ApiInitializer.TwitchAuthToken,
             ApiInitializer.YoutubeAuthToken
     );
-    private static final RetrieveStreamsService streamService = new RetrieveStreamsService(
-            ApiInitializer.initializeTwitch(),
-            ApiInitializer.initializeYoutube(),
-            ApiInitializer.TwitchAuthToken,
-            ApiInitializer.YoutubeAuthToken
-    );
-    private static final ChannelInfoService infoService = new ChannelInfoService(
-            ApiInitializer.initializeTwitch(),
-            ApiInitializer.initializeYoutube(),
-            ApiInitializer.YoutubeAuthToken
-    );
-    private static final RetrieveVideosService videoService = new RetrieveVideosService(
-            ApiInitializer.initializeYoutube(),
-            ApiInitializer.YoutubeAuthToken
-    );
-    private static final RetrieveClips clipService = new RetrieveClips(
-            ApiInitializer.initializeTwitch(),
-            ApiInitializer.TwitchAuthToken
-    );
-    private static final LiveStatusService statusService = new LiveStatusService(
-            ApiInitializer.initializeTwitch(),
-            ApiInitializer.initializeYoutube(),
-            ApiInitializer.TwitchAuthToken,
-            ApiInitializer.YoutubeAuthToken
-    );
+
+    private static final StreamerSearchService searchService = new StreamerSearchService(context);
+    private static final RetrieveStreamsService streamService = new RetrieveStreamsService(context);
+    private static final ChannelInfoService infoService = new ChannelInfoService(context);
+    private static final RetrieveVideosService videoService = new RetrieveVideosService(context);
+    private static final RetrieveClips clipService = new RetrieveClips(context);
+    private static final LiveStatusService statusService = new LiveStatusService(context);
 
     static Scanner scanner = new Scanner(System.in);
     static StreamerSearchHandler searchHandler = new StreamerSearchHandler(scanner, searchService);
@@ -109,7 +91,10 @@ public class Main {
                     String result = streamService.getYoutubeStreams(username);
                     System.out.println(result);
                 }
-                case 2 -> videoService.getYoutubeVideos(username);
+                case 2 -> {
+                    String result = videoService.getYoutubeVideos(username);
+                    System.out.println(result);
+                }
                 case 3 -> {
                     String liveStatus = statusService.getYoutubeLiveStatus(username);
                     System.out.println(liveStatus);

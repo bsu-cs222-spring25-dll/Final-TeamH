@@ -35,11 +35,18 @@ public class GUI extends Application {
     public void start(Stage primaryStage) {
         primaryStage.setTitle("Streamer Tracker");
 
-        StreamerSearchService searchService = new StreamerSearchService(ApiInitializer.initializeTwitch(), ApiInitializer.initializeYoutube(), ApiInitializer.TwitchAuthToken, ApiInitializer.YoutubeAuthToken);
+        ApiContext context = new ApiContext(
+                ApiInitializer.initializeTwitch(),
+                ApiInitializer.initializeYoutube(),
+                ApiInitializer.TwitchAuthToken,
+                ApiInitializer.YoutubeAuthToken
+        );
+
+        StreamerSearchService searchService = new StreamerSearchService(context);
 
         guiSearchHandler = new GUISearchHandler(searchService);
-        guiStreamerInfo = new GUIStreamerInfo(new ChannelInfoService(ApiInitializer.initializeTwitch(), ApiInitializer.initializeYoutube(), ApiInitializer.YoutubeAuthToken), new ProfilePictureService(ApiInitializer.initializeTwitch(), ApiInitializer.initializeYoutube()), new LiveStatusService(ApiInitializer.initializeTwitch(), ApiInitializer.initializeYoutube(), ApiInitializer.TwitchAuthToken, ApiInitializer.YoutubeAuthToken));
-        guiYoutubeInfo = new GUIYoutubeInfo(new RetrieveStreamsService(ApiInitializer.initializeTwitch(), ApiInitializer.initializeYoutube(), ApiInitializer.TwitchAuthToken, ApiInitializer.YoutubeAuthToken), new RetrieveVideosService(ApiInitializer.initializeYoutube(), ApiInitializer.YoutubeAuthToken));
+        guiStreamerInfo = new GUIStreamerInfo(new ChannelInfoService(context), new ProfilePictureService(context), new LiveStatusService(context));
+        guiYoutubeInfo = new GUIYoutubeInfo(new RetrieveStreamsService(context), new RetrieveVideosService(context));
 
         Label titleLabel = new Label("Streamer Tracker");
         titleLabel.setStyle("-fx-font-size: 24px; -fx-font-weight: bold;");
@@ -170,7 +177,7 @@ public class GUI extends Application {
 
             if (uploadType.equals("stream")) {
                 streams = guiYoutubeInfo.fetchYoutubeStreamDetails(username);
-            } else if (uploadType.equals("video")) { // fixed match
+            } else if (uploadType.equals("video")) {
                 streams = guiYoutubeInfo.fetchYoutubeVideoDetails(username);
             } else {
                 showError("Error", "Unsupported upload type: " + uploadType);

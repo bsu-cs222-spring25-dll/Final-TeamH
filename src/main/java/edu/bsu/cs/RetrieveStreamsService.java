@@ -1,6 +1,5 @@
 package edu.bsu.cs;
 
-import com.github.twitch4j.ITwitchClient;
 import com.github.twitch4j.helix.domain.VideoList;
 import com.google.api.services.youtube.YouTube;
 import com.google.api.services.youtube.model.SearchListResponse;
@@ -13,30 +12,33 @@ import java.util.List;
 
 public class RetrieveStreamsService {
 
-    private final ITwitchClient twitchClient;
-    private final String twitchAuthToken;
-    private final String youtubeApiKey;
-    private final YouTube youtubeService;
+    private final ApiContext context;
     private final ObtainStreamerID obtainStreamerID;
 
-    public RetrieveStreamsService(ITwitchClient twitchClient, YouTube youtubeService, String twitchAuthToken, String youtubeApiKey) {
-        this.twitchClient = twitchClient;
-        this.twitchAuthToken = twitchAuthToken;
-        this.youtubeApiKey = youtubeApiKey;
-        this.youtubeService = youtubeService;
-        this.obtainStreamerID = new ObtainStreamerID(twitchClient, youtubeService, twitchAuthToken, youtubeApiKey);
+    public RetrieveStreamsService(ApiContext context) {
+        this.context = context;
+        this.obtainStreamerID = new ObtainStreamerID(context);
     }
 
     public String getTwitchStreams(String username) {
         String userId = obtainStreamerID.getTwitchUserId(username);
-
         if (userId == null) {
             return "Error: Could not retrieve user ID for " + username;
         }
 
         try {
-            VideoList resultList = twitchClient.getHelix()
-                    .getVideos(twitchAuthToken, null, userId, null, null, null, null, null, 10, null, null)
+            VideoList resultList = context.twitchClient.getHelix()
+                    .getVideos(context.twitchAuthToken,
+                            null,
+                            userId,
+                            null,
+                            null,
+                            null,
+                            null,
+                            null,
+                            10,
+                            null,
+                            null)
                     .execute();
 
             if (resultList == null || resultList.getVideos().isEmpty()) {
@@ -44,11 +46,11 @@ public class RetrieveStreamsService {
             }
 
             StringBuilder streams = new StringBuilder("\nStart of list:\n");
-            final int[] i = {0};
-            resultList.getVideos().forEach(video -> {
-                i[0]++;
-                streams.append(i[0]).append(". ").append(video.getTitle()).append(" - ").append(video.getUserName()).append("\n");
-            });
+            int index = 1;
+            for (var video : resultList.getVideos()) {
+                streams.append(index++).append(". ").append(video.getTitle())
+                        .append(" - ").append(video.getUserName()).append("\n");
+            }
             return streams.toString();
         } catch (Exception e) {
             return "Error retrieving Twitch streams: " + e.getMessage();
@@ -64,7 +66,6 @@ public class RetrieveStreamsService {
             if (streams.isEmpty()) {
                 return "No recent streams found for " + username;
             }
-
             return formatStreamList(streams);
         } catch (Exception e) {
             return "Error retrieving YouTube streams: " + e.getMessage();
@@ -75,13 +76,10 @@ public class RetrieveStreamsService {
         return obtainStreamerID.getYoutubeUserId(username);
     }
 
-    public List<SearchResult> fetchCompletedStreams(String username) throws IOException {
-        String userId = getUserIdForStreams(username); // or your own logic
-        if (userId == null) return Collections.emptyList();
-
-        YouTube.Search.List request = youtubeService.search()
+    public List<SearchResult> fetchCompletedStreams(String userId) throws IOException {
+        YouTube.Search.List request = context.youtubeService.search()
                 .list(Arrays.asList("id", "snippet"))
-                .setKey(youtubeApiKey)
+                .setKey(context.youtubeAuthToken)
                 .setChannelId(userId)
                 .setType(Collections.singletonList("video"))
                 .setEventType("completed")
@@ -89,9 +87,11 @@ public class RetrieveStreamsService {
                 .setMaxResults(10L);
 
         SearchListResponse response = request.execute();
+        if (response == null || response.getItems() == null) {
+            return Collections.emptyList();
+        }
         return response.getItems();
     }
-
 
     private String formatStreamList(List<SearchResult> streams) {
         StringBuilder builder = new StringBuilder("\nStart of list:\n");

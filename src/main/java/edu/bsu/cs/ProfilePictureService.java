@@ -1,6 +1,5 @@
 package edu.bsu.cs;
 
-import com.github.twitch4j.ITwitchClient;
 import com.github.twitch4j.helix.domain.User;
 import com.google.api.services.youtube.YouTube;
 import com.google.api.services.youtube.model.ChannelListResponse;
@@ -10,12 +9,11 @@ import java.util.Collections;
 import java.util.List;
 
 public class ProfilePictureService {
-    private final ITwitchClient twitchClient;
-    private final YouTube youtubeService;
 
-    public ProfilePictureService(ITwitchClient twitchClient, YouTube youtubeService) {
-        this.twitchClient = twitchClient;
-        this.youtubeService = youtubeService;
+    private final ApiContext context;
+
+    public ProfilePictureService(ApiContext context) {
+        this.context = context;
     }
 
     public String getProfilePicture(String username, String platform) {
@@ -28,7 +26,7 @@ public class ProfilePictureService {
     }
 
     private String getTwitchProfilePicture(String username) {
-        return twitchClient.getHelix().getUsers(null, null, List.of(username))
+        return context.twitchClient.getHelix().getUsers(null, null, List.of(username))
                 .execute()
                 .getUsers()
                 .stream()
@@ -39,7 +37,7 @@ public class ProfilePictureService {
 
     private String getYouTubeProfilePicture(String username) {
         try {
-            YouTube.Search.List searchRequest = youtubeService.search()
+            YouTube.Search.List searchRequest = context.youtubeService.search()
                     .list(Collections.singletonList("id"))
                     .setQ(username)
                     .setType(Collections.singletonList("channel"))
@@ -54,7 +52,7 @@ public class ProfilePictureService {
 
             String channelId = searchResponse.getItems().get(0).getId().getChannelId();
 
-            YouTube.Channels.List channelRequest = youtubeService.channels()
+            YouTube.Channels.List channelRequest = context.youtubeService.channels()
                     .list(Collections.singletonList("snippet"))
                     .setId(Collections.singletonList(channelId))
                     .setKey(ApiInitializer.YoutubeAuthToken);

@@ -1,6 +1,5 @@
 package edu.bsu.cs;
 
-import com.github.twitch4j.ITwitchClient;
 import com.github.twitch4j.helix.domain.UserList;
 import com.google.api.services.youtube.YouTube;
 import com.google.api.services.youtube.model.ChannelListResponse;
@@ -11,16 +10,10 @@ import java.util.List;
 
 public class ObtainStreamerID {
 
-    private final ITwitchClient twitchClient;
-    private final String twitchAuthToken;
-    private final YouTube youtubeService;
-    private final String youtubeApiKey;
+    private final ApiContext context;
 
-    public ObtainStreamerID(ITwitchClient twitchClient, YouTube youtubeService, String twitchAuthToken, String youtubeApiKey) {
-        this.twitchClient = twitchClient;
-        this.twitchAuthToken = twitchAuthToken;
-        this.youtubeService = youtubeService;
-        this.youtubeApiKey = youtubeApiKey;
+    public ObtainStreamerID(ApiContext context) {
+        this.context = context;
     }
 
     public String getTwitchUserId(String username) {
@@ -30,8 +23,8 @@ public class ObtainStreamerID {
                 return null;
             }
 
-            UserList userList = twitchClient.getHelix()
-                    .getUsers(twitchAuthToken, null, List.of(username))
+            UserList userList = context.twitchClient.getHelix()
+                    .getUsers(context.twitchAuthToken, null, List.of(username))
                     .execute();
 
             if (userList == null || userList.getUsers().isEmpty()) {
@@ -56,9 +49,9 @@ public class ObtainStreamerID {
             return null;
         }
 
-        YouTube.Channels.List channelRequest = youtubeService.channels()
+        YouTube.Channels.List channelRequest = context.youtubeService.channels()
                 .list(Collections.singletonList("snippet"))
-                .setKey(youtubeApiKey)
+                .setKey(context.youtubeAuthToken)
                 .setForHandle("@" + username);
 
         ChannelListResponse response = channelRequest.execute();

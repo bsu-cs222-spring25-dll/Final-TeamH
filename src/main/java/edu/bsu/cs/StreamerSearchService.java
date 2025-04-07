@@ -1,6 +1,5 @@
 package edu.bsu.cs;
 
-import com.github.twitch4j.ITwitchClient;
 import com.github.twitch4j.helix.domain.UserList;
 import com.google.api.services.youtube.YouTube;
 import com.google.api.services.youtube.model.ChannelListResponse;
@@ -12,49 +11,44 @@ import java.util.List;
 
 public class StreamerSearchService {
 
-    private final ITwitchClient twitchClient;
-    private final YouTube youtubeService;
-    private final String twitchAuthToken;
-    private final String youtubeApiKey;
+    private final ApiContext context;
 
-    public StreamerSearchService(ITwitchClient twitchClient, YouTube youtubeService, String twitchAuthToken, String youtubeApiKey) {
-        this.twitchClient = twitchClient;
-        this.youtubeService = youtubeService;
-        this.twitchAuthToken = twitchAuthToken;
-        this.youtubeApiKey = youtubeApiKey;
+    public StreamerSearchService(ApiContext context) {
+        this.context = context;
     }
 
     public List<String> searchTwitchStreamer(String username) {
-        UserList userList = twitchClient.getHelix()
-                .getUsers(twitchAuthToken, null, Collections.singletonList(username))
-                .execute();
+        try {
+            UserList userList = context.twitchClient.getHelix()
+                    .getUsers(context.twitchAuthToken, null, Collections.singletonList(username))
+                    .execute();
 
-        if (userList.getUsers().isEmpty()) {
-            return null;
+            if (userList == null || userList.getUsers() == null || userList.getUsers().isEmpty()) {
+                return Collections.emptyList();
+            }
+            return Collections.singletonList(userList.getUsers().get(0).getDisplayName());
+        } catch (Exception e) {
+            System.out.println("Error while searching Twitch: " + e.getMessage());
+            return Collections.emptyList();
         }
-        return Collections.singletonList(userList.getUsers().get(0).getDisplayName());
     }
 
     public List<String> searchYoutubeStreamer(String username) {
         try {
-            YouTube.Channels.List channelRequest = youtubeService.channels()
+            YouTube.Channels.List channelRequest = context.youtubeService.channels()
                     .list(Collections.singletonList("snippet"))
-                    .setKey(youtubeApiKey)
+                    .setKey(context.youtubeAuthToken)
                     .setForHandle("@" + username);
 
             ChannelListResponse response = channelRequest.execute();
-            assert response != null;
-            assert response.getItems() != null;
-            if (response.getItems().isEmpty()) {
+            if (response == null || response.getItems() == null || response.getItems().isEmpty()) {
                 return Collections.emptyList();
             }
 
             Channel channel = response.getItems().get(0);
             return Collections.singletonList(channel.getSnippet().getTitle());
-
         } catch (IOException e) {
-            System.out.println("Error while searching youtube: " + e.getMessage());
-
+            System.out.println("Error while searching YouTube: " + e.getMessage());
             return Collections.emptyList();
         }
     }

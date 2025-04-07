@@ -1,6 +1,5 @@
 package edu.bsu.cs;
 
-import com.github.twitch4j.ITwitchClient;
 import com.github.twitch4j.helix.TwitchHelix;
 import com.google.api.services.youtube.YouTube;
 import com.google.api.services.youtube.model.SearchListResponse;
@@ -12,29 +11,23 @@ import java.util.Collections;
 import java.util.List;
 
 public class LiveStatusService {
-    private final ITwitchClient twitchClient;
-    private final String twitchAuthToken;
-    private final String youtubeApiKey;
-    private final YouTube youtubeService;
+    private final ApiContext context;
     private final ObtainStreamerID obtainStreamerID;
 
-    public LiveStatusService(ITwitchClient twitchClient, YouTube youtubeService, String twitchAuthToken, String youtubeApiKey) {
-        this.twitchClient = twitchClient;
-        this.twitchAuthToken = twitchAuthToken;
-        this.youtubeApiKey = youtubeApiKey;
-        this.youtubeService = youtubeService;
-        this.obtainStreamerID = new ObtainStreamerID(twitchClient, youtubeService, twitchAuthToken, youtubeApiKey);
+    public LiveStatusService(ApiContext context) {
+        this.context = context;
+        this.obtainStreamerID = new ObtainStreamerID(context);
     }
 
     public String getTwitchLiveStatus(String username) {
         try {
-            TwitchHelix helix = twitchClient.getHelix();
+            TwitchHelix helix = context.twitchClient.getHelix();
             if (helix == null) {
                 return "Error: TwitchHelix API client not initialized.";
             }
 
             var response = helix.getStreams(
-                    twitchAuthToken,
+                    context.twitchAuthToken,
                     null,
                     null,
                     1,
@@ -64,18 +57,20 @@ public class LiveStatusService {
             return "Error: Could not retrieve YouTube Channel ID for " + username;
         }
 
-        YouTube.Search.List searchRequest = youtubeService.search()
+        YouTube.Search.List searchRequest = context.youtubeService.search()
                 .list(Arrays.asList("id,snippet"))
-                .setKey(youtubeApiKey)
+                .setKey(context.youtubeAuthToken)
                 .setChannelId(userId)
                 .setEventType("live")
-                .setType(Arrays.asList(("video")));
+                .setType(Arrays.asList("video"));
 
         SearchListResponse searchResponse = searchRequest.execute();
-        List<SearchResult> results = searchResponse.getItems();
+        List<SearchResult> results = (searchResponse == null || searchResponse.getItems() == null)
+                ? Collections.emptyList()
+                : searchResponse.getItems();
 
         if (!results.isEmpty()) {
-            StringBuilder liveStreams = new StringBuilder("This Youtuber is live!\n");
+            StringBuilder liveStreams = new StringBuilder("This YouTuber is live!\n");
             for (SearchResult result : results) {
                 liveStreams.append("Live Stream Title: ").append(result.getSnippet().getTitle()).append("\n")
                         .append("Watch here: https://www.youtube.com/watch?v=").append(result.getId().getVideoId()).append("\n");

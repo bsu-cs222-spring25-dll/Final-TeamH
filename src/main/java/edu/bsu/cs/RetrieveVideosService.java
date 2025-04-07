@@ -10,57 +10,56 @@ import java.util.Collections;
 import java.util.List;
 
 public class RetrieveVideosService {
-    private final String youtubeApiKey;
-    private final YouTube youtubeService;
+    private final ApiContext context;
     private final ObtainStreamerID obtainStreamerID;
 
-    public RetrieveVideosService(YouTube youtubeService, String youtubeApiKey) {
-        this.youtubeApiKey = youtubeApiKey;
-        this.youtubeService = youtubeService;
-        this.obtainStreamerID = new ObtainStreamerID(null, youtubeService, null, youtubeApiKey);
-
+    public RetrieveVideosService(ApiContext context) {
+        this.context = context;
+        this.obtainStreamerID = new ObtainStreamerID(context);
     }
-
 
     public String getYoutubeVideos(String username) throws IOException {
         String userId = getUserIdForVideos(username);
-        if (userId == null) return "Error: Could not retrieve YouTube Channel ID for " + username;
+        if (userId == null)
+            return "Error: Could not retrieve YouTube Channel ID for " + username;
 
         try {
-            List<SearchResult> streams = fetchRecentVideos(userId);
-            if (streams.isEmpty()) {
+            List<SearchResult> videos = fetchRecentVideos(userId);
+            if (videos.isEmpty()) {
                 return "No recent videos found for " + username;
             }
-
-            return formatVideoList(streams);
+            return formatVideoList(videos);
         } catch (Exception e) {
             return "Error retrieving YouTube videos: " + e.getMessage();
         }
     }
-    public List<SearchResult> fetchRecentVideos(String username) throws IOException {
-        String userId = getUserIdForVideos(username);
-        if (userId == null) return Collections.emptyList();
 
-        YouTube.Search.List request = youtubeService.search()
+    public List<SearchResult> fetchRecentVideos(String userId) throws IOException {
+        YouTube.Search.List request = context.youtubeService.search()
                 .list(Arrays.asList("id", "snippet"))
-                .setKey(youtubeApiKey)
+                .setKey(context.youtubeAuthToken)
                 .setChannelId(userId)
                 .setType(Collections.singletonList("video"))
                 .setOrder("date")
                 .setMaxResults(10L);
 
         SearchListResponse response = request.execute();
-        return response.getItems();
+
+        List<SearchResult> items = response.getItems();
+        if (items == null) {
+            return Collections.emptyList();
+        }
+        return items;
     }
 
-    private String formatVideoList(List<SearchResult> streams) {
-        StringBuilder builder = new StringBuilder("\nStart of list:\n");
+    private String formatVideoList(List<SearchResult> videos) {
+        StringBuilder builder = new StringBuilder("\nRecent Videos:\n");
         int index = 1;
-        for (SearchResult stream : streams) {
-            builder.append(index++).append(". ").append(stream.getSnippet().getTitle()).append("\n")
-                    .append("Published At: ").append(stream.getSnippet().getPublishedAt()).append("\n")
+        for (SearchResult video : videos) {
+            builder.append(index++).append(". ").append(video.getSnippet().getTitle()).append("\n")
+                    .append("Published At: ").append(video.getSnippet().getPublishedAt()).append("\n")
                     .append("Watch here: https://www.youtube.com/watch?v=")
-                    .append(stream.getId().getVideoId()).append("\n")
+                    .append(video.getId().getVideoId()).append("\n")
                     .append("----------------------\n");
         }
         return builder.toString();
