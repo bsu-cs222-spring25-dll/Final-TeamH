@@ -35,12 +35,7 @@ public class GUI extends Application {
     public void start(Stage primaryStage) {
         primaryStage.setTitle("Streamer Tracker");
 
-        ApiContext context = new ApiContext(
-                ApiInitializer.initializeTwitch(),
-                ApiInitializer.initializeYoutube(),
-                ApiInitializer.TwitchAuthToken,
-                ApiInitializer.YoutubeAuthToken
-        );
+        final ApiContext context = ApiInitializer.initializeApiContext();
 
         StreamerSearchService searchService = new StreamerSearchService(context);
 

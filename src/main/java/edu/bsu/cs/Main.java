@@ -3,16 +3,9 @@ package edu.bsu.cs;
 import java.util.Scanner;
 import java.io.IOException;
 
-import static edu.bsu.cs.ApiInitializer.twitchClient;
-
 public class Main {
 
-    private static final ApiContext context = new ApiContext(
-            ApiInitializer.initializeTwitch(),
-            ApiInitializer.initializeYoutube(),
-            ApiInitializer.TwitchAuthToken,
-            ApiInitializer.YoutubeAuthToken
-    );
+    private static final ApiContext context = ApiInitializer.initializeApiContext();
 
     private static final StreamerSearchService searchService = new StreamerSearchService(context);
     private static final RetrieveStreamsService streamService = new RetrieveStreamsService(context);
@@ -32,7 +25,7 @@ public class Main {
 
             switch (choice) {
                 case 1 -> {
-                    twitchClient = ApiInitializer.initializeTwitch();
+                    context.twitchClient = ApiInitializer.initializeTwitch();
                     username = searchHandler.searchStreamer("Twitch");
 
                     if (!username.isEmpty()) {

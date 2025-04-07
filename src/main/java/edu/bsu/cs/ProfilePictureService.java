@@ -42,7 +42,7 @@ public class ProfilePictureService {
                     .setQ(username)
                     .setType(Collections.singletonList("channel"))
                     .setMaxResults(1L)
-                    .setKey(ApiInitializer.YoutubeAuthToken);
+                    .setKey(context.youtubeAuthToken);
 
             var searchResponse = searchRequest.execute();
             if (searchResponse == null || searchResponse.getItems() == null || searchResponse.getItems().isEmpty()) {
@@ -55,7 +55,7 @@ public class ProfilePictureService {
             YouTube.Channels.List channelRequest = context.youtubeService.channels()
                     .list(Collections.singletonList("snippet"))
                     .setId(Collections.singletonList(channelId))
-                    .setKey(ApiInitializer.YoutubeAuthToken);
+                    .setKey(context.youtubeAuthToken);
 
             ChannelListResponse channelResponse = channelRequest.execute();
 
