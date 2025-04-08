@@ -3,6 +3,7 @@ package edu.bsu.cs;
 import com.google.api.services.youtube.YouTube;
 import com.google.api.services.youtube.model.SearchListResponse;
 import com.google.api.services.youtube.model.SearchResult;
+import edu.bsu.cs.channelid.YoutubeUserIdProvider;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -11,11 +12,9 @@ import java.util.List;
 
 public class RetrieveVideosService {
     private final ApiContext context;
-    private final ObtainStreamerID obtainStreamerID;
 
     public RetrieveVideosService(ApiContext context) {
         this.context = context;
-        this.obtainStreamerID = new ObtainStreamerID(context);
     }
 
     public String getYoutubeVideos(String username) throws IOException {
@@ -64,6 +63,7 @@ public class RetrieveVideosService {
     }
 
     private String getUserIdForVideos(String username) throws IOException {
-        return obtainStreamerID.getYoutubeUserId(username);
+        YoutubeUserIdProvider idProvider = new YoutubeUserIdProvider(context);
+        return idProvider.getUserId(username);
     }
 }

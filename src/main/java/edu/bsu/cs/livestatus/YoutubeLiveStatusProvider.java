@@ -1,10 +1,10 @@
 package edu.bsu.cs.livestatus;
 
 import edu.bsu.cs.ApiContext;
-import edu.bsu.cs.ObtainStreamerID;
 import com.google.api.services.youtube.YouTube;
 import com.google.api.services.youtube.model.SearchListResponse;
 import com.google.api.services.youtube.model.SearchResult;
+import edu.bsu.cs.channelid.YoutubeUserIdProvider;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -13,16 +13,15 @@ import java.util.List;
 
 public class YoutubeLiveStatusProvider implements LiveStatusProvider {
     private final ApiContext context;
-    private final ObtainStreamerID obtainStreamerID;
 
     public YoutubeLiveStatusProvider(ApiContext context) {
         this.context = context;
-        this.obtainStreamerID = new ObtainStreamerID(context);
     }
 
     @Override
     public String getLiveStatus(String username) throws IOException {
-        String userId = obtainStreamerID.getYoutubeUserId(username);
+        YoutubeUserIdProvider idProvider = new YoutubeUserIdProvider(context);
+        String userId = idProvider.getUserId(username);
         if (userId == null) {
             return "Error: Could not retrieve YouTube Channel ID for " + username;
         }

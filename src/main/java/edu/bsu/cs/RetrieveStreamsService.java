@@ -4,6 +4,8 @@ import com.github.twitch4j.helix.domain.VideoList;
 import com.google.api.services.youtube.YouTube;
 import com.google.api.services.youtube.model.SearchListResponse;
 import com.google.api.services.youtube.model.SearchResult;
+import edu.bsu.cs.channelid.TwitchUserIdProvider;
+import edu.bsu.cs.channelid.YoutubeUserIdProvider;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -13,15 +15,15 @@ import java.util.List;
 public class RetrieveStreamsService {
 
     private final ApiContext context;
-    private final ObtainStreamerID obtainStreamerID;
 
     public RetrieveStreamsService(ApiContext context) {
         this.context = context;
-        this.obtainStreamerID = new ObtainStreamerID(context);
     }
 
     public String getTwitchStreams(String username) {
-        String userId = obtainStreamerID.getTwitchUserId(username);
+        TwitchUserIdProvider twitchIdProvider = new TwitchUserIdProvider(context);
+        String userId = twitchIdProvider.getUserId(username);
+
         if (userId == null) {
             return "Error: Could not retrieve user ID for " + username;
         }
@@ -73,7 +75,8 @@ public class RetrieveStreamsService {
     }
 
     private String getUserIdForStreams(String username) throws IOException {
-        return obtainStreamerID.getYoutubeUserId(username);
+        YoutubeUserIdProvider youtubeIdProvider = new YoutubeUserIdProvider(context);
+        return youtubeIdProvider.getUserId(username);
     }
 
     public List<SearchResult> fetchCompletedStreams(String username) throws IOException {
