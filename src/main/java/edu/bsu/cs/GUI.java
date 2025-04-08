@@ -230,8 +230,10 @@ public class GUI extends Application {
         webView.setPrefSize(640, 390);
 
         Button returnButton = new Button("Return");
-        webView.getEngine().load(null);
-        returnButton.setOnAction(e -> showStreamerScene(primaryStage, username, platform));
+        returnButton.setOnAction(e -> {
+            webView.getEngine().load(null);
+            showStreamerScene(primaryStage, username, platform);
+        });
 
         VBox layout = new VBox(10, returnButton, webView);
         layout.setAlignment(Pos.TOP_CENTER);

@@ -76,7 +76,10 @@ public class RetrieveStreamsService {
         return obtainStreamerID.getYoutubeUserId(username);
     }
 
-    public List<SearchResult> fetchCompletedStreams(String userId) throws IOException {
+    public List<SearchResult> fetchCompletedStreams(String username) throws IOException {
+        String userId = getUserIdForStreams(username);
+        if (userId == null) return Collections.emptyList();
+
         YouTube.Search.List request = context.youtubeService.search()
                 .list(Arrays.asList("id", "snippet"))
                 .setKey(context.youtubeAuthToken)
@@ -87,9 +90,6 @@ public class RetrieveStreamsService {
                 .setMaxResults(10L);
 
         SearchListResponse response = request.execute();
-        if (response == null || response.getItems() == null) {
-            return Collections.emptyList();
-        }
         return response.getItems();
     }
 

@@ -34,7 +34,10 @@ public class RetrieveVideosService {
         }
     }
 
-    public List<SearchResult> fetchRecentVideos(String userId) throws IOException {
+    public List<SearchResult> fetchRecentVideos(String username) throws IOException {
+        String userId = getUserIdForVideos(username);
+        if (userId == null) return Collections.emptyList();
+
         YouTube.Search.List request = context.youtubeService.search()
                 .list(Arrays.asList("id", "snippet"))
                 .setKey(context.youtubeAuthToken)
@@ -44,12 +47,7 @@ public class RetrieveVideosService {
                 .setMaxResults(10L);
 
         SearchListResponse response = request.execute();
-
-        List<SearchResult> items = response.getItems();
-        if (items == null) {
-            return Collections.emptyList();
-        }
-        return items;
+        return response.getItems();
     }
 
     private String formatVideoList(List<SearchResult> videos) {
