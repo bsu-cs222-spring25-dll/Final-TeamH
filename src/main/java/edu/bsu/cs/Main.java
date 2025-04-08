@@ -1,7 +1,10 @@
 package edu.bsu.cs;
 
+import edu.bsu.cs.channelInfo.ChannelInfo;
+import edu.bsu.cs.channelInfo.ChannelInfoAggregator;
+import edu.bsu.cs.livestatus.LiveStatusAggregator;
+
 import java.util.Scanner;
-import java.io.IOException;
 
 public class Main {
 
@@ -9,16 +12,16 @@ public class Main {
 
     private static final StreamerSearchService searchService = new StreamerSearchService(context);
     private static final RetrieveStreamsService streamService = new RetrieveStreamsService(context);
-    private static final ChannelInfoService infoService = new ChannelInfoService(context);
+    private static final ChannelInfoAggregator channelInfoAggregator = new ChannelInfoAggregator(context);
     private static final RetrieveVideosService videoService = new RetrieveVideosService(context);
     private static final RetrieveClips clipService = new RetrieveClips(context);
-    private static final LiveStatusService statusService = new LiveStatusService(context);
+    static LiveStatusAggregator liveStatusAggregator = new LiveStatusAggregator(context);
 
     static Scanner scanner = new Scanner(System.in);
     static StreamerSearchHandler searchHandler = new StreamerSearchHandler(scanner, searchService);
     static String username = "";
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws Exception {
         while (true) {
             Menu.printMainMenu();
             int choice = getUserInput(Menu::printMainMenu);
@@ -48,7 +51,7 @@ public class Main {
         }
     }
 
-    private static void twitchAccess(String username) {
+    private static void twitchAccess(String username) throws Exception {
         while (true) {
             Menu.printTwitchMenu();
             int choice = getUserInput(Menu::printTwitchMenu);
@@ -60,12 +63,12 @@ public class Main {
                 }
                 case 2 -> clipService.getTwitchClips(username);
                 case 3 -> {
-                    String result = infoService.getTwitchStreamerInfo(username);
-                    System.out.println(result);
+                    ChannelInfo info = channelInfoAggregator.getChannelInfo("Twitch", username);
+                    System.out.println(info != null ? info.toString() : "Twitch channel not found for: " + username);
                 }
                 case 4 -> {
-                    String liveStatus = statusService.getTwitchLiveStatus(username);
-                    System.out.println(liveStatus);
+                    String twitchStatus = liveStatusAggregator.getLiveStatus("Twitch", username);
+                    System.out.println(twitchStatus);
                 }
                 case 5 -> {
                     return;
@@ -74,7 +77,7 @@ public class Main {
         }
     }
 
-    private static void youtubeAccess(String username) throws IOException {
+    private static void youtubeAccess(String username) throws Exception {
         while (true) {
             Menu.printYoutubeMenu();
             int choice = getUserInput(Menu::printYoutubeMenu);
@@ -89,12 +92,12 @@ public class Main {
                     System.out.println(result);
                 }
                 case 3 -> {
-                    String liveStatus = statusService.getYoutubeLiveStatus(username);
-                    System.out.println(liveStatus);
+                    String youtubeStatus = liveStatusAggregator.getLiveStatus("YouTube", username);
+                    System.out.println(youtubeStatus);
                 }
                 case 4 -> {
-                    String result = infoService.getYoutuberInfo(username);
-                    System.out.println(result);
+                    ChannelInfo info = channelInfoAggregator.getChannelInfo("YouTube", username);
+                    System.out.println(info != null ? info.toString() : "YouTube channel not found for: " + username);
                 }
                 case 5 -> {
                     return;
