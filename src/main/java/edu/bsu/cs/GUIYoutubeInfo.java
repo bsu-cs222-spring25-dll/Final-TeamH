@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.util.List;
 
 public class GUIYoutubeInfo {
-    private final RetrieveStreamsService retrieveStreamsService;
+    private final edu.bsu.cs.StreamsAggregator retrieveStreamsService;
     private final RetrieveVideosService retrieveVideosService;
     private final RetrieveScheduledStreams retrieveScheduledStreams;
 

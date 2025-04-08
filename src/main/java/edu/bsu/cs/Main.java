@@ -5,6 +5,7 @@ import edu.bsu.cs.channelInfo.ChannelInfoAggregator;
 import edu.bsu.cs.clips.ClipsPrinter;
 import edu.bsu.cs.clips.TwitchClipsProvider;
 import edu.bsu.cs.livestatus.LiveStatusAggregator;
+import edu.bsu.cs.streams.StreamsAggregator;
 
 import java.util.Scanner;
 
@@ -13,7 +14,7 @@ public class Main {
     private static final ApiContext context = ApiInitializer.initializeApiContext();
 
     private static final StreamerSearchService searchService = new StreamerSearchService(context);
-    private static final RetrieveStreamsService streamService = new RetrieveStreamsService(context);
+    private static final StreamsAggregator streamsAggregator = new StreamsAggregator(context);
     private static final ChannelInfoAggregator channelInfoAggregator = new ChannelInfoAggregator(context);
     private static final RetrieveVideosService videoService = new RetrieveVideosService(context);
     static LiveStatusAggregator liveStatusAggregator = new LiveStatusAggregator(context);
@@ -59,7 +60,7 @@ public class Main {
 
             switch (choice) {
                 case 1 -> {
-                    String result = streamService.getTwitchStreams(username);
+                    String result = streamsAggregator.getTwitchStreams(username);
                     System.out.println(result);
                 }
                 case 2 -> {
@@ -94,7 +95,7 @@ public class Main {
 
             switch (choice) {
                 case 1 -> {
-                    String result = streamService.getYoutubeStreams(username);
+                    String result = streamsAggregator.getYoutubeStreams(username);
                     System.out.println(result);
                 }
                 case 2 -> {
