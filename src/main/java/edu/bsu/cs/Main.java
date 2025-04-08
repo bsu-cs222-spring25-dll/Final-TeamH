@@ -99,8 +99,8 @@ public class Main {
                     System.out.println(result);
                 }
                 case 2 -> {
-                    String result = videoService.getYoutubeVideos(username);
-                    System.out.println(result);
+                    String youtubeVideos = videoService.getYoutubeVideos(username);
+                    System.out.println(youtubeVideos);
                 }
                 case 3 -> {
                     String youtubeStatus = liveStatusAggregator.getLiveStatus("YouTube", username);
