@@ -1,6 +1,8 @@
 package edu.bsu.cs;
 
+import com.github.twitch4j.helix.domain.*;
 import com.google.api.services.youtube.model.SearchResult;
+import edu.bsu.cs.clips.TwitchClipsProvider;
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -11,12 +13,19 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
 
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 
 public class GUI extends Application {
@@ -26,7 +35,7 @@ public class GUI extends Application {
     private Label resultLabel;
     private ChoiceBox<String> platformSelector;
     private GUIYoutubeInfo guiYoutubeInfo;
-
+    private GUITwitchInfo guiTwitchInfo;
     public static void main(String[] args) {
         launch(args);
     }
@@ -42,7 +51,7 @@ public class GUI extends Application {
         guiSearchHandler = new GUISearchHandler(searchService);
         guiStreamerInfo = new GUIStreamerInfo(new ChannelInfoService(context), new ProfilePictureService(context), new LiveStatusService(context));
         guiYoutubeInfo = new GUIYoutubeInfo(new RetrieveStreamsService(context), new RetrieveVideosService(context), new RetrieveScheduledStreams(context));
-
+        guiTwitchInfo = new GUITwitchInfo(new RetrieveStreamsService(context),new RetrieveClips(context),new RetrieveScheduledStreams(context));
         Label titleLabel = new Label("Streamer Tracker");
         titleLabel.setStyle("-fx-font-size: 24px; -fx-font-weight: bold;");
 
@@ -67,11 +76,14 @@ public class GUI extends Application {
             String platform = platformSelector.getValue();
             String username = usernameInput.getText().trim();
 
-            if (username.isEmpty() || username.contains(" ")) {
-                showError("Invalid Username", "Usernames cannot contain spaces.");
+            if (username.isEmpty()) {
+                showError("Invalid Username", "Username cannot be empty.");
                 return;
             }
-
+            if (username.contains(" ")) {
+                showError("Invalid Username", "Username cannot contain a space.");
+                return;
+            }
             String result = guiSearchHandler.GUISearchStreamer(username, platform);
 
             if (!result.isEmpty()) {
@@ -104,21 +116,28 @@ public class GUI extends Application {
     private void showStreamerScene(Stage primaryStage, String username, String platform) {
         Label titleLabel = new Label("Streamer Tracker");
         titleLabel.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
-
+        String recentVideosOrClips;
+        if (platform.equals("Youtube")){
+            recentVideosOrClips = "Recent Uploads";
+        }
+        else{
+            recentVideosOrClips = "Recent Clips";
+        }
         Button returnButton = new Button("Return");
         returnButton.setOnAction(e -> start(primaryStage));
 
         Button recentStreamsButton = new Button("Recent Streams");
-        Button recentVideosButton = new Button("Recent Uploads");
+        Button recentVideosOrClipsButton = new Button(recentVideosOrClips);
         Button scheduledStreamsButton = new Button("Scheduled Streams");
 
         if (platform.equalsIgnoreCase("YouTube")) {
             recentStreamsButton.setOnAction(e -> showYoutubeContent(primaryStage, username, platform, "stream"));
-            recentVideosButton.setOnAction(e -> showYoutubeContent(primaryStage, username, platform, "video"));
+            recentVideosOrClipsButton.setOnAction(e -> showYoutubeContent(primaryStage, username, platform, "video"));
             scheduledStreamsButton.setOnAction(e -> showYoutubeContent(primaryStage, username, platform, "scheduled"));
         } else if (platform.equalsIgnoreCase("Twitch")) {
-            recentStreamsButton.setDisable(true);
-            recentVideosButton.setDisable(true);
+            recentStreamsButton.setOnAction(e -> showTwitchContent(primaryStage, username, platform, "Recent Streams"));
+            recentVideosOrClipsButton.setOnAction(e -> showTwitchContent(primaryStage, username, platform, "Recent Clips"));
+            scheduledStreamsButton.setOnAction(e -> showTwitchContent(primaryStage,username,platform,"Scheduled Streams"));
         }
 
         HBox topBar = new HBox(10, titleLabel, returnButton);
@@ -149,13 +168,219 @@ public class GUI extends Application {
         Label liveStatusLabel = new Label("Status: " + liveStatus);
         liveStatusLabel.setStyle("-fx-font-size: 16px;");
 
-        VBox layout = new VBox(20, topBar, streamerInfo, profileBox, liveStatusLabel, recentStreamsButton, recentVideosButton, scheduledStreamsButton);
+        VBox layout = new VBox(20, topBar, streamerInfo, profileBox, liveStatusLabel, recentStreamsButton, recentVideosOrClipsButton, scheduledStreamsButton);
 
         layout.setPadding(new Insets(20));
         layout.setAlignment(Pos.TOP_LEFT);
 
         Scene streamerScene = new Scene(layout, 800, 600);
         primaryStage.setScene(streamerScene);
+    }
+
+    public void showTwitchContent(Stage primaryStage, String username, String platform, String uploadType){
+        Label titleLabel = new Label("Streamer Tracker " + "- " + uploadType);
+        titleLabel.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
+
+        Button returnButton = new Button("Return");
+        returnButton.setOnAction(e -> showStreamerScene(primaryStage, username, platform));
+
+        HBox topBar = new HBox(10, titleLabel, returnButton);
+        topBar.setAlignment(Pos.TOP_LEFT);
+        topBar.setPadding(new Insets(10));
+        try {
+            if (uploadType.equals("Recent Streams")) {
+                ArrayList<String> videos = guiTwitchInfo.fetchTwitchVODs(username);
+                if (videos.isEmpty()){
+                    showError("Error","No VODs found.");
+                }
+                VBox streamsBox = new VBox(10);
+                streamsBox.setAlignment(Pos.TOP_LEFT);
+                for (String video : videos) {
+                    String[] info = video.split("__");
+                    String title = info[0];
+                    String VODId = info[1];
+                    String thumbnailUrl = info[2];
+
+                    HBox streamBox = new HBox(10);
+                    ImageView thumbnailImageView = new ImageView(new Image(thumbnailUrl));
+                    thumbnailImageView.setFitWidth(120);
+                    thumbnailImageView.setFitHeight(90);
+
+                    Label streamTitle = new Label(title);
+                    streamTitle.setStyle("-fx-font-size: 14px;");
+
+                    Button watchButton = new Button("Watch");
+                    watchButton.setOnAction(e1 -> {
+                        try {
+                            showVOD(primaryStage, VODId, username, platform, uploadType);
+                        } catch (URISyntaxException | IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    });
+
+                    streamBox.getChildren().addAll(thumbnailImageView, streamTitle, watchButton);
+                    streamsBox.getChildren().add(streamBox);
+                }
+
+                ScrollPane scrollPane = new ScrollPane(streamsBox);
+                scrollPane.setFitToWidth(true);
+                scrollPane.setPannable(true);
+                scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+                scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+
+                VBox layout = new VBox(20, topBar, streamsBox, scrollPane);
+                layout.setPadding(new Insets(20));
+                layout.setAlignment(Pos.TOP_LEFT);
+
+                Scene streamsScene = new Scene(layout, 600, 500);
+                primaryStage.setScene(streamsScene);
+            } else if (uploadType.equals("Recent Clips")) {
+                ArrayList<String> clips = guiTwitchInfo.fetchTwitchClips(username);
+                if (clips.isEmpty()){
+                    showError("Error","No clips found.");
+                }
+                VBox streamsBox = new VBox(10);
+                streamsBox.setAlignment(Pos.TOP_LEFT);
+                for (String clip : clips) {
+                    String[] info = clip.split("__");
+                    String title = info[0];
+                    String embeddedURL = info[1];
+                    String thumbnailUrl = info[2];
+
+                    HBox streamBox = new HBox(10);
+                    ImageView thumbnailImageView = new ImageView(new Image(thumbnailUrl));
+                    thumbnailImageView.setFitWidth(120);
+                    thumbnailImageView.setFitHeight(90);
+
+                    Label clipTitle = new Label(title);
+                    clipTitle.setStyle("-fx-font-size: 14px;");
+
+                    Button watchButton = new Button("Watch");
+                    watchButton.setOnAction(e1 -> {
+                        showClip(primaryStage, embeddedURL, username, platform, uploadType);
+                    });
+
+                    streamBox.getChildren().addAll(thumbnailImageView, clipTitle, watchButton);
+                    streamsBox.getChildren().add(streamBox);
+                }
+
+                ScrollPane scrollPane = new ScrollPane(streamsBox);
+                scrollPane.setFitToWidth(true);
+                scrollPane.setPannable(true);
+                scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+                scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+
+                VBox layout = new VBox(20, topBar, streamsBox, scrollPane);
+                layout.setPadding(new Insets(20));
+                layout.setAlignment(Pos.TOP_LEFT);
+
+                Scene clipsScene = new Scene(layout, 600, 500);
+                primaryStage.setScene(clipsScene);
+            }else if (uploadType.equals("Scheduled Streams")){
+                ArrayList<String> schedule = guiTwitchInfo.fetchStreamSchedule(username);
+                if (schedule.isEmpty()){
+                    showError("Error","No VODs found.");
+                }
+                VBox streamsBox = new VBox(10);
+                streamsBox.setAlignment(Pos.TOP_CENTER);
+                for (String segment : schedule) {
+                    String[] info = segment.split("__");
+                    String title = info[0];
+                    String VODId = info[1];
+                    String startTime = info[2];
+                    ZonedDateTime zdt = ZonedDateTime.parse(startTime);
+                    DateTimeFormatter format = DateTimeFormatter.ofPattern("MMM d, yyyy h:mm a");
+                    startTime = zdt.format(format);
+                    String endTime = info[3];
+                    zdt = ZonedDateTime.parse(endTime);
+                    endTime = zdt.format(format);
+
+                    HBox streamBox = new HBox(10);
+
+                    Label streamTitle = new Label(title);
+                    streamTitle.setStyle("-fx-font-size: 16px;");
+
+                    Label startTimeLabel = new Label(startTime);
+                    streamTitle.setStyle("-fx-font-size: 16px;");
+
+                    Label endTimeLabel = new Label(endTime);
+                    streamTitle.setStyle("-fx-font-size: 16px;");
+
+                    Button watchButton = new Button("Watch");
+                    watchButton.setOnAction(e1 -> {
+                        try {
+                            showVOD(primaryStage, VODId, username, platform, uploadType);
+                        } catch (URISyntaxException | IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    });
+
+                    streamBox.getChildren().addAll(streamTitle, startTimeLabel,endTimeLabel, watchButton);
+                    streamsBox.getChildren().add(streamBox);
+                }
+
+                ScrollPane scrollPane = new ScrollPane(streamsBox);
+                scrollPane.setFitToWidth(true);
+                scrollPane.setPannable(true);
+                scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+                scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+
+                VBox layout = new VBox(20, topBar, streamsBox, scrollPane);
+                layout.setPadding(new Insets(20));
+                layout.setAlignment(Pos.TOP_LEFT);
+
+                Scene streamsScene = new Scene(layout, 900, 600);
+                primaryStage.setScene(streamsScene);
+
+            }else {
+                showError("Error", "Unsupported upload type: " + uploadType);
+            }
+        } catch (Exception e) {
+            showError("Error", "Could not fetch streams: " + e.getMessage());
+            System.out.println(e.getMessage());
+        }
+    }
+
+    private void showClip(Stage primaryStage, String clipId, String username, String platform, String uploadType) {
+        String embeddedURL = "https://clips.twitch.tv/embed?clip="+clipId+"&parent=localhost";
+        WebView webView = new WebView();
+        WebEngine webEngine = webView.getEngine();
+
+        webEngine.load(embeddedURL);
+
+        Button returnButton = new Button("Return");
+        returnButton.setOnAction(e -> {
+            webView.getEngine().load(null);
+            showStreamerScene(primaryStage, username, platform);
+        });
+
+        VBox layout = new VBox(10, returnButton, webView);
+        layout.setAlignment(Pos.TOP_CENTER);
+        layout.setPadding(new Insets(20));
+
+        Scene videoScene = new Scene(layout, 700, 500);
+
+        primaryStage.setScene(videoScene);
+        primaryStage.show();
+    }
+
+    private void showVOD(Stage primaryStage, String VODId, String username, String platform, String uploadType) throws URISyntaxException, IOException {
+        String embedURL = "https://player.twitch.tv/?video=" + VODId+ "&parent=localhost";
+        java.awt.Desktop.getDesktop().browse(new URI(embedURL));
+
+        Button returnButton = new Button("Return From Browser");
+        returnButton.setOnAction(e -> {
+            showStreamerScene(primaryStage, username, platform);
+        });
+
+        VBox layout = new VBox(10, returnButton);
+        layout.setAlignment(Pos.CENTER);
+        layout.setPadding(new Insets(20));
+
+        Scene videoScene = new Scene(layout, 700, 500);
+
+        primaryStage.setScene(videoScene);
+        primaryStage.show();
     }
 
     public void showYoutubeContent(Stage primaryStage, String username, String platform, String uploadType) {

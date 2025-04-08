@@ -8,6 +8,7 @@ import edu.bsu.cs.channelid.TwitchUserIdProvider;
 import edu.bsu.cs.channelid.YoutubeUserIdProvider;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -20,42 +21,30 @@ public class RetrieveStreamsService {
         this.context = context;
     }
 
-    public String getTwitchStreams(String username) {
+    public ArrayList<String> getTwitchStreamsInfo(String username){
+        ArrayList<String> twitchStreamsInfo = new ArrayList<>();
         TwitchUserIdProvider twitchIdProvider = new TwitchUserIdProvider(context);
         String userId = twitchIdProvider.getUserId(username);
-
-        if (userId == null) {
-            return "Error: Could not retrieve user ID for " + username;
-        }
-
         try {
             VideoList resultList = context.twitchClient.getHelix()
-                    .getVideos(context.twitchAuthToken,
-                            null,
-                            userId,
-                            null,
-                            null,
-                            null,
-                            null,
-                            null,
-                            10,
-                            null,
-                            null)
+                    .getVideos(context.twitchAuthToken, null, userId, null, null, null, null, null, 10, null, null)
                     .execute();
-
             if (resultList == null || resultList.getVideos().isEmpty()) {
-                return "No recent streams found for " + username;
+                return null;
             }
-
-            StringBuilder streams = new StringBuilder("\nStart of list:\n");
-            int index = 1;
+            StringBuilder streamInfo = new StringBuilder();
             for (var video : resultList.getVideos()) {
-                streams.append(index++).append(". ").append(video.getTitle())
-                        .append(" - ").append(video.getUserName()).append("\n");
+                streamInfo.append(video.getTitle())
+                        .append("__")
+                        .append(video.getId())
+                        .append("__")
+                        .append(video.getThumbnailUrl(120,90));
+                twitchStreamsInfo.add(String.valueOf(streamInfo));
+                streamInfo.delete(0,1000);
             }
-            return streams.toString();
-        } catch (Exception e) {
-            return "Error retrieving Twitch streams: " + e.getMessage();
+            return twitchStreamsInfo;
+        } catch (Exception e){
+            return null;
         }
     }
 
