@@ -41,7 +41,7 @@ public class GUI extends Application {
 
         guiSearchHandler = new GUISearchHandler(searchService);
         guiStreamerInfo = new GUIStreamerInfo(new ChannelInfoService(context), new ProfilePictureService(context), new LiveStatusService(context));
-        guiYoutubeInfo = new GUIYoutubeInfo(new RetrieveStreamsService(context), new RetrieveVideosService(context));
+        guiYoutubeInfo = new GUIYoutubeInfo(new RetrieveStreamsService(context), new RetrieveVideosService(context), new RetrieveScheduledStreams(context));
 
         Label titleLabel = new Label("Streamer Tracker");
         titleLabel.setStyle("-fx-font-size: 24px; -fx-font-weight: bold;");
@@ -110,10 +110,12 @@ public class GUI extends Application {
 
         Button recentStreamsButton = new Button("Recent Streams");
         Button recentVideosButton = new Button("Recent Uploads");
+        Button scheduledStreamsButton = new Button("Scheduled Streams");
 
         if (platform.equalsIgnoreCase("YouTube")) {
             recentStreamsButton.setOnAction(e -> showYoutubeContent(primaryStage, username, platform, "stream"));
-            recentVideosButton.setOnAction(e -> showYoutubeContent(primaryStage, username, platform, "video")); // fixed
+            recentVideosButton.setOnAction(e -> showYoutubeContent(primaryStage, username, platform, "video"));
+            scheduledStreamsButton.setOnAction(e -> showYoutubeContent(primaryStage, username, platform, "scheduled"));
         } else if (platform.equalsIgnoreCase("Twitch")) {
             recentStreamsButton.setDisable(true);
             recentVideosButton.setDisable(true);
@@ -147,12 +149,12 @@ public class GUI extends Application {
         Label liveStatusLabel = new Label("Status: " + liveStatus);
         liveStatusLabel.setStyle("-fx-font-size: 16px;");
 
-        VBox layout = new VBox(20, topBar, streamerInfo, profileBox, liveStatusLabel, recentStreamsButton, recentVideosButton);
+        VBox layout = new VBox(20, topBar, streamerInfo, profileBox, liveStatusLabel, recentStreamsButton, recentVideosButton, scheduledStreamsButton);
 
         layout.setPadding(new Insets(20));
         layout.setAlignment(Pos.TOP_LEFT);
 
-        Scene streamerScene = new Scene(layout, 700, 500);
+        Scene streamerScene = new Scene(layout, 800, 600);
         primaryStage.setScene(streamerScene);
     }
 
@@ -174,7 +176,9 @@ public class GUI extends Application {
                 streams = guiYoutubeInfo.fetchYoutubeStreamDetails(username);
             } else if (uploadType.equals("video")) {
                 streams = guiYoutubeInfo.fetchYoutubeVideoDetails(username);
-            } else {
+            }else if (uploadType.equals("scheduled")){
+                streams = guiYoutubeInfo.fetchYoutubeScheduledStreamsDetails(username);
+            }else {
                 showError("Error", "Unsupported upload type: " + uploadType);
                 return;
             }
