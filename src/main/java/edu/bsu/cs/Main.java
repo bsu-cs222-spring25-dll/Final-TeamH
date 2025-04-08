@@ -2,6 +2,8 @@ package edu.bsu.cs;
 
 import edu.bsu.cs.channelInfo.ChannelInfo;
 import edu.bsu.cs.channelInfo.ChannelInfoAggregator;
+import edu.bsu.cs.clips.ClipsPrinter;
+import edu.bsu.cs.clips.TwitchClipsProvider;
 import edu.bsu.cs.livestatus.LiveStatusAggregator;
 
 import java.util.Scanner;
@@ -14,7 +16,6 @@ public class Main {
     private static final RetrieveStreamsService streamService = new RetrieveStreamsService(context);
     private static final ChannelInfoAggregator channelInfoAggregator = new ChannelInfoAggregator(context);
     private static final RetrieveVideosService videoService = new RetrieveVideosService(context);
-    private static final RetrieveClips clipService = new RetrieveClips(context);
     static LiveStatusAggregator liveStatusAggregator = new LiveStatusAggregator(context);
 
     static Scanner scanner = new Scanner(System.in);
@@ -61,7 +62,16 @@ public class Main {
                     String result = streamService.getTwitchStreams(username);
                     System.out.println(result);
                 }
-                case 2 -> clipService.getTwitchClips(username);
+                case 2 -> {
+                    TwitchClipsProvider clipsProvider = new TwitchClipsProvider(context);
+                    try {
+                        var clips = clipsProvider.fetchClips(username);
+                        ClipsPrinter.printClips(clips, username);
+                    } catch (Exception e) {
+                        System.out.println("Failed to retrieve clips: " + e.getMessage());
+                        e.printStackTrace();
+                    }
+                }
                 case 3 -> {
                     ChannelInfo info = channelInfoAggregator.getChannelInfo("Twitch", username);
                     System.out.println(info != null ? info.toString() : "Twitch channel not found for: " + username);
