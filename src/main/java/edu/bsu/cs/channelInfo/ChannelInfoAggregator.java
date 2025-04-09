@@ -1,6 +1,6 @@
 package edu.bsu.cs.channelInfo;
 
-import edu.bsu.cs.ApiContext;
+import edu.bsu.cs.api.ApiContext;
 
 public class ChannelInfoAggregator {
     private final ChannelInfoProvider twitchProvider;

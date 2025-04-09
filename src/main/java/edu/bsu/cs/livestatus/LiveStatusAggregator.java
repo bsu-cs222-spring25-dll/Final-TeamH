@@ -1,6 +1,6 @@
 package edu.bsu.cs.livestatus;
 
-import edu.bsu.cs.ApiContext;
+import edu.bsu.cs.api.ApiContext;
 
 public class LiveStatusAggregator {
     private final LiveStatusProvider twitchProvider;

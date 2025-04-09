@@ -1,6 +1,6 @@
 package edu.bsu.cs.channelInfo;
 
-import edu.bsu.cs.ApiContext;
+import edu.bsu.cs.api.ApiContext;
 import com.github.twitch4j.helix.domain.User;
 import com.github.twitch4j.helix.domain.UserList;
 

@@ -1,4 +1,4 @@
-package edu.bsu.cs;
+package edu.bsu.cs.api;
 
 import com.github.twitch4j.ITwitchClient;
 import com.google.api.services.youtube.YouTube;

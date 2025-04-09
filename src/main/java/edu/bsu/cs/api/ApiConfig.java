@@ -1,4 +1,4 @@
-package edu.bsu.cs;
+package edu.bsu.cs.api;
 
 import java.io.IOException;
 import java.io.InputStream;

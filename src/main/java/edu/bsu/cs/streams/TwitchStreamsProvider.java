@@ -1,6 +1,6 @@
 package edu.bsu.cs.streams;
 
-import edu.bsu.cs.ApiContext;
+import edu.bsu.cs.api.ApiContext;
 import edu.bsu.cs.channelid.TwitchUserIdProvider;
 import com.github.twitch4j.helix.domain.VideoList;
 

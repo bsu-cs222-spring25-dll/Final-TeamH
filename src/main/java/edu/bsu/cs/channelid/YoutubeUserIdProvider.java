@@ -1,6 +1,6 @@
 package edu.bsu.cs.channelid;
 
-import edu.bsu.cs.ApiContext;
+import edu.bsu.cs.api.ApiContext;
 import com.google.api.services.youtube.YouTube;
 import com.google.api.services.youtube.model.ChannelListResponse;
 import java.io.IOException;

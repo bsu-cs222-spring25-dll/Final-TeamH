@@ -1,6 +1,6 @@
 package edu.bsu.cs.channelid;
 
-import edu.bsu.cs.ApiContext;
+import edu.bsu.cs.api.ApiContext;
 import com.github.twitch4j.helix.domain.UserList;
 import java.util.List;
 

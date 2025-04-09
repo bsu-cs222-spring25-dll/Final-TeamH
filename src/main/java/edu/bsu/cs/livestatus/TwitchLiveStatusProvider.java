@@ -1,6 +1,6 @@
 package edu.bsu.cs.livestatus;
 
-import edu.bsu.cs.ApiContext;
+import edu.bsu.cs.api.ApiContext;
 import com.github.twitch4j.helix.TwitchHelix;
 
 import java.util.Collections;

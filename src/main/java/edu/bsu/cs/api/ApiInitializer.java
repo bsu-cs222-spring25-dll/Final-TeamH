@@ -1,4 +1,4 @@
-package edu.bsu.cs;
+package edu.bsu.cs.api;
 
 import com.github.philippheuer.credentialmanager.domain.OAuth2Credential;
 import com.google.api.client.json.jackson2.JacksonFactory;

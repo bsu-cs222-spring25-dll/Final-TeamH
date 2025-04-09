@@ -1,6 +1,6 @@
 package edu.bsu.cs.streams;
 
-import edu.bsu.cs.ApiContext;
+import edu.bsu.cs.api.ApiContext;
 import java.io.IOException;
 
 public class StreamsAggregator {
@@ -18,6 +18,6 @@ public class StreamsAggregator {
     }
 
     public String getYoutubeStreams(String username) throws IOException {
-        return youtubeProvider.getYoutubeStreams(username);
+        return youtubeProvider.getFormattedYoutubeStreams(username);
     }
 }

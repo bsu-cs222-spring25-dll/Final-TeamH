@@ -1,4 +1,4 @@
-package edu.bsu.cs.videos;
+package edu.bsu.cs.streams;
 
 import edu.bsu.cs.api.ApiContext;
 import edu.bsu.cs.channelid.YoutubeUserIdProvider;
@@ -11,31 +11,29 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-public class YoutubeVideosProvider {
+public class YoutubeStreamsFetcher {
     private final ApiContext context;
     private final YoutubeUserIdProvider idProvider;
 
-    public YoutubeVideosProvider(ApiContext context) {
+    public YoutubeStreamsFetcher(ApiContext context) {
         this.context = context;
         this.idProvider = new YoutubeUserIdProvider(context);
     }
 
-    public List<SearchResult> fetchRecentVideos(String username) throws IOException {
+    public List<SearchResult> fetchCompletedStreams(String username) throws IOException {
         String userId = idProvider.getUserId(username);
-        if (userId == null) {
-            return Collections.emptyList();
-        }
+        if (userId == null) return Collections.emptyList();
+
         YouTube.Search.List request = context.youtubeService.search()
                 .list(Arrays.asList("id", "snippet"))
                 .setKey(context.youtubeAuthToken)
                 .setChannelId(userId)
                 .setType(Collections.singletonList("video"))
+                .setEventType("completed")
                 .setOrder("date")
                 .setMaxResults(10L);
+
         SearchListResponse response = request.execute();
-        if (response.getItems() == null) {
-            return Collections.emptyList();
-        }
-        return response.getItems();
+        return response.getItems() != null ? response.getItems() : Collections.emptyList();
     }
 }
