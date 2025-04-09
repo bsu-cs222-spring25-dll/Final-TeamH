@@ -1,8 +1,6 @@
 package edu.bsu.cs;
 
-import com.github.twitch4j.helix.domain.*;
 import com.google.api.services.youtube.model.SearchResult;
-import edu.bsu.cs.clips.TwitchClipsProvider;
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -14,7 +12,6 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
 
@@ -190,155 +187,162 @@ public class GUI extends Application {
         topBar.setAlignment(Pos.TOP_LEFT);
         topBar.setPadding(new Insets(10));
         try {
-            if (uploadType.equals("Recent Streams")) {
-                ArrayList<String> videos = guiTwitchInfo.fetchTwitchVODs(username);
-                if (videos == null){
-                    showError("Error","No VODs found.");
-                }else{
-                    VBox streamsBox = new VBox(10);
-                    streamsBox.setAlignment(Pos.TOP_LEFT);
-                    for (String video : videos) {
-                        String[] info = video.split("__");
-                        String title = info[0];
-                        String VODId = info[1];
-                        String thumbnailUrl = info[2];
+            switch (uploadType) {
+                case "Recent Streams" -> {
+                    ArrayList<String> videos = guiTwitchInfo.fetchTwitchVODs(username);
+                    if (videos == null) {
+                        showError("Error", "No VODs found.");
+                    } else {
+                        VBox streamsBox = new VBox(10);
+                        streamsBox.setAlignment(Pos.TOP_LEFT);
+                        for (String video : videos) {
+                            String[] info = video.split("__");
+                            String title = info[0];
+                            String VODId = info[1];
+                            String thumbnailUrl = info[2];
 
-                        HBox streamBox = new HBox(10);
-                        ImageView thumbnailImageView = new ImageView(new Image(thumbnailUrl));
-                        thumbnailImageView.setFitWidth(120);
-                        thumbnailImageView.setFitHeight(90);
+                            HBox streamBox = new HBox(10);
+                            ImageView thumbnailImageView = new ImageView(new Image(thumbnailUrl));
+                            thumbnailImageView.setFitWidth(120);
+                            thumbnailImageView.setFitHeight(90);
 
-                        Label streamTitle = new Label(title);
-                        streamTitle.setStyle("-fx-font-size: 14px;");
+                            Label streamTitle = new Label(title);
+                            streamTitle.setStyle("-fx-font-size: 14px;");
 
-                        Button watchButton = new Button("Watch");
-                        watchButton.setOnAction(e1 -> {
-                            try {
-                                showVOD(primaryStage, VODId, username, platform);
-                            } catch (URISyntaxException | IOException e) {
-                                throw new RuntimeException(e);
-                            }
-                        });
+                            Button watchButton = new Button("Watch");
+                            watchButton.setOnAction(e1 -> {
+                                try {
+                                    showVOD(primaryStage, VODId, username, platform);
+                                } catch (URISyntaxException | IOException e) {
+                                    throw new RuntimeException(e);
+                                }
+                            });
 
-                        streamBox.getChildren().addAll(thumbnailImageView, streamTitle, watchButton);
-                        streamsBox.getChildren().add(streamBox);
+                            streamBox.getChildren().addAll(thumbnailImageView, streamTitle, watchButton);
+                            streamsBox.getChildren().add(streamBox);
+                        }
+
+                        ScrollPane scrollPane = new ScrollPane(streamsBox);
+                        scrollPane.setFitToWidth(true);
+                        scrollPane.setPannable(true);
+                        scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+                        scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+
+                        VBox layout = new VBox(20, topBar, streamsBox, scrollPane);
+                        layout.setPadding(new Insets(20));
+                        layout.setAlignment(Pos.TOP_LEFT);
+
+                        Scene streamsScene = new Scene(layout, 600, 500);
+                        primaryStage.setScene(streamsScene);
                     }
-
-                    ScrollPane scrollPane = new ScrollPane(streamsBox);
-                    scrollPane.setFitToWidth(true);
-                    scrollPane.setPannable(true);
-                    scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
-                    scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
-
-                    VBox layout = new VBox(20, topBar, streamsBox, scrollPane);
-                    layout.setPadding(new Insets(20));
-                    layout.setAlignment(Pos.TOP_LEFT);
-
-                    Scene streamsScene = new Scene(layout, 600, 500);
-                    primaryStage.setScene(streamsScene);
                 }
-            } else if (uploadType.equals("Recent Clips")) {
-                ArrayList<String> clips = guiTwitchInfo.fetchTwitchClips(username);
-                if (clips == null){
-                    showError("Error","No clips found.");
-                }else{
-                    VBox streamsBox = new VBox(10);
-                    streamsBox.setAlignment(Pos.TOP_LEFT);
+                case "Recent Clips" -> {
+                    ArrayList<String> clips = guiTwitchInfo.fetchTwitchClips(username);
+                    if (clips == null) {
+                        showError("Error", "No clips found.");
+                    } else {
+                        VBox streamsBox = new VBox(10);
+                        streamsBox.setAlignment(Pos.TOP_LEFT);
 
-                    for (String clip : clips) {
-                        String[] info = clip.split("__");
-                        String title = info[0];
-                        String embeddedURL = info[1];
-                        String thumbnailUrl = info[2];
+                        for (String clip : clips) {
+                            String[] info = clip.split("__");
+                            String title = info[0];
+                            String embeddedURL = info[1];
+                            String thumbnailUrl = info[2];
 
-                        HBox streamBox = new HBox(10);
-                        ImageView thumbnailImageView = new ImageView(new Image(thumbnailUrl));
-                        thumbnailImageView.setFitWidth(120);
-                        thumbnailImageView.setFitHeight(90);
+                            HBox streamBox = new HBox(10);
+                            ImageView thumbnailImageView = new ImageView(new Image(thumbnailUrl));
+                            thumbnailImageView.setFitWidth(120);
+                            thumbnailImageView.setFitHeight(90);
 
-                        Label clipTitle = new Label(title);
-                        clipTitle.setStyle("-fx-font-size: 14px;");
+                            Label clipTitle = new Label(title);
+                            clipTitle.setStyle("-fx-font-size: 14px;");
 
-                        Button watchButton = new Button("Watch");
-                        watchButton.setOnAction(e1 -> {
-                            showClip(primaryStage, embeddedURL, username, platform, uploadType);
-                        });
+                            Button watchButton = new Button("Watch");
+                            watchButton.setOnAction(e1 -> {
+                                try {
+                                    showClip(primaryStage, embeddedURL, username, platform);
+                                } catch (URISyntaxException | IOException e) {
+                                    throw new RuntimeException(e);
+                                }
+                            });
 
-                        streamBox.getChildren().addAll(thumbnailImageView, clipTitle, watchButton);
-                        streamsBox.getChildren().add(streamBox);
+                            streamBox.getChildren().addAll(thumbnailImageView, clipTitle, watchButton);
+                            streamsBox.getChildren().add(streamBox);
+                        }
+
+                        ScrollPane scrollPane = new ScrollPane(streamsBox);
+                        scrollPane.setFitToWidth(true);
+                        scrollPane.setPannable(true);
+                        scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+                        scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+
+                        VBox layout = new VBox(20, topBar, streamsBox, scrollPane);
+                        layout.setPadding(new Insets(20));
+                        layout.setAlignment(Pos.TOP_LEFT);
+
+                        Scene clipsScene = new Scene(layout, 600, 500);
+                        primaryStage.setScene(clipsScene);
                     }
-
-                    ScrollPane scrollPane = new ScrollPane(streamsBox);
-                    scrollPane.setFitToWidth(true);
-                    scrollPane.setPannable(true);
-                    scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
-                    scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
-
-                    VBox layout = new VBox(20, topBar, streamsBox, scrollPane);
-                    layout.setPadding(new Insets(20));
-                    layout.setAlignment(Pos.TOP_LEFT);
-
-                    Scene clipsScene = new Scene(layout, 600, 500);
-                    primaryStage.setScene(clipsScene);
                 }
-            }else if (uploadType.equals("Scheduled Streams")){
-                ArrayList<String> schedule = guiTwitchInfo.fetchStreamSchedule(username);
-                if (schedule == null){
-                    showError("Error","No Scheduled Streams found.");
-                } else {
-                    VBox streamsBox = new VBox(10);
-                    streamsBox.setAlignment(Pos.TOP_CENTER);
-                    for (String segment : schedule) {
-                        String[] info = segment.split("__");
-                        String title = info[0];
-                        String VODId = info[1];
-                        String startTime = info[2];
-                        ZonedDateTime zdt = ZonedDateTime.parse(startTime);
-                        DateTimeFormatter format = DateTimeFormatter.ofPattern("MMM d, yyyy h:mm a");
-                        startTime = zdt.format(format);
-                        String endTime = info[3];
-                        zdt = ZonedDateTime.parse(endTime);
-                        endTime = zdt.format(format);
+                case "Scheduled Streams" -> {
+                    ArrayList<String> schedule = guiTwitchInfo.fetchStreamSchedule(username);
+                    if (schedule == null) {
+                        showError("Error", "No Scheduled Streams found.");
+                    } else {
+                        VBox streamsBox = new VBox(10);
+                        streamsBox.setAlignment(Pos.TOP_CENTER);
+                        for (String segment : schedule) {
+                            String[] info = segment.split("__");
+                            String title = info[0];
+                            String VODId = info[1];
+                            String startTime = info[2];
+                            ZonedDateTime zdt = ZonedDateTime.parse(startTime);
+                            DateTimeFormatter format = DateTimeFormatter.ofPattern("MMM d, yyyy h:mm a");
+                            startTime = zdt.format(format);
+                            String endTime = info[3];
+                            zdt = ZonedDateTime.parse(endTime);
+                            endTime = zdt.format(format);
 
-                        HBox streamBox = new HBox(10);
+                            HBox streamBox = new HBox(10);
 
-                        Label streamTitle = new Label(title);
-                        streamTitle.setStyle("-fx-font-size: 16px;");
+                            Label streamTitle = new Label(title);
+                            streamTitle.setStyle("-fx-font-size: 16px;");
 
-                        Label startTimeLabel = new Label(startTime);
-                        streamTitle.setStyle("-fx-font-size: 16px;");
+                            Label startTimeLabel = new Label(startTime);
+                            streamTitle.setStyle("-fx-font-size: 16px;");
 
-                        Label endTimeLabel = new Label(endTime);
-                        streamTitle.setStyle("-fx-font-size: 16px;");
+                            Label endTimeLabel = new Label(endTime);
+                            streamTitle.setStyle("-fx-font-size: 16px;");
 
-                        Button watchButton = new Button("Watch");
-                        watchButton.setOnAction(e1 -> {
-                            try {
-                                showVOD(primaryStage, VODId, username, platform);
-                            } catch (URISyntaxException | IOException e) {
-                                throw new RuntimeException(e);
-                            }
-                        });
+                            Button watchButton = new Button("Watch");
+                            watchButton.setOnAction(e1 -> {
+                                try {
+                                    showVOD(primaryStage, VODId, username, platform);
+                                } catch (URISyntaxException | IOException e) {
+                                    throw new RuntimeException(e);
+                                }
+                            });
 
-                        streamBox.getChildren().addAll(streamTitle, startTimeLabel, endTimeLabel, watchButton);
-                        streamsBox.getChildren().add(streamBox);
+                            streamBox.getChildren().addAll(streamTitle, startTimeLabel, endTimeLabel, watchButton);
+                            streamsBox.getChildren().add(streamBox);
+                        }
+
+                        ScrollPane scrollPane = new ScrollPane(streamsBox);
+                        scrollPane.setFitToWidth(true);
+                        scrollPane.setPannable(true);
+                        scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+                        scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+
+                        VBox layout = new VBox(20, topBar, streamsBox, scrollPane);
+                        layout.setPadding(new Insets(20));
+                        layout.setAlignment(Pos.TOP_LEFT);
+
+                        Scene streamsScene = new Scene(layout, 900, 600);
+                        primaryStage.setScene(streamsScene);
                     }
-
-                    ScrollPane scrollPane = new ScrollPane(streamsBox);
-                    scrollPane.setFitToWidth(true);
-                    scrollPane.setPannable(true);
-                    scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
-                    scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
-
-                    VBox layout = new VBox(20, topBar, streamsBox, scrollPane);
-                    layout.setPadding(new Insets(20));
-                    layout.setAlignment(Pos.TOP_LEFT);
-
-                    Scene streamsScene = new Scene(layout, 900, 600);
-                    primaryStage.setScene(streamsScene);
                 }
-            }else {
-                showError("Error", "Unsupported upload type: " + uploadType);
+                default -> showError("Error", "Unsupported upload type: " + uploadType);
             }
         } catch (Exception e) {
             showError("Error", "Could not fetch streams: " + e.getMessage());
@@ -346,21 +350,15 @@ public class GUI extends Application {
         }
     }
 
-    private void showClip(Stage primaryStage, String clipId, String username, String platform, String uploadType) {
+    private void showClip(Stage primaryStage, String clipId, String username, String platform) throws URISyntaxException, IOException {
         String embeddedURL = "https://clips.twitch.tv/embed?clip="+clipId+"&parent=localhost";
-        WebView webView = new WebView();
-        WebEngine webEngine = webView.getEngine();
+        Desktop.getDesktop().browse(new URI(embeddedURL));
 
-        webEngine.load(embeddedURL);
+        Button returnButton = new Button("Return From Browser");
+        returnButton.setOnAction(e -> showStreamerScene(primaryStage, username, platform));
 
-        Button returnButton = new Button("Return");
-        returnButton.setOnAction(e -> {
-            webView.getEngine().load(null);
-            showStreamerScene(primaryStage, username, platform);
-        });
-
-        VBox layout = new VBox(10, returnButton, webView);
-        layout.setAlignment(Pos.TOP_CENTER);
+        VBox layout = new VBox(10, returnButton);
+        layout.setAlignment(Pos.CENTER);
         layout.setPadding(new Insets(20));
 
         Scene videoScene = new Scene(layout, 700, 500);
@@ -375,9 +373,7 @@ public class GUI extends Application {
         Desktop.getDesktop().browse(new URI(URL));
 
         Button returnButton = new Button("Return From Browser");
-        returnButton.setOnAction(e -> {
-            showStreamerScene(primaryStage, username, platform);
-        });
+        returnButton.setOnAction(e -> showStreamerScene(primaryStage, username, platform));
 
         VBox layout = new VBox(10, returnButton);
         layout.setAlignment(Pos.CENTER);
@@ -403,15 +399,14 @@ public class GUI extends Application {
         try {
             List<SearchResult> streams;
 
-            if (uploadType.equals("stream")) {
-                streams = guiYoutubeInfo.fetchYoutubeStreamDetails(username);
-            } else if (uploadType.equals("video")) {
-                streams = guiYoutubeInfo.fetchYoutubeVideoDetails(username);
-            }else if (uploadType.equals("scheduled")){
-                streams = guiYoutubeInfo.fetchYoutubeScheduledStreamsDetails(username);
-            }else {
-                showError("Error", "Unsupported upload type: " + uploadType);
-                return;
+            switch (uploadType) {
+                case "stream" -> streams = guiYoutubeInfo.fetchYoutubeStreamDetails(username);
+                case "video" -> streams = guiYoutubeInfo.fetchYoutubeVideoDetails(username);
+                case "scheduled" -> streams = guiYoutubeInfo.fetchYoutubeScheduledStreamsDetails(username);
+                default -> {
+                    showError("Error", "Unsupported upload type: " + uploadType);
+                    return;
+                }
             }
 
             VBox streamsBox = new VBox(10);
@@ -431,9 +426,7 @@ public class GUI extends Application {
                 streamTitle.setStyle("-fx-font-size: 14px;");
 
                 Button watchButton = new Button("Watch");
-                watchButton.setOnAction(e1 -> {
-                    showEmbeddedVideo(primaryStage, videoId, username, platform);
-                });
+                watchButton.setOnAction(e1 -> showEmbeddedVideo(primaryStage, videoId, username, platform));
 
                 streamBox.getChildren().addAll(thumbnailImageView, streamTitle, watchButton);
                 streamsBox.getChildren().add(streamBox);
