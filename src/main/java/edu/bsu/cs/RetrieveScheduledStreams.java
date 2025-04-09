@@ -45,6 +45,9 @@ public class RetrieveScheduledStreams {
             .execute();
             StreamSchedule schedule = scheduleResponse.getSchedule();
             List<ScheduledSegment> segments = schedule.getSegments();
+            if (segments.isEmpty()){
+                return null;
+            }
             StringBuilder segmentInfo = new StringBuilder();
             for (ScheduledSegment segment: segments){
                 segmentInfo.append(segment.getTitle())

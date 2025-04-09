@@ -34,7 +34,7 @@ dependencies {
     implementation 'com.google.http-client:google-http-client-jackson2:1.43.3'
     implementation 'com.github.twitch4j:twitch4j:1.24.0'
     implementation group: 'ch.qos.logback', name: 'logback-classic', version: '1.4.12'
-
+    implementation 'org.nanohttpd:nanohttpd:2.3.1'
     implementation 'org.openjfx:javafx-controls:17'
     implementation 'org.openjfx:javafx-fxml:17'
 }

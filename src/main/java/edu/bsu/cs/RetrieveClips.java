@@ -46,6 +46,9 @@ public class RetrieveClips {
                 twitchClipsInfo.add(String.valueOf(clipInfo));
                 clipInfo.delete(0,1000);
             });
+            if(twitchClipsInfo.isEmpty()){
+                return null;
+            }
             return twitchClipsInfo;
         } catch (Exception e) {
             return null;
