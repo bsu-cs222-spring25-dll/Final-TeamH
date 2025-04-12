@@ -1,17 +1,8 @@
 package edu.bsu.cs.main;
 
+import edu.bsu.cs.*;
 import edu.bsu.cs.api.ApiContext;
 import edu.bsu.cs.api.ApiInitializer;
-import edu.bsu.cs.channelInfo.ChannelInfo;
-import edu.bsu.cs.channelInfo.ChannelInfoAggregator;
-import edu.bsu.cs.clips.ClipsPrinter;
-import edu.bsu.cs.clips.TwitchClipsProvider;
-import edu.bsu.cs.livestatus.LiveStatusAggregator;
-import edu.bsu.cs.streamersearch.StreamerSearchAggregator;
-import edu.bsu.cs.streamersearch.StreamerSearchHandler;
-import edu.bsu.cs.streams.StreamsAggregator;
-import edu.bsu.cs.videos.YoutubeVideosFormatter;
-import edu.bsu.cs.videos.YoutubeVideosProvider;
 
 import java.util.Scanner;
 
@@ -21,12 +12,12 @@ public class Main {
 
     static Scanner scanner = new Scanner(System.in);
 
-    private static final StreamerSearchAggregator searchAggregator = new StreamerSearchAggregator(context);
-    private static final StreamerSearchHandler searchHandler = new StreamerSearchHandler(scanner, searchAggregator);
-    private static final StreamsAggregator streamsAggregator = new StreamsAggregator(context);
-    private static final ChannelInfoAggregator channelInfoAggregator = new ChannelInfoAggregator(context);
-    private static final YoutubeVideosProvider videosProvider = new YoutubeVideosProvider(context);
-    static LiveStatusAggregator liveStatusAggregator = new LiveStatusAggregator(context);
+    private static final StreamerSearchService searchService = new StreamerSearchService(context);
+    private static final StreamerSearchHandler searchHandler = new StreamerSearchHandler(scanner, searchService);
+    private static final RetrieveStreamsService streamsService = new RetrieveStreamsService(context);
+    private static final ChannelInfoService channelInfo = new ChannelInfoService(context);
+    private static final RetrieveVideosService videosService = new RetrieveVideosService(context);
+    static LiveStatusService liveStatus = new LiveStatusService(context);
 
     static String username = "";
 
@@ -45,6 +36,7 @@ public class Main {
                     }
                 }
                 case 2 -> {
+                    context.youtubeService = ApiInitializer.initializeYoutube();
                     username = searchHandler.searchStreamer("YouTube");
                     if (!username.isEmpty()) {
                         youtubeAccess(username);
@@ -67,25 +59,24 @@ public class Main {
 
             switch (choice) {
                 case 1 -> {
-                    String result = streamsAggregator.getTwitchStreams(username);
+                    String result = streamsService.getTwitchStreams(username);
                     System.out.println(result);
                 }
                 case 2 -> {
-                    TwitchClipsProvider clipsProvider = new TwitchClipsProvider(context);
+                    RetrieveClips clipsProvider = new RetrieveClips(context);
                     try {
-                        var clips = clipsProvider.fetchClips(username);
-                        ClipsPrinter.printClips(clips, username);
+                        clipsProvider.getTwitchClips(username);
                     } catch (Exception e) {
                         System.out.println("Failed to retrieve clips: " + e.getMessage());
                         e.printStackTrace();
                     }
                 }
                 case 3 -> {
-                    ChannelInfo info = channelInfoAggregator.getChannelInfo("Twitch", username);
-                    System.out.println(info != null ? info.toString() : "Twitch channel not found for: " + username);
+                    String info = channelInfo.getTwitchStreamerInfo(username);
+                    System.out.println(info != null ? info : "Twitch channel not found for: " + username);
                 }
                 case 4 -> {
-                    String twitchStatus = liveStatusAggregator.getLiveStatus("Twitch", username);
+                    String twitchStatus = liveStatus.getTwitchLiveStatus(username);
                     System.out.println(twitchStatus);
                 }
                 case 5 -> {
@@ -102,16 +93,16 @@ public class Main {
 
             switch (choice) {
                 case 1 -> {
-                    String result = streamsAggregator.getYoutubeStreams(username);
+                    String result = streamsService.getYoutubeStreams(username);
                     System.out.println(result);
                 }
                 case 2 -> {
                     try {
-                        var videos = videosProvider.fetchRecentVideos(username);
+                        var videos = videosService.fetchRecentVideos(username);
                         if (videos.isEmpty()) {
                             System.out.println("No recent videos found for " + username);
                         } else {
-                            String formatted = YoutubeVideosFormatter.formatVideoList(videos);
+                            String formatted = videosService.getYoutubeVideos(username);
                             System.out.println(formatted);
                         }
                     } catch (Exception e) {
@@ -119,12 +110,12 @@ public class Main {
                     }
                 }
                 case 3 -> {
-                    String youtubeStatus = liveStatusAggregator.getLiveStatus("YouTube", username);
+                    String youtubeStatus = liveStatus.getYoutubeLiveStatus(username);
                     System.out.println(youtubeStatus);
                 }
                 case 4 -> {
-                    ChannelInfo info = channelInfoAggregator.getChannelInfo("YouTube", username);
-                    System.out.println(info != null ? info.toString() : "YouTube channel not found for: " + username);
+                    String info = channelInfo.getYoutuberInfo(username);
+                    System.out.println(info != null ? info : "YouTube channel not found for: " + username);
                 }
                 case 5 -> {
                     return;

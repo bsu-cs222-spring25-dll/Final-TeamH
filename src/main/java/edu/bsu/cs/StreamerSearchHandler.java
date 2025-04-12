@@ -1,16 +1,16 @@
-package edu.bsu.cs.streamersearch;
+package edu.bsu.cs;
 
-import java.util.List;
 import java.util.Scanner;
+import java.util.List;
 
 public class StreamerSearchHandler {
 
     private final Scanner scanner;
-    private final StreamerSearchAggregator searchAggregator;
+    private final StreamerSearchService searchService;
 
-    public StreamerSearchHandler(Scanner scanner, StreamerSearchAggregator searchAggregator) {
+    public StreamerSearchHandler(Scanner scanner, StreamerSearchService searchService) {
         this.scanner = scanner;
-        this.searchAggregator = searchAggregator;
+        this.searchService = searchService;
     }
 
     public String getValidatedUsername(String platform) {
@@ -32,8 +32,16 @@ public class StreamerSearchHandler {
     public String searchStreamer(String platform) {
         String username = getValidatedUsername(platform);
 
+        List<String> result;
         try {
-            List<String> result = searchAggregator.search(platform, username);
+            if (platform.equalsIgnoreCase("Twitch")) {
+                result = searchService.searchTwitchStreamer(username);
+            } else if (platform.equalsIgnoreCase("YouTube")) {
+                result = searchService.searchYoutubeStreamer(username);
+            } else {
+                throw new IllegalArgumentException("Unsupported platform: " + platform);
+            }
+
             if (result.isEmpty()) {
                 System.out.println(platform + " streamer not found.");
                 return "";
@@ -42,7 +50,7 @@ public class StreamerSearchHandler {
                 return username;
             }
         } catch (Exception e) {
-            System.err.println(platform + " user not found (crash prevention): " + e.getMessage());
+            System.err.println(platform + " user not found (crash prevention)");
             return "";
         }
     }
