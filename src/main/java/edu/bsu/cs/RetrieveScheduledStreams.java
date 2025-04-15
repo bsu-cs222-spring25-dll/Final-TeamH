@@ -84,23 +84,7 @@ public class RetrieveScheduledStreams {
         return response.getItems();
     }
 
-    private String formatScheduledStreamsList(List<SearchResult> ScheduledStreams) {
-        StringBuilder builder = new StringBuilder("\nScheduledStreams:\n");
-        int index = 1;
-        for (SearchResult ScheduledStream : ScheduledStreams) {
-            builder.append(index++).append(". ").append(ScheduledStream.getSnippet().getTitle()).append("\n")
-                    .append("Published At: ").append(ScheduledStream.getSnippet().getPublishedAt()).append("\n")
-                    .append("Watch here: https://www.youtube.com/watch?v=")
-                    .append(ScheduledStream.getId().getVideoId()).append("\n")
-                    .append("----------------------\n");
-        }
-        return builder.toString();
-    }
-
     private String getUserIdForScheduled(String username) throws IOException {
         return obtainStreamerID.getYoutubeUserId(username);
     }
-
-
-
 }

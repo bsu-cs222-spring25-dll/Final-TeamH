@@ -96,4 +96,22 @@ public class RetrieveStreamsService {
         }
         return builder.toString();
     }
+
+    public String getFormattedTwitchVODs(String username) {
+        ArrayList<String> vods = getTwitchStreamsInfo(username);
+        if (vods == null || vods.isEmpty()) {
+            return "No VODs found for " + username;
+        }
+        StringBuilder builder = new StringBuilder("Recent Twitch VODs:\n");
+        for (String entry : vods) {
+            String[] info = entry.split("__");
+            if (info.length >= 3) {
+                builder.append("- Title: ").append(info[0]).append("\n")
+                        .append("  Watch: https://www.twitch.tv/videos/").append(info[1]).append("\n")
+                        .append("  Thumbnail: ").append(info[2]).append("\n\n");
+            }
+        }
+        return builder.toString();
+    }
+
 }

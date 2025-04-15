@@ -4,6 +4,7 @@ import edu.bsu.cs.*;
 import edu.bsu.cs.api.ApiContext;
 import edu.bsu.cs.api.ApiInitializer;
 
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Main {
@@ -52,24 +53,16 @@ public class Main {
         }
     }
 
-    private static void twitchAccess(String username) throws Exception {
+    private static void twitchAccess(String username) {
         while (true) {
             Menu.printTwitchMenu();
             int choice = getUserInput(Menu::printTwitchMenu);
 
             switch (choice) {
-                case 1 -> {
-                    String result = String.valueOf(streamsService.getTwitchStreamsInfo(username));
-                    System.out.println(result);
-                }
+                case 1 -> System.out.println(streamsService.getFormattedTwitchVODs(username));
                 case 2 -> {
                     RetrieveClips clipsProvider = new RetrieveClips(context);
-                    try {
-                        clipsProvider.getTwitchClipsInfo(username);
-                    } catch (Exception e) {
-                        System.out.println("Failed to retrieve clips: " + e.getMessage());
-                        e.printStackTrace();
-                    }
+                    System.out.println(clipsProvider.getFormattedTwitchClips(username));
                 }
                 case 3 -> {
                     String info = channelInfo.getTwitchStreamerInfo(username);

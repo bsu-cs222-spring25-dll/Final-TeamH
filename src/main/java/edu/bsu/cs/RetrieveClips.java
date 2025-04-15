@@ -27,16 +27,7 @@ public class RetrieveClips {
             TwitchHelix helix = context.twitchClient.getHelix();
             ClipList clips = helix.getClips(
                     context.twitchAuthToken,
-                    broadcasterId,
-                    null,
-                    null,
-                    null,
-                    null,
-                    10,
-                    Instant.now().minus(Duration.ofDays(7)),
-                    null,
-                    false
-            ).execute();
+                    broadcasterId, null, null, null, null, 10, Instant.now().minus(Duration.ofDays(7)), null, false).execute();
             StringBuilder clipInfo = new StringBuilder();
             clips.getData().forEach(clip -> {
                 clipInfo.append(clip.getTitle())
@@ -54,5 +45,22 @@ public class RetrieveClips {
         } catch (Exception e) {
             return null;
         }
+    }
+
+    public String getFormattedTwitchClips(String username) {
+        ArrayList<String> clips = getTwitchClipsInfo(username);
+        if (clips == null || clips.isEmpty()) {
+            return "No clips found for " + username;
+        }
+        StringBuilder builder = new StringBuilder("Recent Twitch Clips:\n");
+        for (String entry : clips) {
+            String[] info = entry.split("__");
+            if (info.length >= 3) {
+                builder.append("- Title: ").append(info[0]).append("\n")
+                        .append("  Watch: https://clips.twitch.tv/").append(info[1]).append("\n")
+                        .append("  Thumbnail: ").append(info[2]).append("\n\n");
+            }
+        }
+        return builder.toString();
     }
 }

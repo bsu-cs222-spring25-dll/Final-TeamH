@@ -10,7 +10,6 @@ public class GUIYoutubeInfo {
     private final RetrieveVideosService retrieveVideosService;
     private final RetrieveScheduledStreams retrieveScheduledStreams;
 
-
     public GUIYoutubeInfo(RetrieveStreamsService retrieveStreamsService, RetrieveVideosService retrieveVideosService, RetrieveScheduledStreams retrieveScheduledStreams) {
         this.retrieveStreamsService = retrieveStreamsService;
         this.retrieveVideosService = retrieveVideosService;
@@ -28,7 +27,4 @@ public class GUIYoutubeInfo {
     public List<SearchResult> fetchYoutubeScheduledStreamsDetails(String username) throws IOException {
         return retrieveScheduledStreams.fetchScheduledStreams(username);
     }
-
-
-
 }
