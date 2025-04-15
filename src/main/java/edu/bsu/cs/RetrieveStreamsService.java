@@ -7,6 +7,7 @@ import com.google.api.services.youtube.model.SearchResult;
 import edu.bsu.cs.api.ApiContext;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -14,37 +15,36 @@ import java.util.List;
 public class RetrieveStreamsService {
 
     private final ApiContext context;
+    private final ObtainStreamerID obtainStreamerID;
 
     public RetrieveStreamsService(ApiContext context) {
         this.context = context;
+        this.obtainStreamerID = new ObtainStreamerID(context);
     }
 
-    public String getTwitchStreams(String username) {
-        ObtainStreamerID getID = new ObtainStreamerID(context);
-        String userId = getID.getTwitchUserId(username);
-
-        if (userId == null) {
-            return "Error: Could not retrieve user ID for " + username;
-        }
-
+    public ArrayList<String> getTwitchStreamsInfo(String username){
+        ArrayList<String> twitchStreamsInfo = new ArrayList<>();
+        String userId = obtainStreamerID.getTwitchUserId(username);
         try {
             VideoList resultList = context.twitchClient.getHelix()
                     .getVideos(context.twitchAuthToken, null, userId, null, null, null, null, null, 10, null, null)
                     .execute();
-
             if (resultList == null || resultList.getVideos().isEmpty()) {
-                return "No recent streams found for " + username;
+                return null;
             }
-
-            StringBuilder streams = new StringBuilder("\nStart of list:\n");
-            int index = 1;
+            StringBuilder streamInfo = new StringBuilder();
             for (var video : resultList.getVideos()) {
-                streams.append(index++).append(". ").append(video.getTitle())
-                        .append(" - ").append(video.getUserName()).append("\n");
+                streamInfo.append(video.getTitle())
+                        .append("__")
+                        .append(video.getId())
+                        .append("__")
+                        .append(video.getThumbnailUrl(120,90));
+                twitchStreamsInfo.add(String.valueOf(streamInfo));
+                streamInfo.delete(0,1000);
             }
-            return streams.toString();
-        } catch (Exception e) {
-            return "Error retrieving Twitch streams: " + e.getMessage();
+            return twitchStreamsInfo;
+        } catch (Exception e){
+            return null;
         }
     }
 
@@ -54,7 +54,7 @@ public class RetrieveStreamsService {
 
         try {
             List<SearchResult> streams = fetchCompletedStreams(userId);
-            if (streams == null || streams.isEmpty()) {
+            if (streams.isEmpty()) {
                 return "No recent streams found for " + username;
             }
             return formatStreamList(streams);
@@ -64,11 +64,13 @@ public class RetrieveStreamsService {
     }
 
     private String getUserIdForStreams(String username) throws IOException {
-        ObtainStreamerID youtubeIdProvider = new ObtainStreamerID(context);
-        return youtubeIdProvider.getYoutubeUserId(username);
+        return obtainStreamerID.getYoutubeUserId(username);
     }
 
-    public List<SearchResult> fetchCompletedStreams(String userId) throws IOException {
+    public List<SearchResult> fetchCompletedStreams(String username) throws IOException {
+        String userId = getUserIdForStreams(username);
+        if (userId == null) return Collections.emptyList();
+
         YouTube.Search.List request = context.youtubeService.search()
                 .list(Arrays.asList("id", "snippet"))
                 .setKey(context.youtubeAuthToken)
@@ -79,12 +81,6 @@ public class RetrieveStreamsService {
                 .setMaxResults(10L);
 
         SearchListResponse response = request.execute();
-
-        if (response == null || response.getItems() == null) {
-            System.err.println("ERROR: YouTube API returned null or no items for completed streams.");
-            return Collections.emptyList();
-        }
-
         return response.getItems();
     }
 

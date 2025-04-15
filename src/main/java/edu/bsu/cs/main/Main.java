@@ -59,13 +59,13 @@ public class Main {
 
             switch (choice) {
                 case 1 -> {
-                    String result = streamsService.getTwitchStreams(username);
+                    String result = String.valueOf(streamsService.getTwitchStreamsInfo(username));
                     System.out.println(result);
                 }
                 case 2 -> {
                     RetrieveClips clipsProvider = new RetrieveClips(context);
                     try {
-                        clipsProvider.getTwitchClips(username);
+                        clipsProvider.getTwitchClipsInfo(username);
                     } catch (Exception e) {
                         System.out.println("Failed to retrieve clips: " + e.getMessage());
                         e.printStackTrace();

@@ -1,6 +1,5 @@
 package edu.bsu.cs;
 
-import java.io.IOException;
 import java.util.ArrayList;
 
 public class GUITwitchInfo {
@@ -14,13 +13,13 @@ public class GUITwitchInfo {
         this.retrieveScheduledStreams = retrieveScheduledStreams;
     }
 
-    public String fetchTwitchVODs(String username){
-        return retrieveStreamsService.getTwitchStreams(username);
+    public ArrayList<String> fetchTwitchVODs(String username){
+        return this.retrieveStreamsService.getTwitchStreamsInfo(username);
     }
     public ArrayList<String> fetchTwitchClips(String username){
-        return retrieveClips.getTwitchClips(username);
+        return retrieveClips.getTwitchClipsInfo(username);
     }
-    public ArrayList<String> fetchStreamSchedule(String username) throws IOException {
-        return retrieveScheduledStreams.fetchScheduledStreams(username);
+    public ArrayList<String> fetchStreamSchedule(String username){
+        return retrieveScheduledStreams.getStreamSchedule(username);
     }
 }

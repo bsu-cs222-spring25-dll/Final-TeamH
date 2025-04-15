@@ -2,7 +2,7 @@ package edu.bsu.cs;
 
 import com.github.twitch4j.helix.domain.UserList;
 import com.google.api.services.youtube.YouTube;
-import com.google.api.services.youtube.model.SearchListResponse;
+import com.google.api.services.youtube.model.ChannelListResponse;
 import edu.bsu.cs.api.ApiContext;
 
 import java.io.IOException;
@@ -50,21 +50,19 @@ public class ObtainStreamerID {
             return null;
         }
 
-        YouTube.Search.List searchRequest = context.youtubeService.search()
+        YouTube.Channels.List channelRequest = context.youtubeService.channels()
                 .list(Collections.singletonList("snippet"))
-                .setQ(username)
-                .setType(Collections.singletonList("channel"))
-                .setMaxResults(1L)
-                .setKey(context.youtubeAuthToken);
+                .setKey(context.youtubeAuthToken)
+                .setForHandle("@" + username);
 
-        SearchListResponse searchResponse = searchRequest.execute();
+        ChannelListResponse response = channelRequest.execute();
 
-        if (searchResponse == null || searchResponse.getItems() == null || searchResponse.getItems().isEmpty()) {
-            System.err.println("No YouTube channel found for user: " + username);
+        if (response.getItems().isEmpty()) {
+            System.out.println("No YouTube channel found for username: " + username);
             return null;
         }
 
-        String userId = searchResponse.getItems().get(0).getSnippet().getChannelId();
+        String userId = response.getItems().get(0).getId();
         System.out.println("Retrieved YouTube Channel ID: " + userId);
         return userId;
     }

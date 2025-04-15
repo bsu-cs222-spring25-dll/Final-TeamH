@@ -1,13 +1,13 @@
 package edu.bsu.cs;
 
 import com.github.twitch4j.helix.TwitchHelix;
-import com.github.twitch4j.helix.domain.Clip;
 import com.github.twitch4j.helix.domain.ClipList;
 import edu.bsu.cs.api.ApiContext;
 
-
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
-import java.util.List;
+
 
 public class RetrieveClips {
 
@@ -19,20 +19,13 @@ public class RetrieveClips {
         this.obtainStreamerID = new ObtainStreamerID(context);
     }
 
-    public ArrayList<String> getTwitchClips(String username) {
+    public ArrayList<String> getTwitchClipsInfo(String username) {
+        ArrayList<String> twitchClipsInfo = new ArrayList<>();
         String broadcasterId = obtainStreamerID.getTwitchUserId(username);
-
-        if (broadcasterId == null || broadcasterId.isEmpty()) {
-            System.out.println("Error: Could not retrieve user ID for " + username);
-            return null;
-        }
-
         System.out.println("Fetched Broadcaster ID: " + broadcasterId);
-
         try {
             TwitchHelix helix = context.twitchClient.getHelix();
-
-            ClipList clipList = helix.getClips(
+            ClipList clips = helix.getClips(
                     context.twitchAuthToken,
                     broadcasterId,
                     null,
@@ -40,32 +33,26 @@ public class RetrieveClips {
                     null,
                     null,
                     10,
+                    Instant.now().minus(Duration.ofDays(7)),
                     null,
-                    null,
-                    null
+                    false
             ).execute();
-
-            List<Clip> clips = clipList.getData();
-            if (clips.isEmpty()) {
-                System.out.println("No clips found for " + username);
+            StringBuilder clipInfo = new StringBuilder();
+            clips.getData().forEach(clip -> {
+                clipInfo.append(clip.getTitle())
+                        .append("__")
+                        .append(clip.getId())
+                        .append("__")
+                        .append(clip.getThumbnailUrl());
+                twitchClipsInfo.add(String.valueOf(clipInfo));
+                clipInfo.delete(0,1000);
+            });
+            if(twitchClipsInfo.isEmpty()){
                 return null;
             }
-
-            System.out.println("\nTop Clips for " + username + ":");
-            int index = 0;
-            for (Clip clip : clips) {
-                index++;
-                System.out.println(index + ". " + clip.getTitle());
-                System.out.println("    URL: " + clip.getUrl());
-                System.out.println("    Created by: " + clip.getCreatorName());
-                System.out.println("    Views: " + clip.getViewCount());
-                System.out.println();
-            }
-
+            return twitchClipsInfo;
         } catch (Exception e) {
-            System.out.println("Failed to retrieve clips: " + e.getMessage());
-            e.printStackTrace();
+            return null;
         }
-        return null;
     }
 }

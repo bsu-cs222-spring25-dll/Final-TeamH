@@ -26,9 +26,8 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-
-import edu.bsu.cs.api.ApiInitializer;
 import edu.bsu.cs.api.ApiContext;
+import edu.bsu.cs.api.ApiInitializer;
 
 public class GUI extends Application {
     private GUISearchHandler guiSearchHandler;
@@ -473,5 +472,4 @@ public class GUI extends Application {
         Scene videoScene = new Scene(layout, 700, 500);
         primaryStage.setScene(videoScene);
     }
-
 }

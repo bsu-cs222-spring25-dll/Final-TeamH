@@ -12,9 +12,11 @@ import java.util.List;
 
 public class RetrieveVideosService {
     private final ApiContext context;
+    private final ObtainStreamerID obtainStreamerID;
 
     public RetrieveVideosService(ApiContext context) {
         this.context = context;
+        this.obtainStreamerID = new ObtainStreamerID(context);
     }
 
     public String getYoutubeVideos(String username) throws IOException {
@@ -24,7 +26,7 @@ public class RetrieveVideosService {
 
         try {
             List<SearchResult> videos = fetchRecentVideos(userId);
-            if (videos == null || videos.isEmpty()) {
+            if (videos.isEmpty()) {
                 return "No recent videos found for " + username;
             }
             return formatVideoList(videos);
@@ -46,18 +48,7 @@ public class RetrieveVideosService {
                 .setMaxResults(10L);
 
         SearchListResponse response = request.execute();
-
-        if (response == null || response.getItems() == null) {
-            System.err.println("ERROR: YouTube API returned null or no items for recent uploads.");
-            return Collections.emptyList();
-        }
-
         return response.getItems();
-    }
-
-    private String getUserIdForVideos(String username) throws IOException {
-        ObtainStreamerID idProvider = new ObtainStreamerID(context);
-        return idProvider.getYoutubeUserId(username);
     }
 
     private String formatVideoList(List<SearchResult> videos) {
@@ -71,5 +62,9 @@ public class RetrieveVideosService {
                     .append("----------------------\n");
         }
         return builder.toString();
+    }
+
+    private String getUserIdForVideos(String username) throws IOException {
+        return obtainStreamerID.getYoutubeUserId(username);
     }
 }
