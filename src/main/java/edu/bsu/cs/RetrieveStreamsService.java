@@ -49,11 +49,11 @@ public class RetrieveStreamsService {
     }
 
     public String getYoutubeStreams(String username) throws IOException {
-        String userId = getUserIdForStreams(username);
+        String userId = obtainStreamerID.getYoutubeUserId(username);
         if (userId == null) return "Error: Could not retrieve YouTube Channel ID for " + username;
 
         try {
-            List<SearchResult> streams = fetchCompletedStreams(userId);
+            List<SearchResult> streams = fetchCompletedStreamsById(userId);
             if (streams.isEmpty()) {
                 return "No recent streams found for " + username;
             }
@@ -63,14 +63,7 @@ public class RetrieveStreamsService {
         }
     }
 
-    private String getUserIdForStreams(String username) throws IOException {
-        return obtainStreamerID.getYoutubeUserId(username);
-    }
-
-    public List<SearchResult> fetchCompletedStreams(String username) throws IOException {
-        String userId = getUserIdForStreams(username);
-        if (userId == null) return Collections.emptyList();
-
+    public List<SearchResult> fetchCompletedStreamsById(String userId) throws IOException {
         YouTube.Search.List request = context.youtubeService.search()
                 .list(Arrays.asList("id", "snippet"))
                 .setKey(context.youtubeAuthToken)
@@ -81,7 +74,7 @@ public class RetrieveStreamsService {
                 .setMaxResults(10L);
 
         SearchListResponse response = request.execute();
-        return response.getItems();
+        return response.getItems() != null ? response.getItems() : Collections.emptyList();
     }
 
     private String formatStreamList(List<SearchResult> streams) {
@@ -97,18 +90,25 @@ public class RetrieveStreamsService {
         return builder.toString();
     }
 
+    public List<SearchResult> fetchCompletedStreams(String username) throws IOException {
+        String userId = obtainStreamerID.getYoutubeUserId(username);
+        if (userId == null) return Collections.emptyList();
+        return fetchCompletedStreamsById(userId);
+    }
+
     public String getFormattedTwitchVODs(String username) {
         ArrayList<String> vods = getTwitchStreamsInfo(username);
         if (vods == null || vods.isEmpty()) {
             return "No VODs found for " + username;
         }
         StringBuilder builder = new StringBuilder("Recent Twitch VODs:\n");
+        int index = 1;
         for (String entry : vods) {
             String[] info = entry.split("__");
             if (info.length >= 3) {
-                builder.append("- Title: ").append(info[0]).append("\n")
-                        .append("  Watch: https://www.twitch.tv/videos/").append(info[1]).append("\n")
-                        .append("  Thumbnail: ").append(info[2]).append("\n\n");
+                builder.append(index++).append(". Title: ").append(info[0]).append("\n")
+                        .append("   Watch: https://www.twitch.tv/videos/").append(info[1]).append("\n")
+                        .append("   Thumbnail: ").append(info[2]).append("\n\n");
             }
         }
         return builder.toString();

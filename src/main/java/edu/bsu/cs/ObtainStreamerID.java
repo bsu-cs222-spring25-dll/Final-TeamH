@@ -57,7 +57,7 @@ public class ObtainStreamerID {
 
         ChannelListResponse response = channelRequest.execute();
 
-        if (response.getItems().isEmpty()) {
+        if (response == null || response.getItems() == null || response.getItems().isEmpty()) {
             System.out.println("No YouTube channel found for username: " + username);
             return null;
         }

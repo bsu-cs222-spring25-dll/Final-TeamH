@@ -4,7 +4,6 @@ import edu.bsu.cs.*;
 import edu.bsu.cs.api.ApiContext;
 import edu.bsu.cs.api.ApiInitializer;
 
-import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Main {
