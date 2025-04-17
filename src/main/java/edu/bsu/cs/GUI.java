@@ -26,6 +26,8 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
+
 import edu.bsu.cs.api.ApiContext;
 import edu.bsu.cs.api.ApiInitializer;
 
@@ -122,7 +124,7 @@ public class GUI extends Application {
         Label titleLabel = new Label("Streamer Tracker");
         titleLabel.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
         String recentVideosOrClips;
-        if (platform.equals("Youtube")){
+        if (platform.equalsIgnoreCase("Youtube")){
             recentVideosOrClips = "Recent Uploads";
         }
         else{
@@ -136,9 +138,9 @@ public class GUI extends Application {
         Button scheduledStreamsButton = new Button("Scheduled Streams");
 
         if (platform.equalsIgnoreCase("YouTube")) {
-            recentStreamsButton.setOnAction(e -> showYoutubeContent(primaryStage, username, platform, "stream"));
-            recentVideosOrClipsButton.setOnAction(e -> showYoutubeContent(primaryStage, username, platform, "video"));
-            scheduledStreamsButton.setOnAction(e -> showYoutubeContent(primaryStage, username, platform, "scheduled"));
+            recentStreamsButton.setOnAction(e -> showYoutubeChannelContent(primaryStage, username, platform, "stream"));
+            recentVideosOrClipsButton.setOnAction(e -> showYoutubeChannelContent(primaryStage, username, platform, "video"));
+            scheduledStreamsButton.setOnAction(e -> showYoutubeChannelContent(primaryStage, username, platform, "scheduled"));
         } else if (platform.equalsIgnoreCase("Twitch")) {
             recentStreamsButton.setOnAction(e -> showTwitchContent(primaryStage, username, platform, "Recent Streams"));
             recentVideosOrClipsButton.setOnAction(e -> showTwitchContent(primaryStage, username, platform, "Recent Clips"));
@@ -391,8 +393,8 @@ public class GUI extends Application {
         primaryStage.show();
     }
 
-    public void showYoutubeContent(Stage primaryStage, String username, String platform, String uploadType) {
-        Label titleLabel = new Label("Streamer Tracker - Recent Streams");
+    public void showYoutubeChannelContent(Stage primaryStage, String username, String platform, String uploadType) {
+        Label titleLabel = new Label("Streamer Tracker - Videos List");
         titleLabel.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
 
         Button returnButton = new Button("Return");
@@ -415,28 +417,9 @@ public class GUI extends Application {
                 }
             }
 
-            VBox streamsBox = new VBox(10);
-            streamsBox.setAlignment(Pos.TOP_LEFT);
-
-            for (SearchResult stream : streams) {
-                String title = stream.getSnippet().getTitle();
-                String videoId = stream.getId().getVideoId();
-                String thumbnailUrl = stream.getSnippet().getThumbnails().getHigh().getUrl();
-
-                HBox streamBox = new HBox(10);
-                ImageView thumbnailImageView = new ImageView(new Image(thumbnailUrl));
-                thumbnailImageView.setFitWidth(120);
-                thumbnailImageView.setFitHeight(90);
-
-                Label streamTitle = new Label(title);
-                streamTitle.setStyle("-fx-font-size: 14px;");
-
-                Button watchButton = new Button("Watch");
-                watchButton.setOnAction(e1 -> playYoutubeChannelVideo(primaryStage, videoId, username, platform));
-
-                streamBox.getChildren().addAll(thumbnailImageView, streamTitle, watchButton);
-                streamsBox.getChildren().add(streamBox);
-            }
+            VBox streamsBox = buildStreamList(streams, videoId ->
+                    playYoutubeTopVideos(primaryStage, videoId)
+            );
 
             ScrollPane scrollPane = new ScrollPane(streamsBox);
             scrollPane.setFitToWidth(true);
@@ -444,7 +427,7 @@ public class GUI extends Application {
             scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
             scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
 
-            VBox layout = new VBox(20, topBar, streamsBox, scrollPane);
+            VBox layout = new VBox(20, topBar, scrollPane);
             layout.setPadding(new Insets(20));
             layout.setAlignment(Pos.TOP_LEFT);
 
@@ -468,32 +451,11 @@ public class GUI extends Application {
         topBar.setPadding(new Insets(10));
 
         try {
-            List<SearchResult> streams;
+            List<SearchResult> streams = guiYoutubeInfo.fetchYoutubeTopStreamsDetails();
 
-            streams = guiYoutubeInfo.fetchYoutubeTopStreamsDetails();
-
-            VBox streamsBox = new VBox(10);
-            streamsBox.setAlignment(Pos.TOP_LEFT);
-
-            for (SearchResult stream : streams) {
-                String title = stream.getSnippet().getTitle();
-                String videoId = stream.getId().getVideoId();
-                String thumbnailUrl = stream.getSnippet().getThumbnails().getHigh().getUrl();
-
-                HBox streamBox = new HBox(10);
-                ImageView thumbnailImageView = new ImageView(new Image(thumbnailUrl));
-                thumbnailImageView.setFitWidth(120);
-                thumbnailImageView.setFitHeight(90);
-
-                Label streamTitle = new Label(title);
-                streamTitle.setStyle("-fx-font-size: 14px;");
-
-                Button watchButton = new Button("Watch");
-                watchButton.setOnAction(e1 -> playYoutubeTopVideos(primaryStage, videoId));
-
-                streamBox.getChildren().addAll(thumbnailImageView, streamTitle, watchButton);
-                streamsBox.getChildren().add(streamBox);
-            }
+            VBox streamsBox = buildStreamList(streams, videoId ->
+                    playYoutubeTopVideos(primaryStage, videoId)
+            );
 
             ScrollPane scrollPane = new ScrollPane(streamsBox);
             scrollPane.setFitToWidth(true);
@@ -501,7 +463,7 @@ public class GUI extends Application {
             scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
             scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
 
-            VBox layout = new VBox(20, topBar, streamsBox, scrollPane);
+            VBox layout = new VBox(20, topBar, scrollPane);
             layout.setPadding(new Insets(20));
             layout.setAlignment(Pos.TOP_LEFT);
 
@@ -512,45 +474,65 @@ public class GUI extends Application {
             showError("Error", "Could not fetch streams: " + e.getMessage());
         }
     }
+    private VBox buildStreamList(List<SearchResult> streams, Consumer<String> onWatchClick) {
+        VBox streamsBox = new VBox(10);
+        streamsBox.setAlignment(Pos.TOP_LEFT);
+
+        for (SearchResult stream : streams) {
+            String title = stream.getSnippet().getTitle();
+            String videoId = stream.getId().getVideoId();
+            String thumbnailUrl = stream.getSnippet().getThumbnails().getHigh().getUrl();
+
+            ImageView thumbnail = new ImageView(new Image(thumbnailUrl));
+            thumbnail.setFitWidth(120);
+            thumbnail.setFitHeight(90);
+
+            Label streamTitle = new Label(title);
+            streamTitle.setStyle("-fx-font-size: 14px;");
+
+            Button watchButton = new Button("Watch");
+            watchButton.setOnAction(e -> onWatchClick.accept(videoId));
+
+            HBox streamBox = new HBox(10, thumbnail, streamTitle, watchButton);
+            streamsBox.getChildren().add(streamBox);
+        }
+
+        return streamsBox;
+    }
+
 
     private void playYoutubeTopVideos(Stage primaryStage, String videoId) {
         String embedUrl = "https://www.youtube.com/embed/" + videoId + "?autoplay=1";
+        String videoUrl = "https://www.youtube.com/watch?v=" + videoId;
 
         WebView webView = new WebView();
         webView.getEngine().load(embedUrl);
         webView.setPrefSize(640, 390);
 
-        Button returnButton = new Button("Return");
+        Button returnButton = new Button("Return to main menu");
         returnButton.setOnAction(e -> {
             webView.getEngine().load(null);
-            showTopYoutubeContent(primaryStage);
+            start(primaryStage);
         });
 
-        VBox layout = new VBox(10, returnButton, webView);
+        Label fallbackLabel  = new Label("If the video doesn't work, ");
+        Hyperlink openInBrowserLink = new Hyperlink("click here to watch it on YouTube.");
+        openInBrowserLink.setOnAction(e -> {
+            try {
+                java.awt.Desktop.getDesktop().browse(new java.net.URI(videoUrl));
+            } catch (Exception ex) {
+                showError("Error", "Could not open browser: " + ex.getMessage());
+            }
+        });
+
+        HBox fallbackBox = new HBox(5, fallbackLabel, openInBrowserLink);
+        fallbackBox.setAlignment(Pos.CENTER);
+
+        VBox layout = new VBox(10, returnButton, webView, fallbackBox);
         layout.setAlignment(Pos.TOP_CENTER);
         layout.setPadding(new Insets(20));
 
-        Scene videoScene = new Scene(layout, 700, 500);
-        primaryStage.setScene(videoScene);
-    }
-    private void playYoutubeChannelVideo(Stage primaryStage, String videoId, String username, String platform) {
-        String embedUrl = "https://www.youtube.com/embed/" + videoId + "?autoplay=1";
-
-        WebView webView = new WebView();
-        webView.getEngine().load(embedUrl);
-        webView.setPrefSize(640, 390);
-
-        Button returnButton = new Button("Return");
-        returnButton.setOnAction(e -> {
-            webView.getEngine().load(null);
-            showStreamerScene(primaryStage, username, platform);
-        });
-
-        VBox layout = new VBox(10, returnButton, webView);
-        layout.setAlignment(Pos.TOP_CENTER);
-        layout.setPadding(new Insets(20));
-
-        Scene videoScene = new Scene(layout, 700, 500);
+        Scene videoScene = new Scene(layout, 700, 550);
         primaryStage.setScene(videoScene);
     }
 }
