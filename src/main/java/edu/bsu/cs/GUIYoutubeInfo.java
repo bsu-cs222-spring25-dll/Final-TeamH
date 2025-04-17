@@ -9,11 +9,13 @@ public class GUIYoutubeInfo {
     private final RetrieveStreamsService retrieveStreamsService;
     private final RetrieveVideosService retrieveVideosService;
     private final RetrieveScheduledStreams retrieveScheduledStreams;
+    private final TopYoutubeStreams topYoutubeStreams;
 
-    public GUIYoutubeInfo(RetrieveStreamsService retrieveStreamsService, RetrieveVideosService retrieveVideosService, RetrieveScheduledStreams retrieveScheduledStreams) {
+    public GUIYoutubeInfo(RetrieveStreamsService retrieveStreamsService, RetrieveVideosService retrieveVideosService, RetrieveScheduledStreams retrieveScheduledStreams, TopYoutubeStreams topYoutubeStreams) {
         this.retrieveStreamsService = retrieveStreamsService;
         this.retrieveVideosService = retrieveVideosService;
         this.retrieveScheduledStreams = retrieveScheduledStreams;
+        this.topYoutubeStreams = topYoutubeStreams;
     }
 
     public List<SearchResult> fetchYoutubeStreamDetails(String username) throws IOException {
@@ -27,4 +29,10 @@ public class GUIYoutubeInfo {
     public List<SearchResult> fetchYoutubeScheduledStreamsDetails(String username) throws IOException {
         return retrieveScheduledStreams.fetchScheduledStreams(username);
     }
+
+    public List<SearchResult> fetchYoutubeTopStreamsDetails() throws IOException {
+        return topYoutubeStreams.fetchRandomStreamsById();
+    }
+
+
 }

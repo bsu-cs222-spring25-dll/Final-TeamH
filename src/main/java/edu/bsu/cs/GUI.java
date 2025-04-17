@@ -51,7 +51,7 @@ public class GUI extends Application {
 
         guiSearchHandler = new GUISearchHandler(searchService);
         guiStreamerInfo = new GUIStreamerInfo(new ChannelInfoService(context), new ProfilePictureService(context), new LiveStatusService(context));
-        guiYoutubeInfo = new GUIYoutubeInfo(new RetrieveStreamsService(context), new RetrieveVideosService(context), new RetrieveScheduledStreams(context));
+        guiYoutubeInfo = new GUIYoutubeInfo(new RetrieveStreamsService(context), new RetrieveVideosService(context), new RetrieveScheduledStreams(context),new TopYoutubeStreams(context));
         guiTwitchInfo = new GUITwitchInfo(new RetrieveStreamsService(context),new RetrieveClips(context),new RetrieveScheduledStreams(context));
         Label titleLabel = new Label("Streamer Tracker");
         titleLabel.setStyle("-fx-font-size: 24px; -fx-font-weight: bold;");
@@ -69,6 +69,10 @@ public class GUI extends Application {
 
         Button searchButton = new Button("Search");
         searchButton.setMinWidth(100);
+
+        Button topStreamButton = new Button("Top current streams");
+        topStreamButton.setMinWidth(100);
+        topStreamButton.setOnAction(e -> showTopYoutubeContent( primaryStage));
 
         resultLabel = new Label();
         resultLabel.setStyle("-fx-font-size: 14px;");
@@ -94,7 +98,7 @@ public class GUI extends Application {
             }
         });
 
-        VBox inputSection = new VBox(10, titleLabel, inputRow, searchButton, resultLabel);
+        VBox inputSection = new VBox(10, titleLabel, inputRow, searchButton,topStreamButton, resultLabel);
         inputSection.setAlignment(Pos.CENTER);
 
         VBox layout = new VBox(20, inputSection);
@@ -428,7 +432,7 @@ public class GUI extends Application {
                 streamTitle.setStyle("-fx-font-size: 14px;");
 
                 Button watchButton = new Button("Watch");
-                watchButton.setOnAction(e1 -> showEmbeddedVideo(primaryStage, videoId, username, platform));
+                watchButton.setOnAction(e1 -> playYoutubeChannelVideo(primaryStage, videoId, username, platform));
 
                 streamBox.getChildren().addAll(thumbnailImageView, streamTitle, watchButton);
                 streamsBox.getChildren().add(streamBox);
@@ -452,7 +456,84 @@ public class GUI extends Application {
         }
     }
 
-    private void showEmbeddedVideo(Stage primaryStage, String videoId, String username, String platform) {
+    public void showTopYoutubeContent(Stage primaryStage) {
+        Label titleLabel = new Label("Streamer Tracker - Top Streams");
+        titleLabel.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
+
+        Button returnButton = new Button("Return");
+        returnButton.setOnAction(e -> start(primaryStage));
+
+        HBox topBar = new HBox(10, titleLabel, returnButton);
+        topBar.setAlignment(Pos.TOP_LEFT);
+        topBar.setPadding(new Insets(10));
+
+        try {
+            List<SearchResult> streams;
+
+            streams = guiYoutubeInfo.fetchYoutubeTopStreamsDetails();
+
+            VBox streamsBox = new VBox(10);
+            streamsBox.setAlignment(Pos.TOP_LEFT);
+
+            for (SearchResult stream : streams) {
+                String title = stream.getSnippet().getTitle();
+                String videoId = stream.getId().getVideoId();
+                String thumbnailUrl = stream.getSnippet().getThumbnails().getHigh().getUrl();
+
+                HBox streamBox = new HBox(10);
+                ImageView thumbnailImageView = new ImageView(new Image(thumbnailUrl));
+                thumbnailImageView.setFitWidth(120);
+                thumbnailImageView.setFitHeight(90);
+
+                Label streamTitle = new Label(title);
+                streamTitle.setStyle("-fx-font-size: 14px;");
+
+                Button watchButton = new Button("Watch");
+                watchButton.setOnAction(e1 -> playYoutubeTopVideos(primaryStage, videoId));
+
+                streamBox.getChildren().addAll(thumbnailImageView, streamTitle, watchButton);
+                streamsBox.getChildren().add(streamBox);
+            }
+
+            ScrollPane scrollPane = new ScrollPane(streamsBox);
+            scrollPane.setFitToWidth(true);
+            scrollPane.setPannable(true);
+            scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+            scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+
+            VBox layout = new VBox(20, topBar, streamsBox, scrollPane);
+            layout.setPadding(new Insets(20));
+            layout.setAlignment(Pos.TOP_LEFT);
+
+            Scene streamsScene = new Scene(layout, 600, 500);
+            primaryStage.setScene(streamsScene);
+
+        } catch (Exception e) {
+            showError("Error", "Could not fetch streams: " + e.getMessage());
+        }
+    }
+
+    private void playYoutubeTopVideos(Stage primaryStage, String videoId) {
+        String embedUrl = "https://www.youtube.com/embed/" + videoId + "?autoplay=1";
+
+        WebView webView = new WebView();
+        webView.getEngine().load(embedUrl);
+        webView.setPrefSize(640, 390);
+
+        Button returnButton = new Button("Return");
+        returnButton.setOnAction(e -> {
+            webView.getEngine().load(null);
+            showTopYoutubeContent(primaryStage);
+        });
+
+        VBox layout = new VBox(10, returnButton, webView);
+        layout.setAlignment(Pos.TOP_CENTER);
+        layout.setPadding(new Insets(20));
+
+        Scene videoScene = new Scene(layout, 700, 500);
+        primaryStage.setScene(videoScene);
+    }
+    private void playYoutubeChannelVideo(Stage primaryStage, String videoId, String username, String platform) {
         String embedUrl = "https://www.youtube.com/embed/" + videoId + "?autoplay=1";
 
         WebView webView = new WebView();
