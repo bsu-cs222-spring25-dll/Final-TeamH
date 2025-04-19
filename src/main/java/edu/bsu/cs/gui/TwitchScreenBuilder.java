@@ -22,6 +22,7 @@ public class TwitchScreenBuilder {
         TextArea bioTextArea = createBioTextArea();
         ScrollPane bioScrollPane = wrapBioInScrollPane(bioTextArea);
         Button getStreamsButton = createGetStreamsButton();
+        Button getClipsButton = createGetClipsButton();
 
         VBox profileLeftColumn = new VBox(profileImageView);
         profileLeftColumn.setAlignment(Pos.TOP_LEFT);
@@ -33,7 +34,7 @@ public class TwitchScreenBuilder {
         HBox searchRow = new HBox(10, searchField, searchButton);
         searchRow.setAlignment(Pos.CENTER_LEFT);
 
-        VBox contentBox = new VBox(10, titleLabel, searchRow, resultLabel, profileRow, liveStatusLabel, getStreamsButton);
+        VBox contentBox = new VBox(10, titleLabel, searchRow, resultLabel, profileRow, liveStatusLabel, getStreamsButton, getClipsButton);
         contentBox.setAlignment(Pos.TOP_LEFT);
         contentBox.setPadding(new Insets(0));
 
@@ -51,13 +52,20 @@ public class TwitchScreenBuilder {
         layout.setTop(topBar);
 
         TwitchViewModel model = new TwitchViewModel(
-                resultLabel, profileImageView, bioTextArea, bioScrollPane, liveStatusLabel, getStreamsButton, layout
+                resultLabel, profileImageView, bioTextArea, bioScrollPane, liveStatusLabel,
+                getStreamsButton, getClipsButton, layout
         );
-        TwitchScreenController controller = new TwitchScreenController(context, model, stage);
 
+        TwitchScreenController controller = new TwitchScreenController(context, model, stage);
         searchButton.setOnAction(e -> controller.handleSearch(searchField.getText()));
 
         return layout;
+    }
+
+    private Button createGetClipsButton() {
+        Button button = new Button("Get Clips");
+        button.setVisible(false);
+        return button;
     }
 
     private Label createTitleLabel() {

@@ -74,10 +74,18 @@ public class TwitchScreenController {
 
         model.getStreamsButton.setVisible(true);
         model.getStreamsButton.setOnAction(e -> openStreamsScreen(displayName));
+
+        model.getClipsButton.setVisible(true);
+        model.getClipsButton.setOnAction(e -> openClipsScreen(displayName));
+    }
+
+    private void openClipsScreen(String displayName) {
+        TwitchMediaScreenController clipsController = new TwitchMediaScreenController(context, stage, model.twitchRoot);
+        clipsController.showClips(displayName);
     }
 
     private void openStreamsScreen(String displayName) {
-        TwitchStreamsScreenController controller = new TwitchStreamsScreenController(context, stage, model.twitchRoot);
+        TwitchMediaScreenController controller = new TwitchMediaScreenController(context, stage, model.twitchRoot);
         controller.showStreams(displayName);
     }
 
