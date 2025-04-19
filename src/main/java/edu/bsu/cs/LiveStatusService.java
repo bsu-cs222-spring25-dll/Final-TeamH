@@ -28,13 +28,7 @@ public class LiveStatusService {
             }
 
             var response = helix.getStreams(
-                    context.twitchAuthToken,
-                    null,
-                    null,
-                    1,
-                    null,
-                    null,
-                    null,
+                    context.twitchAuthToken, null, null, 1, null, null, null,
                     Collections.singletonList(username)
             ).execute();
 

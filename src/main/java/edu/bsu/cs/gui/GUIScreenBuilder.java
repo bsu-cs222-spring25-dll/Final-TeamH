@@ -6,19 +6,33 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 
 public class GUIScreenBuilder {
 
     public BorderPane buildMainScreen(GUIScreenController controller) {
+        ImageView logoImageView = createLogoView();
+        HBox buttonRow = createPlatformButtons(controller);
+        Label instructionLabel = createInstructionLabel();
+
+        VBox centerContent = new VBox(30, logoImageView, buttonRow, instructionLabel);
+        centerContent.setAlignment(Pos.CENTER);
+
+        BorderPane layout = new BorderPane();
+        layout.setCenter(centerContent);
+        return layout;
+    }
+
+    private ImageView createLogoView() {
         ImageView logoImageView = new ImageView(new Image(getClass().getResource("/images/projectLogo.png").toExternalForm()));
         logoImageView.setFitWidth(150);
         logoImageView.setPreserveRatio(true);
         logoImageView.setScaleX(7.0);
         logoImageView.setScaleY(7.0);
+        return logoImageView;
+    }
 
+    private HBox createPlatformButtons(GUIScreenController controller) {
         ImageView twitchImageView = new ImageView(new Image(getClass().getResource("/images/twitchLogo.jpg").toExternalForm()));
         twitchImageView.setFitWidth(150);
         twitchImageView.setFitHeight(150);
@@ -44,16 +58,13 @@ public class GUIScreenBuilder {
         HBox buttonRow = new HBox(80, twitchButton, youtubeButton);
         buttonRow.setAlignment(Pos.CENTER);
         buttonRow.setPadding(new Insets(40));
+        return buttonRow;
+    }
 
+    private Label createInstructionLabel() {
         Label instructionLabel = new Label("To begin, select one of the platforms on either side.");
         instructionLabel.setStyle("-fx-font-size: 16px;");
         instructionLabel.setAlignment(Pos.CENTER);
-
-        VBox centerContent = new VBox(30, logoImageView, buttonRow, instructionLabel);
-        centerContent.setAlignment(Pos.CENTER);
-
-        BorderPane layout = new BorderPane();
-        layout.setCenter(centerContent);
-        return layout;
+        return instructionLabel;
     }
 }
