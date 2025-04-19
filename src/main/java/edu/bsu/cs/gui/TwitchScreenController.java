@@ -77,6 +77,14 @@ public class TwitchScreenController {
 
         model.getClipsButton.setVisible(true);
         model.getClipsButton.setOnAction(e -> openClipsScreen(displayName));
+
+        model.getScheduledButton.setVisible(true);
+        model.getScheduledButton.setOnAction(e -> openScheduledScreen(displayName));
+    }
+
+    private void openScheduledScreen(String displayName) {
+        TwitchMediaScreenController controller = new TwitchMediaScreenController(context, stage, model.twitchRoot);
+        controller.showScheduled(displayName);
     }
 
     private void openClipsScreen(String displayName) {

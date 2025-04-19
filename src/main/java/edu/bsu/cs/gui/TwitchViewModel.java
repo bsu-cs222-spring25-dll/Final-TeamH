@@ -12,11 +12,12 @@ public class TwitchViewModel {
     public final Label liveStatusLabel;
     public final Button getStreamsButton;
     public final Button getClipsButton;
+    public final Button getScheduledButton;
     public final Pane twitchRoot;
 
     public TwitchViewModel(Label resultLabel, ImageView profileImageView, TextArea bioTextArea,
                            ScrollPane bioScrollPane, Label liveStatusLabel,
-                           Button getStreamsButton, Button getClipsButton, Pane twitchRoot) {
+                           Button getStreamsButton, Button getClipsButton, Button getScheduledButton, Pane twitchRoot) {
         this.resultLabel = resultLabel;
         this.profileImageView = profileImageView;
         this.bioTextArea = bioTextArea;
@@ -24,6 +25,7 @@ public class TwitchViewModel {
         this.liveStatusLabel = liveStatusLabel;
         this.getStreamsButton = getStreamsButton;
         this.getClipsButton = getClipsButton;
+        this.getScheduledButton = getScheduledButton;
         this.twitchRoot = twitchRoot;
     }
 }

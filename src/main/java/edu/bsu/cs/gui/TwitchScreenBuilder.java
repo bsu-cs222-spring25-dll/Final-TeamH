@@ -23,6 +23,7 @@ public class TwitchScreenBuilder {
         ScrollPane bioScrollPane = wrapBioInScrollPane(bioTextArea);
         Button getStreamsButton = createGetStreamsButton();
         Button getClipsButton = createGetClipsButton();
+        Button getScheduledButton = createGetScheduledButton();
 
         VBox profileLeftColumn = new VBox(profileImageView);
         profileLeftColumn.setAlignment(Pos.TOP_LEFT);
@@ -34,7 +35,7 @@ public class TwitchScreenBuilder {
         HBox searchRow = new HBox(10, searchField, searchButton);
         searchRow.setAlignment(Pos.CENTER_LEFT);
 
-        VBox contentBox = new VBox(10, titleLabel, searchRow, resultLabel, profileRow, liveStatusLabel, getStreamsButton, getClipsButton);
+        VBox contentBox = new VBox(10, titleLabel, searchRow, resultLabel, profileRow, liveStatusLabel, getStreamsButton, getClipsButton, getScheduledButton);
         contentBox.setAlignment(Pos.TOP_LEFT);
         contentBox.setPadding(new Insets(0));
 
@@ -53,13 +54,19 @@ public class TwitchScreenBuilder {
 
         TwitchViewModel model = new TwitchViewModel(
                 resultLabel, profileImageView, bioTextArea, bioScrollPane, liveStatusLabel,
-                getStreamsButton, getClipsButton, layout
+                getStreamsButton, getClipsButton, getScheduledButton, layout
         );
 
         TwitchScreenController controller = new TwitchScreenController(context, model, stage);
         searchButton.setOnAction(e -> controller.handleSearch(searchField.getText()));
 
         return layout;
+    }
+
+    private Button createGetScheduledButton() {
+        Button button = new Button("Get Scheduled");
+        button.setVisible(false);
+        return button;
     }
 
     private Button createGetClipsButton() {

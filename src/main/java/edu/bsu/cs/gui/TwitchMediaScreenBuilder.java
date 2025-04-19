@@ -56,9 +56,11 @@ public class TwitchMediaScreenBuilder {
     }
 
     private void openInBrowser(String type, String id) {
-        String url = type.equals("clip")
-                ? "https://clips.twitch.tv/" + id
-                : "https://www.twitch.tv/videos/" + id;
+        String url = switch (type) {
+            case "clip" -> "https://clips.twitch.tv/" + id;
+            case "stream", "scheduled" -> "https://www.twitch.tv/videos/" + id;
+            default -> "https://www.twitch.tv";
+        };
 
         try {
             java.awt.Desktop.getDesktop().browse(new java.net.URI(url));
