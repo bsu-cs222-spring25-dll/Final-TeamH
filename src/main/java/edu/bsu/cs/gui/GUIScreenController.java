@@ -1,5 +1,7 @@
 package edu.bsu.cs.gui;
 
+import edu.bsu.cs.api.ApiContext;
+import edu.bsu.cs.api.ApiInitializer;
 import javafx.stage.Stage;
 import javafx.scene.control.Alert;
 
@@ -12,12 +14,12 @@ public class GUIScreenController {
     }
 
     public void handleTwitchClick() {
-        // Placeholder action
-        showAlert("Twitch View", "This will open the Twitch GUI section.");
+        ApiContext context = ApiInitializer.initializeApiContext();
+        TwitchScreenBuilder twitchBuilder = new TwitchScreenBuilder();
+        stage.getScene().setRoot(twitchBuilder.buildTwitchScreen(context));
     }
 
     public void handleYouTubeClick() {
-        // Placeholder action
         showAlert("YouTube View", "This will open the YouTube GUI section.");
     }
 
