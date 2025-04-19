@@ -6,36 +6,29 @@ import edu.bsu.cs.ProfilePictureService;
 import edu.bsu.cs.StreamerSearchService;
 import edu.bsu.cs.api.ApiContext;
 import javafx.scene.control.Alert;
-import javafx.scene.control.Label;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.TextArea;
 import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
+import javafx.stage.Stage;
 
 import java.util.List;
 
 public class TwitchScreenController {
 
+    private final ApiContext context;
+    private final Stage stage;
+    private final TwitchViewModel model;
     private final StreamerSearchService searchService;
     private final ProfilePictureService pictureService;
     private final ChannelInfoService channelInfoService;
     private final LiveStatusService liveStatusService;
-    private final Label resultLabel;
-    private final ImageView profileImageView;
-    private final TextArea bioTextArea;
-    private final ScrollPane bioScrollPane;
-    private final Label liveStatusLabel;
 
-    public TwitchScreenController(ApiContext context, Label resultLabel, ImageView profileImageView, TextArea bioTextArea, ScrollPane bioScrollPane, Label liveStatusLabel) {
+    public TwitchScreenController(ApiContext context, TwitchViewModel model, Stage stage) {
+        this.context = context;
+        this.model = model;
+        this.stage = stage;
         this.searchService = new StreamerSearchService(context);
         this.pictureService = new ProfilePictureService(context);
         this.channelInfoService = new ChannelInfoService(context);
         this.liveStatusService = new LiveStatusService(context);
-        this.resultLabel = resultLabel;
-        this.profileImageView = profileImageView;
-        this.bioTextArea = bioTextArea;
-        this.bioScrollPane = bioScrollPane;
-        this.liveStatusLabel = liveStatusLabel;
     }
 
     public void handleSearch(String username) {
@@ -63,30 +56,29 @@ public class TwitchScreenController {
     }
 
     private void updateStreamerDisplay(String displayName) {
-        resultLabel.setText("Current Streamer: " + displayName);
-        resultLabel.setVisible(true);
-        loadProfileImage(displayName);
-        loadBio(displayName);
-        updateLiveStatus(displayName);
-    }
+        model.resultLabel.setText("Current Streamer: " + displayName);
+        model.resultLabel.setVisible(true);
 
-    private void loadProfileImage(String displayName) {
         String imageUrl = pictureService.getProfilePicture(displayName, "Twitch");
         if (imageUrl != null && !imageUrl.isEmpty()) {
-            profileImageView.setImage(new Image(imageUrl, 100, 100, true, true));
+            model.profileImageView.setImage(new Image(imageUrl, 100, 100, true, true));
         }
-    }
 
-    private void loadBio(String displayName) {
         String info = channelInfoService.getTwitchStreamerInfo(displayName);
-        bioTextArea.setText(info);
-        bioScrollPane.setVisible(true);
+        model.bioTextArea.setText(info);
+        model.bioScrollPane.setVisible(true);
+
+        String status = liveStatusService.getTwitchLiveStatus(displayName);
+        model.liveStatusLabel.setText(status);
+        model.liveStatusLabel.setVisible(true);
+
+        model.getStreamsButton.setVisible(true);
+        model.getStreamsButton.setOnAction(e -> openStreamsScreen(displayName));
     }
 
-    private void updateLiveStatus(String displayName) {
-        String status = liveStatusService.getTwitchLiveStatus(displayName);
-        liveStatusLabel.setText(status);
-        liveStatusLabel.setVisible(true);
+    private void openStreamsScreen(String displayName) {
+        TwitchStreamsScreenController controller = new TwitchStreamsScreenController(context, stage, model.twitchRoot);
+        controller.showStreams(displayName);
     }
 
     private void showError(String title, String message) {

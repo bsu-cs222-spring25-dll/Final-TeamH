@@ -21,27 +21,23 @@ public class TwitchScreenBuilder {
         Label liveStatusLabel = createLiveStatusLabel();
         TextArea bioTextArea = createBioTextArea();
         ScrollPane bioScrollPane = wrapBioInScrollPane(bioTextArea);
+        Button getStreamsButton = createGetStreamsButton();
+
         VBox profileLeftColumn = new VBox(profileImageView);
         profileLeftColumn.setAlignment(Pos.TOP_LEFT);
 
         HBox profileRow = new HBox(15, profileLeftColumn, bioScrollPane);
         profileRow.setAlignment(Pos.CENTER_LEFT);
 
-        TwitchScreenController controller = new TwitchScreenController(
-                context, resultLabel, profileImageView, bioTextArea, bioScrollPane, liveStatusLabel
-        );
-
         Button searchButton = new Button("Search");
-        searchButton.setOnAction(e -> controller.handleSearch(searchField.getText()));
-
         HBox searchRow = new HBox(10, searchField, searchButton);
         searchRow.setAlignment(Pos.CENTER_LEFT);
 
-        VBox contentBox = new VBox(10, titleLabel, searchRow, resultLabel, profileRow, liveStatusLabel);
+        VBox contentBox = new VBox(10, titleLabel, searchRow, resultLabel, profileRow, liveStatusLabel, getStreamsButton);
         contentBox.setAlignment(Pos.TOP_LEFT);
         contentBox.setPadding(new Insets(0));
 
-        Button homeButton = createHomeButton(stage, resultLabel, profileImageView, bioTextArea, bioScrollPane, liveStatusLabel);
+        Button homeButton = createHomeButton(stage);
 
         HBox topBar = new HBox();
         topBar.setAlignment(Pos.TOP_LEFT);
@@ -53,15 +49,23 @@ public class TwitchScreenBuilder {
 
         BorderPane layout = new BorderPane();
         layout.setTop(topBar);
+
+        TwitchViewModel model = new TwitchViewModel(
+                resultLabel, profileImageView, bioTextArea, bioScrollPane, liveStatusLabel, getStreamsButton, layout
+        );
+        TwitchScreenController controller = new TwitchScreenController(context, model, stage);
+
+        searchButton.setOnAction(e -> controller.handleSearch(searchField.getText()));
+
         return layout;
     }
 
     private Label createTitleLabel() {
-        Label titleLabel = new Label("Search Streamers!");
-        titleLabel.setFont(Font.font("System", FontWeight.BOLD, 30));
-        titleLabel.setTextFill(Color.web("#007bff"));
-        titleLabel.setAlignment(Pos.CENTER_LEFT);
-        return titleLabel;
+        Label label = new Label("Search Streamers!");
+        label.setFont(Font.font("System", FontWeight.BOLD, 30));
+        label.setTextFill(Color.web("#007bff"));
+        label.setAlignment(Pos.CENTER_LEFT);
+        return label;
     }
 
     private TextField createSearchField() {
@@ -114,14 +118,15 @@ public class TwitchScreenBuilder {
         return scrollPane;
     }
 
-    private Button createHomeButton(Stage stage, Label resultLabel, ImageView profileImageView, TextArea bioTextArea, ScrollPane bioScrollPane, Label liveStatusLabel) {
+    private Button createGetStreamsButton() {
+        Button button = new Button("Get Streams");
+        button.setVisible(false);
+        return button;
+    }
+
+    private Button createHomeButton(Stage stage) {
         Button homeButton = new Button("Home");
         homeButton.setOnAction(e -> {
-            resultLabel.setVisible(false);
-            bioScrollPane.setVisible(false);
-            liveStatusLabel.setVisible(false);
-            profileImageView.setImage(null);
-            bioTextArea.clear();
             GUIScreenBuilder guiBuilder = new GUIScreenBuilder();
             GUIScreenController guiController = new GUIScreenController(stage);
             stage.getScene().setRoot(guiBuilder.buildMainScreen(guiController));
