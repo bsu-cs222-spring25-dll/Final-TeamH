@@ -33,32 +33,27 @@ public class GUIScreenBuilder {
     }
 
     private HBox createPlatformButtons(GUIScreenController controller) {
-        ImageView twitchImageView = new ImageView(new Image(getClass().getResource("/images/twitchLogo.jpg").toExternalForm()));
-        twitchImageView.setFitWidth(150);
-        twitchImageView.setFitHeight(150);
-        twitchImageView.setPreserveRatio(true);
-
-        Button twitchButton = new Button();
-        twitchButton.setGraphic(twitchImageView);
-        twitchButton.setMinSize(200, 200);
-        twitchButton.setMaxSize(200, 200);
-        twitchButton.setOnAction(e -> controller.handleTwitchClick());
-
-        ImageView youtubeImageView = new ImageView(new Image(getClass().getResource("/images/youtubeLogo.png").toExternalForm()));
-        youtubeImageView.setFitWidth(150);
-        youtubeImageView.setFitHeight(150);
-        youtubeImageView.setPreserveRatio(true);
-
-        Button youtubeButton = new Button();
-        youtubeButton.setGraphic(youtubeImageView);
-        youtubeButton.setMinSize(200, 200);
-        youtubeButton.setMaxSize(200, 200);
-        youtubeButton.setOnAction(e -> controller.handleYouTubeClick());
+        Button twitchButton = createPlatformButton("/images/twitchLogo.jpg", controller::handleTwitchClick);
+        Button youtubeButton = createPlatformButton("/images/youtubeLogo.png", controller::handleYouTubeClick);
 
         HBox buttonRow = new HBox(80, twitchButton, youtubeButton);
         buttonRow.setAlignment(Pos.CENTER);
         buttonRow.setPadding(new Insets(40));
         return buttonRow;
+    }
+
+    private Button createPlatformButton(String imagePath, Runnable action) {
+        ImageView imageView = new ImageView(new Image(getClass().getResource(imagePath).toExternalForm()));
+        imageView.setFitWidth(150);
+        imageView.setFitHeight(150);
+        imageView.setPreserveRatio(true);
+
+        Button button = new Button();
+        button.setGraphic(imageView);
+        button.setMinSize(200, 200);
+        button.setMaxSize(200, 200);
+        button.setOnAction(e -> action.run());
+        return button;
     }
 
     private Label createInstructionLabel() {

@@ -14,9 +14,9 @@ public class GUIScreenController {
     }
 
     public void handleTwitchClick() {
+        TwitchModeSelectionScreenBuilder modeBuilder = new TwitchModeSelectionScreenBuilder();
         ApiContext context = ApiInitializer.initializeApiContext();
-        TwitchScreenBuilder twitchBuilder = new TwitchScreenBuilder();
-        stage.getScene().setRoot(twitchBuilder.buildTwitchScreen(context, stage));
+        stage.getScene().setRoot(modeBuilder.build(context, stage));
     }
 
     public void handleYouTubeClick() {

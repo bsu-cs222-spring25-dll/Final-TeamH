@@ -16,63 +16,39 @@ public class TwitchScreenBuilder {
     public BorderPane buildTwitchScreen(ApiContext context, Stage stage) {
         Label titleLabel = createTitleLabel();
         TextField searchField = createSearchField();
+        Button searchButton = new Button("Search");
+
         Label resultLabel = createResultLabel();
         ImageView profileImageView = createProfileImageView();
         Label liveStatusLabel = createLiveStatusLabel();
         TextArea bioTextArea = createBioTextArea();
         ScrollPane bioScrollPane = wrapBioInScrollPane(bioTextArea);
+
         Button getStreamsButton = createGetStreamsButton();
         Button getClipsButton = createGetClipsButton();
         Button getScheduledButton = createGetScheduledButton();
 
-        VBox profileLeftColumn = new VBox(profileImageView);
-        profileLeftColumn.setAlignment(Pos.TOP_LEFT);
-
-        HBox profileRow = new HBox(15, profileLeftColumn, bioScrollPane);
-        profileRow.setAlignment(Pos.CENTER_LEFT);
-
-        Button searchButton = new Button("Search");
-        HBox searchRow = new HBox(10, searchField, searchButton);
-        searchRow.setAlignment(Pos.CENTER_LEFT);
-
-        VBox contentBox = new VBox(10, titleLabel, searchRow, resultLabel, profileRow, liveStatusLabel, getStreamsButton, getClipsButton, getScheduledButton);
-        contentBox.setAlignment(Pos.TOP_LEFT);
-        contentBox.setPadding(new Insets(0));
-
-        Button homeButton = createHomeButton(stage);
-
-        HBox topBar = new HBox();
-        topBar.setAlignment(Pos.TOP_LEFT);
-        topBar.setPadding(new Insets(20));
-        topBar.setSpacing(20);
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-        topBar.getChildren().addAll(contentBox, spacer, homeButton);
-
-        BorderPane layout = new BorderPane();
-        layout.setTop(topBar);
+        HBox searchRow = buildSearchRow(searchField, searchButton);
+        VBox profileRow = buildProfileRow(profileImageView, bioScrollPane);
+        VBox contentBox = buildContentBox(titleLabel, searchRow, resultLabel, profileRow,
+                liveStatusLabel, getStreamsButton, getClipsButton, getScheduledButton);
 
         TwitchViewModel model = new TwitchViewModel(
                 resultLabel, profileImageView, bioTextArea, bioScrollPane, liveStatusLabel,
-                getStreamsButton, getClipsButton, getScheduledButton, layout
+                getStreamsButton, getClipsButton, getScheduledButton, contentBox
         );
+
+        Button homeButton = createHomeButton(stage, model);
+        Button backButton = createBackButton(stage, context, model);
+        HBox topBar = buildTopBar(contentBox, backButton, homeButton);
+
+        BorderPane layout = new BorderPane();
+        layout.setTop(topBar);
 
         TwitchScreenController controller = new TwitchScreenController(context, model, stage);
         searchButton.setOnAction(e -> controller.handleSearch(searchField.getText()));
 
         return layout;
-    }
-
-    private Button createGetScheduledButton() {
-        Button button = new Button("Get Scheduled");
-        button.setVisible(false);
-        return button;
-    }
-
-    private Button createGetClipsButton() {
-        Button button = new Button("Get Clips");
-        button.setVisible(false);
-        return button;
     }
 
     private Label createTitleLabel() {
@@ -139,13 +115,71 @@ public class TwitchScreenBuilder {
         return button;
     }
 
-    private Button createHomeButton(Stage stage) {
+    private Button createGetClipsButton() {
+        Button button = new Button("Get Clips");
+        button.setVisible(false);
+        return button;
+    }
+
+    private Button createGetScheduledButton() {
+        Button button = new Button("Get Scheduled");
+        button.setVisible(false);
+        return button;
+    }
+
+    private HBox buildSearchRow(TextField searchField, Button searchButton) {
+        HBox searchRow = new HBox(10, searchField, searchButton);
+        searchRow.setAlignment(Pos.CENTER_LEFT);
+        return searchRow;
+    }
+
+    private VBox buildProfileRow(ImageView profileImageView, ScrollPane bioScrollPane) {
+        VBox profileLeftColumn = new VBox(profileImageView);
+        profileLeftColumn.setAlignment(Pos.TOP_LEFT);
+
+        VBox row = new VBox(new HBox(15, profileLeftColumn, bioScrollPane));
+        row.setAlignment(Pos.CENTER_LEFT);
+        return row;
+    }
+
+    private VBox buildContentBox(Label titleLabel, HBox searchRow, Label resultLabel, VBox profileRow,
+                                 Label liveStatusLabel, Button streams, Button clips, Button scheduled) {
+        VBox contentBox = new VBox(10, titleLabel, searchRow, resultLabel, profileRow,
+                liveStatusLabel, streams, clips, scheduled);
+        contentBox.setAlignment(Pos.TOP_LEFT);
+        contentBox.setPadding(new Insets(0));
+        return contentBox;
+    }
+
+    private HBox buildTopBar(VBox contentBox, Button backButton, Button homeButton) {
+        HBox topBar = new HBox();
+        topBar.setAlignment(Pos.TOP_LEFT);
+        topBar.setPadding(new Insets(20));
+        topBar.setSpacing(20);
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+        topBar.getChildren().addAll(contentBox, spacer, backButton, homeButton);
+        return topBar;
+    }
+
+    private Button createHomeButton(Stage stage, TwitchViewModel model) {
         Button homeButton = new Button("Home");
         homeButton.setOnAction(e -> {
+            model.resetView();
             GUIScreenBuilder guiBuilder = new GUIScreenBuilder();
             GUIScreenController guiController = new GUIScreenController(stage);
             stage.getScene().setRoot(guiBuilder.buildMainScreen(guiController));
         });
         return homeButton;
+    }
+
+    private Button createBackButton(Stage stage, ApiContext context, TwitchViewModel model) {
+        Button backButton = new Button("Back");
+        backButton.setOnAction(e -> {
+            model.resetView();
+            TwitchModeSelectionScreenBuilder modeBuilder = new TwitchModeSelectionScreenBuilder();
+            stage.getScene().setRoot(modeBuilder.build(context, stage));
+        });
+        return backButton;
     }
 }

@@ -28,4 +28,15 @@ public class TwitchViewModel {
         this.getScheduledButton = getScheduledButton;
         this.twitchRoot = twitchRoot;
     }
+
+    public void resetView() {
+        resultLabel.setVisible(false);
+        bioScrollPane.setVisible(false);
+        liveStatusLabel.setVisible(false);
+        getStreamsButton.setVisible(false);
+        getClipsButton.setVisible(false);
+        getScheduledButton.setVisible(false);
+        profileImageView.setImage(null);
+        bioTextArea.clear();
+    }
 }
