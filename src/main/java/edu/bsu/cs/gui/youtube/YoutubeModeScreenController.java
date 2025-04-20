@@ -1,4 +1,4 @@
-package edu.bsu.cs.gui;
+package edu.bsu.cs.gui.youtube;
 
 import edu.bsu.cs.api.ApiContext;
 import javafx.scene.control.Alert;
@@ -15,7 +15,8 @@ public class YoutubeModeScreenController {
     }
 
     public void handleSearchClick() {
-        showPlaceholderAlert("YouTube search screen not yet implemented.");
+        YoutubeScreenBuilder builder = new YoutubeScreenBuilder();
+        stage.getScene().setRoot(builder.buildYoutubeScreen(context, stage));
     }
 
     public void handleCategoryClick() {

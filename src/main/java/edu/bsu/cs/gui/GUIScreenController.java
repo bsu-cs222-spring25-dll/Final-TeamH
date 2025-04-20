@@ -3,6 +3,7 @@ package edu.bsu.cs.gui;
 import edu.bsu.cs.api.ApiContext;
 import edu.bsu.cs.api.ApiInitializer;
 import edu.bsu.cs.gui.twitch.TwitchModeSelectionScreenBuilder;
+import edu.bsu.cs.gui.youtube.YoutubeModeScreenBuilder;
 import javafx.stage.Stage;
 
 public class GUIScreenController {

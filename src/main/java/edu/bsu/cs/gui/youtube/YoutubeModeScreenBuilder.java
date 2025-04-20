@@ -1,9 +1,10 @@
-package edu.bsu.cs.gui;
+package edu.bsu.cs.gui.youtube;
 
 import edu.bsu.cs.api.ApiContext;
+import edu.bsu.cs.gui.GUIScreenBuilder;
+import edu.bsu.cs.gui.GUIScreenController;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
@@ -26,7 +27,8 @@ public class YoutubeModeScreenBuilder {
 
         VBox searchInfo = new VBox(12,
                 styledLabel("Search YouTube Channels!", 20, true),
-                styledLabel("- Get recent uploads", 16, false),
+                styledLabel("- Get recent streams", 16, false),
+                styledLabel("- Get best uploads", 16, false),
                 styledLabel("- Get scheduled streams", 16, false)
         );
         searchInfo.setAlignment(Pos.TOP_LEFT);
@@ -34,7 +36,7 @@ public class YoutubeModeScreenBuilder {
         VBox categoryInfo = new VBox(12,
                 styledLabel("YouTube Categories!", 20, true),
                 styledLabel("- Explore trending content", 16, false),
-                styledLabel("- Discover live events", 16, false)
+                styledLabel("- Discover Random Streams", 16, false)
         );
         categoryInfo.setAlignment(Pos.TOP_RIGHT);
 
@@ -50,11 +52,17 @@ public class YoutubeModeScreenBuilder {
 
         StackPane stack = new StackPane(searchSection, categorySection);
 
+        Button backButton = createBackButton(stage);
+        HBox topBar = new HBox(backButton);
+        topBar.setAlignment(Pos.TOP_RIGHT);
+        topBar.setPadding(new Insets(20, 20, 0, 0));
+
         VBox pageLayout = new VBox(30, titleLabel, stack);
         pageLayout.setAlignment(Pos.TOP_CENTER);
         pageLayout.setPadding(new Insets(40, 0, 0, 0));
 
         BorderPane layout = new BorderPane();
+        layout.setTop(topBar);
         layout.setCenter(pageLayout);
         return layout;
     }
@@ -75,6 +83,17 @@ public class YoutubeModeScreenBuilder {
                         "-fx-padding: 0;"
         );
         return button;
+    }
+
+    private Button createBackButton(Stage stage) {
+        Button backButton = new Button("Back");
+        backButton.setStyle("-fx-font-size: 14px;");
+        backButton.setOnAction(e -> {
+            GUIScreenBuilder builder = new GUIScreenBuilder();
+            GUIScreenController controller = new GUIScreenController(stage);
+            stage.getScene().setRoot(builder.buildMainScreen(controller));
+        });
+        return backButton;
     }
 
     private Label styledLabel(String text, int size, boolean bold) {

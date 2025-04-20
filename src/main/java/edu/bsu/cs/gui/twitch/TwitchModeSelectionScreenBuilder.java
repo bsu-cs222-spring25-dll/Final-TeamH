@@ -1,6 +1,8 @@
 package edu.bsu.cs.gui.twitch;
 
 import edu.bsu.cs.api.ApiContext;
+import edu.bsu.cs.gui.GUIScreenBuilder;
+import edu.bsu.cs.gui.GUIScreenController;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -8,6 +10,7 @@ import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
+import javafx.stage.Stage;
 
 public class TwitchModeSelectionScreenBuilder {
 
@@ -19,9 +22,18 @@ public class TwitchModeSelectionScreenBuilder {
         HBox categorySection = buildCategorySection(controller);
 
         StackPane stack = new StackPane(searchSection, categorySection);
-        VBox pageLayout = buildPageLayout(titleLabel, stack);
+
+        Button backButton = createBackButton(stage);
+        HBox topBar = new HBox(backButton);
+        topBar.setAlignment(Pos.TOP_RIGHT);
+        topBar.setPadding(new Insets(20, 20, 0, 0));
+
+        VBox pageLayout = new VBox(30, titleLabel, stack);
+        pageLayout.setAlignment(Pos.TOP_CENTER);
+        pageLayout.setPadding(new Insets(40, 0, 0, 0));
 
         BorderPane layout = new BorderPane();
+        layout.setTop(topBar);
         layout.setCenter(pageLayout);
         return layout;
     }
@@ -114,5 +126,16 @@ public class TwitchModeSelectionScreenBuilder {
                         "-fx-padding: 0;"
         );
         return button;
+    }
+
+    private Button createBackButton(Stage stage) {
+        Button backButton = new Button("Back");
+        backButton.setStyle("-fx-font-size: 14px;");
+        backButton.setOnAction(e -> {
+            GUIScreenBuilder builder = new GUIScreenBuilder();
+            GUIScreenController controller = new GUIScreenController(stage);
+            stage.getScene().setRoot(builder.buildMainScreen(controller));
+        });
+        return backButton;
     }
 }
