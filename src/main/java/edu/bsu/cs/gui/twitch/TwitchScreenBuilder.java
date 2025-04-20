@@ -1,6 +1,8 @@
-package edu.bsu.cs.gui;
+package edu.bsu.cs.gui.twitch;
 
 import edu.bsu.cs.api.ApiContext;
+import edu.bsu.cs.gui.GUIScreenBuilder;
+import edu.bsu.cs.gui.GUIScreenController;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;

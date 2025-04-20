@@ -1,22 +1,22 @@
-package edu.bsu.cs.gui;
+package edu.bsu.cs.gui.twitch;
 
 import edu.bsu.cs.api.ApiContext;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
-import javafx.stage.Stage;
 
 public class TwitchModeSelectionScreenBuilder {
 
-    public BorderPane build(ApiContext context, Stage stage) {
+    public BorderPane build(ApiContext context, javafx.stage.Stage stage) {
         Label titleLabel = createTitleLabel();
-        HBox searchSection = buildSearchSection(context, stage);
-        HBox categorySection = buildCategorySection();
+        TwitchModeSelectionScreenController controller = new TwitchModeSelectionScreenController(context, stage);
+
+        HBox searchSection = buildSearchSection(controller);
+        HBox categorySection = buildCategorySection(controller);
 
         StackPane stack = new StackPane(searchSection, categorySection);
         VBox pageLayout = buildPageLayout(titleLabel, stack);
@@ -32,12 +32,9 @@ public class TwitchModeSelectionScreenBuilder {
         return titleLabel;
     }
 
-    private HBox buildSearchSection(ApiContext context, Stage stage) {
+    private HBox buildSearchSection(TwitchModeSelectionScreenController controller) {
         Button searchButton = createImageButton("/images/twitchSearch.png", 220, 180);
-        searchButton.setOnAction(e -> {
-            TwitchScreenBuilder searchBuilder = new TwitchScreenBuilder();
-            stage.getScene().setRoot(searchBuilder.buildTwitchScreen(context, stage));
-        });
+        searchButton.setOnAction(e -> controller.handleSearchClick());
 
         VBox info = buildSearchInfoText();
 
@@ -48,9 +45,9 @@ public class TwitchModeSelectionScreenBuilder {
         return section;
     }
 
-    private HBox buildCategorySection() {
+    private HBox buildCategorySection(TwitchModeSelectionScreenController controller) {
         Button categoryButton = createImageButton("/images/twitchCategories.png", 220, 180);
-        categoryButton.setOnAction(e -> showPlaceholderAlert());
+        categoryButton.setOnAction(e -> controller.handleCategoryClick());
 
         VBox info = buildCategoryInfoText();
 
@@ -117,13 +114,5 @@ public class TwitchModeSelectionScreenBuilder {
                         "-fx-padding: 0;"
         );
         return button;
-    }
-
-    private void showPlaceholderAlert() {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Coming Soon");
-        alert.setHeaderText(null);
-        alert.setContentText("This feature is currently in development.");
-        alert.showAndWait();
     }
 }

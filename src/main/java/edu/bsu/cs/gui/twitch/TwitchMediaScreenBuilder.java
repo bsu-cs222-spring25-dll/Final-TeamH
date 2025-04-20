@@ -1,4 +1,4 @@
-package edu.bsu.cs.gui;
+package edu.bsu.cs.gui.twitch;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;

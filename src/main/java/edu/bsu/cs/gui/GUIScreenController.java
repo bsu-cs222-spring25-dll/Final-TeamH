@@ -2,8 +2,8 @@ package edu.bsu.cs.gui;
 
 import edu.bsu.cs.api.ApiContext;
 import edu.bsu.cs.api.ApiInitializer;
+import edu.bsu.cs.gui.twitch.TwitchModeSelectionScreenBuilder;
 import javafx.stage.Stage;
-import javafx.scene.control.Alert;
 
 public class GUIScreenController {
 
@@ -20,14 +20,8 @@ public class GUIScreenController {
     }
 
     public void handleYouTubeClick() {
-        showAlert("YouTube View", "This will open the YouTube GUI section.");
-    }
-
-    private void showAlert(String title, String message) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
+        YoutubeModeScreenBuilder builder = new YoutubeModeScreenBuilder();
+        ApiContext context = ApiInitializer.initializeApiContext();
+        stage.getScene().setRoot(builder.build(context, stage));
     }
 }

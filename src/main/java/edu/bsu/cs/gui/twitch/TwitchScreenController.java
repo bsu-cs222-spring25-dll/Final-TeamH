@@ -1,4 +1,4 @@
-package edu.bsu.cs.gui;
+package edu.bsu.cs.gui.twitch;
 
 import edu.bsu.cs.ChannelInfoService;
 import edu.bsu.cs.LiveStatusService;

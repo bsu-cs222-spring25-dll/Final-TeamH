@@ -1,4 +1,4 @@
-package edu.bsu.cs.gui;
+package edu.bsu.cs.gui.twitch;
 
 import edu.bsu.cs.RetrieveClips;
 import edu.bsu.cs.RetrieveScheduledStreams;
