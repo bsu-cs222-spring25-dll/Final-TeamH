@@ -73,5 +73,4 @@ public class YoutubeMediaScreenBuilder {
         BorderPane layout = new BorderPane(wrapper);
         stage.getScene().setRoot(layout);
     }
-
 }

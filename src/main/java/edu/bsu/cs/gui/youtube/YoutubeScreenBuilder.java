@@ -28,8 +28,9 @@ public class YoutubeScreenBuilder {
         TextArea descriptionArea = createDescriptionArea();
         ScrollPane descriptionScrollPane = wrapInScrollPane(descriptionArea);
 
-        Button uploadsButton = createHiddenButton("Get Streams");
-        Button scheduledButton = createHiddenButton("Get Uploads");
+        Button streamsButton = createHiddenButton("Get Streams");
+        Button uploadsButton = createHiddenButton("Get Uploads");
+        Button scheduledButton = createHiddenButton("Get Scheduled");
 
         HBox searchRow = new HBox(10, searchField, searchButton);
         searchRow.setAlignment(Pos.CENTER_LEFT);
@@ -41,7 +42,7 @@ public class YoutubeScreenBuilder {
         profileRow.setAlignment(Pos.CENTER_LEFT);
 
         VBox contentBox = new VBox(10, titleLabel, searchRow, resultLabel, profileRow,
-                liveStatusLabel, uploadsButton, scheduledButton);
+                liveStatusLabel, streamsButton, uploadsButton, scheduledButton);
         contentBox.setAlignment(Pos.TOP_LEFT);
         contentBox.setPadding(new Insets(0));
 
@@ -61,7 +62,7 @@ public class YoutubeScreenBuilder {
 
         YoutubeViewModel model = new YoutubeViewModel(
                 resultLabel, profileImageView, descriptionArea, descriptionScrollPane,
-                liveStatusLabel, uploadsButton, scheduledButton, layout
+                liveStatusLabel, streamsButton, uploadsButton, scheduledButton, layout
         );
 
         YoutubeScreenController controller = new YoutubeScreenController(context, model, stage);

@@ -18,16 +18,16 @@ public class YoutubeScreenController {
     private final ProfilePictureService pictureService;
     private final ChannelInfoService channelInfoService;
     private final LiveStatusService liveStatusService;
-    private final ApiContext context;
     private final YoutubeViewModel model;
     private final Stage stage;
+    private final ApiContext context;
 
     public YoutubeScreenController(ApiContext context, YoutubeViewModel model, Stage stage) {
+        this.context = context;
         this.searchService = new StreamerSearchService(context);
         this.pictureService = new ProfilePictureService(context);
         this.channelInfoService = new ChannelInfoService(context);
         this.liveStatusService = new LiveStatusService(context);
-        this.context = context;
         this.model = model;
         this.stage = stage;
     }
@@ -44,6 +44,7 @@ public class YoutubeScreenController {
             return;
         }
 
+        model.resetView();
         updateChannelDisplay(channelName);
     }
 
@@ -62,11 +63,14 @@ public class YoutubeScreenController {
         loadProfileImage(channelName);
         loadChannelDescription(channelName);
         updateLiveStatus(channelName);
+        model.getStreamsButton.setVisible(true);
         model.getUploadsButton.setVisible(true);
         model.getScheduledButton.setVisible(true);
 
         YoutubeMediaScreenController mediaController = new YoutubeMediaScreenController(stage, model.rootLayout, context);
-        model.getUploadsButton.setOnAction(e -> mediaController.showUploads(channelName));
+        model.getStreamsButton.setOnAction(e -> mediaController.showStreams(channelName));
+        model.getUploadsButton.setOnAction(e -> mediaController.showRecentVideos(channelName));
+        model.getScheduledButton.setOnAction(e -> mediaController.showScheduledStreams(channelName)); // ✅
     }
 
     private void loadProfileImage(String channelName) {
@@ -78,7 +82,11 @@ public class YoutubeScreenController {
 
     private void loadChannelDescription(String channelName) throws IOException {
         String description = channelInfoService.getYoutuberInfo(channelName);
-        model.channelDescriptionArea.setText(description);
+        if (description == null || description.isBlank()) {
+            model.channelDescriptionArea.setText("No channel description available.");
+        } else {
+            model.channelDescriptionArea.setText(description);
+        }
         model.descriptionScrollPane.setVisible(true);
     }
 

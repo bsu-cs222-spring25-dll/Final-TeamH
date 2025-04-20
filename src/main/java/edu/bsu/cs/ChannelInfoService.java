@@ -25,16 +25,24 @@ public class ChannelInfoService {
                 .setForHandle("@" + username);
 
         ChannelListResponse response = channelRequest.execute();
-        if (response.getItems().isEmpty()) {
+
+        if (response == null || response.getItems() == null || response.getItems().isEmpty()) {
             return "YouTube channel not found for: " + username;
         }
 
         Channel channel = response.getItems().get(0);
-        String bio = channel.getBrandingSettings().getChannel().getDescription();
-        String subscriberCount = String.valueOf(channel.getStatistics().getSubscriberCount());
 
-        if (bio.isEmpty()) {
+        String bio = null;
+        if (channel.getBrandingSettings() != null && channel.getBrandingSettings().getChannel() != null) {
+            bio = channel.getBrandingSettings().getChannel().getDescription();
+        }
+        if (bio == null || bio.isEmpty()) {
             bio = "No bio available.";
+        }
+
+        String subscriberCount = "Unknown";
+        if (channel.getStatistics() != null && channel.getStatistics().getSubscriberCount() != null) {
+            subscriberCount = String.valueOf(channel.getStatistics().getSubscriberCount());
         }
 
         return "Bio:\n" + bio + "\nSubscribers: " + subscriberCount;

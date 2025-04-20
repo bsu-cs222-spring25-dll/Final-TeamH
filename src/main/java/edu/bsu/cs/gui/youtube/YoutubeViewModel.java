@@ -15,19 +15,21 @@ public class YoutubeViewModel {
     public final ScrollPane descriptionScrollPane;
     public final Label liveStatusLabel;
     public final Button getUploadsButton;
+    public final Button getStreamsButton;
     public final Button getScheduledButton;
     public final Pane rootLayout;
 
     public YoutubeViewModel(Label resultLabel, ImageView profileImageView,
                             TextArea channelDescriptionArea, ScrollPane descriptionScrollPane,
-                            Label liveStatusLabel, Button getUploadsButton,
-                            Button getScheduledButton, Pane rootLayout) {
+                            Label liveStatusLabel, Button getStreamsButton,
+                            Button getUploadsButton, Button getScheduledButton, Pane rootLayout) {
         this.resultLabel = resultLabel;
         this.profileImageView = profileImageView;
         this.channelDescriptionArea = channelDescriptionArea;
         this.descriptionScrollPane = descriptionScrollPane;
         this.liveStatusLabel = liveStatusLabel;
         this.getUploadsButton = getUploadsButton;
+        this.getStreamsButton = getStreamsButton;
         this.getScheduledButton = getScheduledButton;
         this.rootLayout = rootLayout;
     }
@@ -37,6 +39,7 @@ public class YoutubeViewModel {
         descriptionScrollPane.setVisible(false);
         liveStatusLabel.setVisible(false);
         getUploadsButton.setVisible(false);
+        getStreamsButton.setVisible(false);
         getScheduledButton.setVisible(false);
         profileImageView.setImage(null);
         channelDescriptionArea.clear();
