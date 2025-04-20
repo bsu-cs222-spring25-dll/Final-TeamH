@@ -28,8 +28,8 @@ public class YoutubeScreenBuilder {
         TextArea descriptionArea = createDescriptionArea();
         ScrollPane descriptionScrollPane = wrapInScrollPane(descriptionArea);
 
-        Button uploadsButton = createHiddenButton("Get Uploads");
-        Button scheduledButton = createHiddenButton("Get Scheduled");
+        Button uploadsButton = createHiddenButton("Get Streams");
+        Button scheduledButton = createHiddenButton("Get Uploads");
 
         HBox searchRow = new HBox(10, searchField, searchButton);
         searchRow.setAlignment(Pos.CENTER_LEFT);
@@ -45,21 +45,8 @@ public class YoutubeScreenBuilder {
         contentBox.setAlignment(Pos.TOP_LEFT);
         contentBox.setPadding(new Insets(0));
 
-        YoutubeViewModel model = new YoutubeViewModel(resultLabel, profileImageView,
-                descriptionArea, descriptionScrollPane, liveStatusLabel,
-                uploadsButton, scheduledButton, contentBox);
-
-        YoutubeScreenController controller = new YoutubeScreenController(context, model, stage);
-        searchButton.setOnAction(e -> {
-            try {
-                controller.handleSearch(searchField.getText());
-            } catch (IOException ex) {
-                throw new RuntimeException(ex);
-            }
-        });
-
-        Button backButton = createBackButton(stage, context, model);
-        Button homeButton = createHomeButton(stage, model);
+        Button backButton = createBackButton(context, stage);
+        Button homeButton = createHomeButton(stage);
 
         HBox topBar = new HBox();
         topBar.setAlignment(Pos.TOP_LEFT);
@@ -71,6 +58,21 @@ public class YoutubeScreenBuilder {
 
         BorderPane layout = new BorderPane();
         layout.setTop(topBar);
+
+        YoutubeViewModel model = new YoutubeViewModel(
+                resultLabel, profileImageView, descriptionArea, descriptionScrollPane,
+                liveStatusLabel, uploadsButton, scheduledButton, layout
+        );
+
+        YoutubeScreenController controller = new YoutubeScreenController(context, model, stage);
+        searchButton.setOnAction(e -> {
+            try {
+                controller.handleSearch(searchField.getText());
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
+            }
+        });
+
         return layout;
     }
 
@@ -137,10 +139,9 @@ public class YoutubeScreenBuilder {
         return button;
     }
 
-    private Button createHomeButton(Stage stage, YoutubeViewModel model) {
+    private Button createHomeButton(Stage stage) {
         Button homeButton = new Button("Home");
         homeButton.setOnAction(e -> {
-            model.resetView();
             GUIScreenBuilder builder = new GUIScreenBuilder();
             GUIScreenController controller = new GUIScreenController(stage);
             stage.getScene().setRoot(builder.buildMainScreen(controller));
@@ -148,10 +149,9 @@ public class YoutubeScreenBuilder {
         return homeButton;
     }
 
-    private Button createBackButton(Stage stage, ApiContext context, YoutubeViewModel model) {
+    private Button createBackButton(ApiContext context, Stage stage) {
         Button backButton = new Button("Back");
         backButton.setOnAction(e -> {
-            model.resetView();
             YoutubeModeScreenBuilder modeBuilder = new YoutubeModeScreenBuilder();
             stage.getScene().setRoot(modeBuilder.build(context, stage));
         });

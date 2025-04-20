@@ -18,14 +18,16 @@ public class YoutubeScreenController {
     private final ProfilePictureService pictureService;
     private final ChannelInfoService channelInfoService;
     private final LiveStatusService liveStatusService;
-    private final edu.bsu.cs.gui.youtube.YoutubeViewModel model;
+    private final ApiContext context;
+    private final YoutubeViewModel model;
     private final Stage stage;
 
-    public YoutubeScreenController(ApiContext context, edu.bsu.cs.gui.youtube.YoutubeViewModel model, Stage stage) {
+    public YoutubeScreenController(ApiContext context, YoutubeViewModel model, Stage stage) {
         this.searchService = new StreamerSearchService(context);
         this.pictureService = new ProfilePictureService(context);
         this.channelInfoService = new ChannelInfoService(context);
         this.liveStatusService = new LiveStatusService(context);
+        this.context = context;
         this.model = model;
         this.stage = stage;
     }
@@ -62,6 +64,9 @@ public class YoutubeScreenController {
         updateLiveStatus(channelName);
         model.getUploadsButton.setVisible(true);
         model.getScheduledButton.setVisible(true);
+
+        YoutubeMediaScreenController mediaController = new YoutubeMediaScreenController(stage, model.rootLayout, context);
+        model.getUploadsButton.setOnAction(e -> mediaController.showUploads(channelName));
     }
 
     private void loadProfileImage(String channelName) {
