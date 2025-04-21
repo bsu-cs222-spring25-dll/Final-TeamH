@@ -20,37 +20,40 @@ public class StreamerSearchService {
 
     public List<String> searchTwitchStreamer(String username) {
         try {
-            UserList userList = context.twitchClient.getHelix()
-                    .getUsers(context.twitchAuthToken, null, Collections.singletonList(username))
-                    .execute();
-
+            UserList userList = fetchTwitchUsers(username);
             if (userList == null || userList.getUsers() == null || userList.getUsers().isEmpty()) {
                 return Collections.emptyList();
             }
             return Collections.singletonList(userList.getUsers().get(0).getDisplayName());
         } catch (Exception e) {
-            System.out.println("Error while searching Twitch: " + e.getMessage());
             return Collections.emptyList();
         }
     }
 
     public List<String> searchYoutubeStreamer(String username) {
         try {
-            YouTube.Channels.List channelRequest = context.youtubeService.channels()
-                    .list(Collections.singletonList("snippet"))
-                    .setKey(context.youtubeAuthToken)
-                    .setForHandle("@" + username);
-
-            ChannelListResponse response = channelRequest.execute();
+            ChannelListResponse response = fetchYoutubeChannels(username);
             if (response == null || response.getItems() == null || response.getItems().isEmpty()) {
                 return Collections.emptyList();
             }
-
             Channel channel = response.getItems().get(0);
             return Collections.singletonList(channel.getSnippet().getTitle());
         } catch (IOException e) {
-            System.out.println("Error while searching YouTube: " + e.getMessage());
             return Collections.emptyList();
         }
+    }
+
+    private UserList fetchTwitchUsers(String username) throws IOException {
+        return context.twitchClient.getHelix()
+                .getUsers(context.twitchAuthToken, null, Collections.singletonList(username))
+                .execute();
+    }
+
+    private ChannelListResponse fetchYoutubeChannels(String username) throws IOException {
+        return context.youtubeService.channels()
+                .list(Collections.singletonList("snippet"))
+                .setKey(context.youtubeAuthToken)
+                .setForHandle("@" + username)
+                .execute();
     }
 }

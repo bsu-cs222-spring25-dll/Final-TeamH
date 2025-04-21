@@ -35,16 +35,17 @@ public class TwitchScreenBuilder {
         VBox contentBox = buildContentBox(titleLabel, searchRow, resultLabel, profileRow,
                 liveStatusLabel, getStreamsButton, getClipsButton, getScheduledButton);
 
+        BorderPane layout = new BorderPane();
+
         TwitchViewModel model = new TwitchViewModel(
                 resultLabel, profileImageView, bioTextArea, bioScrollPane, liveStatusLabel,
-                getStreamsButton, getClipsButton, getScheduledButton, contentBox
+                getStreamsButton, getClipsButton, getScheduledButton, layout
         );
 
         Button homeButton = createHomeButton(stage, model);
         Button backButton = createBackButton(stage, context, model);
         HBox topBar = buildTopBar(contentBox, backButton, homeButton);
 
-        BorderPane layout = new BorderPane();
         layout.setTop(topBar);
 
         TwitchScreenController controller = new TwitchScreenController(context, model, stage);
