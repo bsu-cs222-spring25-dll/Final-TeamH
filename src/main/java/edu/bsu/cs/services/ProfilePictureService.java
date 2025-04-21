@@ -21,13 +21,18 @@ public class ProfilePictureService {
         if (platform.equalsIgnoreCase("Twitch")) {
             return getTwitchProfilePicture(username);
         } else if (platform.equalsIgnoreCase("YouTube")) {
-            return getYouTubeProfilePicture(username);
+            try {
+                return getYouTubeProfilePicture(username);
+            } catch (IOException e) {
+                return null;
+            }
         }
         return null;
     }
 
     private String getTwitchProfilePicture(String username) {
-        return context.twitchClient.getHelix().getUsers(null, null, List.of(username))
+        return context.twitchClient.getHelix()
+                .getUsers(null, null, List.of(username))
                 .execute()
                 .getUsers()
                 .stream()
@@ -36,39 +41,40 @@ public class ProfilePictureService {
                 .orElse(null);
     }
 
-    private String getYouTubeProfilePicture(String username) {
-        try {
-            YouTube.Search.List searchRequest = context.youtubeService.search()
-                    .list(Collections.singletonList("id"))
-                    .setQ(username)
-                    .setType(Collections.singletonList("channel"))
-                    .setMaxResults(1L)
-                    .setKey(context.youtubeAuthToken);
+    private String getYouTubeProfilePicture(String username) throws IOException {
+        String channelId = fetchYouTubeChannelId(username);
+        if (channelId == null) return null;
 
-            var searchResponse = searchRequest.execute();
-            if (searchResponse == null || searchResponse.getItems() == null || searchResponse.getItems().isEmpty()) {
-                System.err.println("Error: No YouTube channel found for user: " + username);
-                return null;
-            }
+        ChannelListResponse response = context.youtubeService.channels()
+                .list(Collections.singletonList("snippet"))
+                .setId(Collections.singletonList(channelId))
+                .setKey(context.youtubeAuthToken)
+                .execute();
 
-            String channelId = searchResponse.getItems().get(0).getId().getChannelId();
+        return extractHighThumbnailUrl(response);
+    }
 
-            YouTube.Channels.List channelRequest = context.youtubeService.channels()
-                    .list(Collections.singletonList("snippet"))
-                    .setId(Collections.singletonList(channelId))
-                    .setKey(context.youtubeAuthToken);
+    private String fetchYouTubeChannelId(String username) throws IOException {
+        var searchResponse = context.youtubeService.search()
+                .list(Collections.singletonList("id"))
+                .setQ(username)
+                .setType(Collections.singletonList("channel"))
+                .setMaxResults(1L)
+                .setKey(context.youtubeAuthToken)
+                .execute();
 
-            ChannelListResponse channelResponse = channelRequest.execute();
+        return (searchResponse != null && searchResponse.getItems() != null && !searchResponse.getItems().isEmpty())
+                ? searchResponse.getItems().get(0).getId().getChannelId()
+                : null;
+    }
 
-            if (channelResponse == null || channelResponse.getItems() == null || channelResponse.getItems().isEmpty()) {
-                System.err.println("Error: No channel details found for user: " + username);
-                return null;
-            }
+    private String extractHighThumbnailUrl(ChannelListResponse response) {
+        if (response == null || response.getItems() == null || response.getItems().isEmpty()) return null;
 
-            return channelResponse.getItems().get(0).getSnippet().getThumbnails().getHigh().getUrl();
-        } catch (IOException e) {
-            System.err.println("Error fetching YouTube profile picture for " + username + ": " + e.getMessage());
-            return null;
-        }
+        return response.getItems().get(0)
+                .getSnippet()
+                .getThumbnails()
+                .getHigh()
+                .getUrl();
     }
 }

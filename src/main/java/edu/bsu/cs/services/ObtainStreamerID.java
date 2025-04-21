@@ -18,52 +18,35 @@ public class ObtainStreamerID {
     }
 
     public String getTwitchUserId(String username) {
+        if (isInvalidUsername(username)) return null;
         try {
-            if (username == null || username.trim().isEmpty()) {
-                System.out.println("Invalid username provided.");
-                return null;
-            }
-
             UserList userList = context.twitchClient.getHelix()
                     .getUsers(context.twitchAuthToken, null, List.of(username))
                     .execute();
 
-            if (userList == null || userList.getUsers().isEmpty()) {
-                System.out.println("No user found with username: " + username);
-                return null;
-            }
-
-            String userId = userList.getUsers().get(0).getId();
-            System.out.println("Retrieved Twitch User ID: " + userId);
-            return userId;
-
+            return userList != null && !userList.getUsers().isEmpty()
+                    ? userList.getUsers().get(0).getId()
+                    : null;
         } catch (Exception e) {
-            System.out.println("Failed to retrieve Twitch user ID: " + e.getMessage());
-            e.printStackTrace();
             return null;
         }
     }
 
     public String getYoutubeUserId(String username) throws IOException {
-        if (username == null || username.trim().isEmpty()) {
-            System.out.println("Invalid YouTube username provided.");
-            return null;
-        }
+        if (isInvalidUsername(username)) return null;
 
-        YouTube.Channels.List channelRequest = context.youtubeService.channels()
+        YouTube.Channels.List request = context.youtubeService.channels()
                 .list(Collections.singletonList("snippet"))
                 .setKey(context.youtubeAuthToken)
                 .setForHandle("@" + username);
 
-        ChannelListResponse response = channelRequest.execute();
+        ChannelListResponse response = request.execute();
+        return (response != null && response.getItems() != null && !response.getItems().isEmpty())
+                ? response.getItems().get(0).getId()
+                : null;
+    }
 
-        if (response == null || response.getItems() == null || response.getItems().isEmpty()) {
-            System.out.println("No YouTube channel found for username: " + username);
-            return null;
-        }
-
-        String userId = response.getItems().get(0).getId();
-        System.out.println("Retrieved YouTube Channel ID: " + userId);
-        return userId;
+    private boolean isInvalidUsername(String username) {
+        return username == null || username.trim().isEmpty();
     }
 }
