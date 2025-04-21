@@ -1,8 +1,8 @@
 package edu.bsu.cs.main;
 
-import edu.bsu.cs.*;
 import edu.bsu.cs.api.ApiContext;
 import edu.bsu.cs.api.ApiInitializer;
+import edu.bsu.cs.services.*;
 
 import java.util.Scanner;
 

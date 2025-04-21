@@ -15,33 +15,14 @@ import java.util.List;
 
 public class YoutubeMediaScreenBuilder {
 
+    private Stage stage;
+    private Pane previousRoot;
+
     public void display(Stage stage, List<String> youtubeVideoData, Pane previousRoot) {
-        VBox videoList = new VBox(20);
-        videoList.setPadding(new Insets(20));
+        this.stage = stage;
+        this.previousRoot = previousRoot;
 
-        for (String entry : youtubeVideoData) {
-            String[] parts = entry.split("__");
-            if (parts.length < 3) continue;
-
-            String title = parts[0];
-            String videoId = parts[1];
-            String thumbnailUrl = parts[2];
-
-            ImageView thumbnail = new ImageView(new Image(thumbnailUrl, 120, 90, true, true));
-            Text label = new Text(title);
-            label.setWrappingWidth(400);
-
-            Button watchButton = new Button("Watch");
-            watchButton.setOnAction(e -> displayVideo(stage, videoId, youtubeVideoData, previousRoot));
-
-            VBox infoBox = new VBox(5, label, watchButton);
-            infoBox.setAlignment(Pos.CENTER_LEFT);
-
-            HBox row = new HBox(15, thumbnail, infoBox);
-            row.setAlignment(Pos.CENTER_LEFT);
-
-            videoList.getChildren().add(row);
-        }
+        VBox videoList = createVideoList(youtubeVideoData);
 
         Button backButton = new Button("Back");
         backButton.setOnAction(e -> stage.getScene().setRoot(previousRoot));
@@ -49,14 +30,47 @@ public class YoutubeMediaScreenBuilder {
         VBox wrapper = new VBox(20, backButton, videoList);
         wrapper.setPadding(new Insets(20));
 
-        ScrollPane scrollPane = new ScrollPane(wrapper);
-        scrollPane.setFitToWidth(true);
-
-        BorderPane layout = new BorderPane(scrollPane);
-        stage.getScene().setRoot(layout);
+        ScrollPane scrollPane = createScrollLayout(wrapper);
+        stage.getScene().setRoot(new BorderPane(scrollPane));
     }
 
-    private void displayVideo(Stage stage, String videoId, List<String> videoListData, Pane previousRoot) {
+    private VBox createVideoList(List<String> data) {
+        VBox list = new VBox(20);
+        list.setPadding(new Insets(20));
+        for (String entry : data) {
+            String[] parts = entry.split("__");
+            if (parts.length < 3) continue;
+
+            YoutubeVideoEntry videoEntry = new YoutubeVideoEntry(parts[0], parts[1], parts[2]);
+            list.getChildren().add(createVideoRow(videoEntry, data));
+        }
+        return list;
+    }
+
+    private HBox createVideoRow(YoutubeVideoEntry entry, List<String> allVideos) {
+        ImageView thumbnail = new ImageView(new Image(entry.thumbnailUrl, 120, 90, true, true));
+        Text label = new Text(entry.title);
+        label.setWrappingWidth(400);
+
+        Button watchButton = new Button("Watch");
+        watchButton.setOnAction(e -> displayVideo(entry.videoId, allVideos));
+
+        VBox infoBox = new VBox(5, label, watchButton);
+        infoBox.setAlignment(Pos.CENTER_LEFT);
+
+        HBox row = new HBox(15, thumbnail, infoBox);
+        row.setAlignment(Pos.CENTER_LEFT);
+        return row;
+    }
+
+
+    private ScrollPane createScrollLayout(Pane content) {
+        ScrollPane scrollPane = new ScrollPane(content);
+        scrollPane.setFitToWidth(true);
+        return scrollPane;
+    }
+
+    private void displayVideo(String videoId, List<String> allVideos) {
         WebView webView = new WebView();
         webView.setPrefSize(800, 450);
         webView.getEngine().load("https://www.youtube.com/embed/" + videoId + "?autoplay=1");
@@ -64,13 +78,12 @@ public class YoutubeMediaScreenBuilder {
         Button backToList = new Button("Back to List");
         backToList.setOnAction(e -> {
             webView.getEngine().load(null);
-            display(stage, videoListData, previousRoot);
+            display(stage, allVideos, previousRoot);
         });
 
         VBox wrapper = new VBox(10, backToList, webView);
         wrapper.setPadding(new Insets(20));
 
-        BorderPane layout = new BorderPane(wrapper);
-        stage.getScene().setRoot(layout);
+        stage.getScene().setRoot(new BorderPane(wrapper));
     }
 }

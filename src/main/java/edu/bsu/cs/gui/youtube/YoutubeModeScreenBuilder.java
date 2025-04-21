@@ -14,57 +14,83 @@ import javafx.stage.Stage;
 
 public class YoutubeModeScreenBuilder {
 
+    private Stage stage;
+    private ApiContext context;
+
     public BorderPane build(ApiContext context, Stage stage) {
-        Label titleLabel = new Label("YouTube Access");
-        titleLabel.setStyle("-fx-font-size: 32px; -fx-text-fill: #ff0000; -fx-font-weight: bold;");
+        this.context = context;
+        this.stage = stage;
 
-        Button searchButton = createImageButton("/images/youtubeSearch.png", 220, 180);
-        Button categoryButton = createImageButton("/images/youtubeCategories.png", 220, 180);
+        BorderPane layout = new BorderPane();
+        layout.setTop(createTopBar());
+        layout.setCenter(createMainContent());
+        return layout;
+    }
 
-        YoutubeModeScreenController controller = new YoutubeModeScreenController(context, stage);
-        searchButton.setOnAction(e -> controller.handleSearchClick());
-        categoryButton.setOnAction(e -> controller.handleCategoryClick());
+    private HBox createTopBar() {
+        Button backButton = new Button("Back");
+        backButton.setStyle("-fx-font-size: 14px;");
+        backButton.setOnAction(e -> {
+            GUIScreenBuilder builder = new GUIScreenBuilder();
+            GUIScreenController controller = new GUIScreenController(stage);
+            stage.getScene().setRoot(builder.buildMainScreen(controller));
+        });
 
-        VBox searchInfo = new VBox(12,
-                styledLabel("Search YouTube Channels!", 20, true),
-                styledLabel("- Get recent streams", 16, false),
-                styledLabel("- Get best uploads", 16, false),
-                styledLabel("- Get scheduled streams", 16, false)
-        );
-        searchInfo.setAlignment(Pos.TOP_LEFT);
-
-        VBox categoryInfo = new VBox(12,
-                styledLabel("YouTube Categories!", 20, true),
-                styledLabel("- Explore trending content", 16, false),
-                styledLabel("- Discover Random Streams", 16, false)
-        );
-        categoryInfo.setAlignment(Pos.TOP_RIGHT);
-
-        HBox searchSection = new HBox(20, searchButton, searchInfo);
-        searchSection.setAlignment(Pos.TOP_LEFT);
-        StackPane.setAlignment(searchSection, Pos.TOP_LEFT);
-        StackPane.setMargin(searchSection, new Insets(80, 0, 0, 100));
-
-        HBox categorySection = new HBox(20, categoryInfo, categoryButton);
-        categorySection.setAlignment(Pos.TOP_RIGHT);
-        StackPane.setAlignment(categorySection, Pos.TOP_RIGHT);
-        StackPane.setMargin(categorySection, new Insets(300, 100, 0, 0));
-
-        StackPane stack = new StackPane(searchSection, categorySection);
-
-        Button backButton = createBackButton(stage);
         HBox topBar = new HBox(backButton);
         topBar.setAlignment(Pos.TOP_RIGHT);
         topBar.setPadding(new Insets(20, 20, 0, 0));
+        return topBar;
+    }
 
-        VBox pageLayout = new VBox(30, titleLabel, stack);
+    private VBox createMainContent() {
+        Label titleLabel = createStyledLabel("YouTube Access", 32, true, "#ff0000");
+
+        HBox searchSection = createSearchSection();
+        HBox categorySection = createCategorySection();
+
+        StackPane stackedSections = new StackPane(searchSection, categorySection);
+
+        VBox pageLayout = new VBox(30, titleLabel, stackedSections);
         pageLayout.setAlignment(Pos.TOP_CENTER);
         pageLayout.setPadding(new Insets(40, 0, 0, 0));
+        return pageLayout;
+    }
 
-        BorderPane layout = new BorderPane();
-        layout.setTop(topBar);
-        layout.setCenter(pageLayout);
-        return layout;
+    private HBox createSearchSection() {
+        Button searchButton = createImageButton("/images/youtubeSearch.png", 220, 180);
+        searchButton.setOnAction(e -> new YoutubeModeScreenController(context, stage).handleSearchClick());
+
+        VBox info = new VBox(12,
+                createStyledLabel("Search YouTube Channels!", 20, true),
+                createStyledLabel("- Get recent streams", 16, false),
+                createStyledLabel("- Get best uploads", 16, false),
+                createStyledLabel("- Get scheduled streams", 16, false)
+        );
+        info.setAlignment(Pos.TOP_LEFT);
+
+        HBox section = new HBox(20, searchButton, info);
+        section.setAlignment(Pos.TOP_LEFT);
+        StackPane.setAlignment(section, Pos.TOP_LEFT);
+        StackPane.setMargin(section, new Insets(80, 0, 0, 100));
+        return section;
+    }
+
+    private HBox createCategorySection() {
+        Button categoryButton = createImageButton("/images/youtubeCategories.png", 220, 180);
+        categoryButton.setOnAction(e -> new YoutubeModeScreenController(context, stage).handleCategoryClick());
+
+        VBox info = new VBox(12,
+                createStyledLabel("YouTube Categories!", 20, true),
+                createStyledLabel("- Explore trending content", 16, false),
+                createStyledLabel("- Discover Random Streams", 16, false)
+        );
+        info.setAlignment(Pos.TOP_RIGHT);
+
+        HBox section = new HBox(20, info, categoryButton);
+        section.setAlignment(Pos.TOP_RIGHT);
+        StackPane.setAlignment(section, Pos.TOP_RIGHT);
+        StackPane.setMargin(section, new Insets(300, 100, 0, 0));
+        return section;
     }
 
     private Button createImageButton(String imagePath, int width, int height) {
@@ -85,22 +111,15 @@ public class YoutubeModeScreenBuilder {
         return button;
     }
 
-    private Button createBackButton(Stage stage) {
-        Button backButton = new Button("Back");
-        backButton.setStyle("-fx-font-size: 14px;");
-        backButton.setOnAction(e -> {
-            GUIScreenBuilder builder = new GUIScreenBuilder();
-            GUIScreenController controller = new GUIScreenController(stage);
-            stage.getScene().setRoot(builder.buildMainScreen(controller));
-        });
-        return backButton;
+    private Label createStyledLabel(String text, int size, boolean bold) {
+        return createStyledLabel(text, size, bold, "black");
     }
 
-    private Label styledLabel(String text, int size, boolean bold) {
+    private Label createStyledLabel(String text, int size, boolean bold, String color) {
         Label label = new Label(text);
         label.setStyle("-fx-font-size: " + size + "px;" +
                 (bold ? " -fx-font-weight: bold;" : "") +
-                " -fx-text-fill: black;");
+                " -fx-text-fill: " + color + ";");
         return label;
     }
 }

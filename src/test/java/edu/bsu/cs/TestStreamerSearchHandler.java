@@ -1,5 +1,7 @@
 package edu.bsu.cs;
 
+import edu.bsu.cs.services.StreamerSearchHandler;
+import edu.bsu.cs.services.StreamerSearchService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import static org.mockito.Mockito.*;

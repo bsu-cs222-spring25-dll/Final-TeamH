@@ -1,4 +1,4 @@
-package edu.bsu.cs;
+package edu.bsu.cs.services;
 
 import com.github.twitch4j.helix.TwitchHelix;
 import com.github.twitch4j.helix.domain.ScheduledSegment;

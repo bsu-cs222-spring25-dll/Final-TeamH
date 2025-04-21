@@ -1,4 +1,4 @@
-package edu.bsu.cs;
+package edu.bsu.cs.services;
 
 import java.util.Scanner;
 import java.util.List;

@@ -1,8 +1,8 @@
 package edu.bsu.cs.gui.twitch;
 
-import edu.bsu.cs.RetrieveClips;
-import edu.bsu.cs.RetrieveScheduledStreams;
-import edu.bsu.cs.RetrieveStreamsService;
+import edu.bsu.cs.services.RetrieveClips;
+import edu.bsu.cs.services.RetrieveScheduledStreams;
+import edu.bsu.cs.services.RetrieveStreamsService;
 import edu.bsu.cs.api.ApiContext;
 import javafx.scene.control.Alert;
 import javafx.scene.layout.Pane;

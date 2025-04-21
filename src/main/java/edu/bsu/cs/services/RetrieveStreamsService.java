@@ -1,4 +1,4 @@
-package edu.bsu.cs;
+package edu.bsu.cs.services;
 
 import com.github.twitch4j.helix.domain.VideoList;
 import com.google.api.services.youtube.YouTube;

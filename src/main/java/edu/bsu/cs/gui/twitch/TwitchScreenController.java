@@ -1,9 +1,9 @@
 package edu.bsu.cs.gui.twitch;
 
-import edu.bsu.cs.ChannelInfoService;
-import edu.bsu.cs.LiveStatusService;
-import edu.bsu.cs.ProfilePictureService;
-import edu.bsu.cs.StreamerSearchService;
+import edu.bsu.cs.services.ChannelInfoService;
+import edu.bsu.cs.services.LiveStatusService;
+import edu.bsu.cs.services.ProfilePictureService;
+import edu.bsu.cs.services.StreamerSearchService;
 import edu.bsu.cs.api.ApiContext;
 import javafx.scene.control.Alert;
 import javafx.scene.image.Image;

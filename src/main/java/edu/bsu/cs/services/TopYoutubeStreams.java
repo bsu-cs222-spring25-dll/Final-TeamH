@@ -1,4 +1,4 @@
-package edu.bsu.cs;
+package edu.bsu.cs.services;
 
 import com.google.api.services.youtube.YouTube;
 import com.google.api.services.youtube.model.SearchListResponse;

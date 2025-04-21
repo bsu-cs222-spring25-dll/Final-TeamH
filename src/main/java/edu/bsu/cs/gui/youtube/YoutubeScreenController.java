@@ -1,9 +1,9 @@
 package edu.bsu.cs.gui.youtube;
 
-import edu.bsu.cs.ChannelInfoService;
-import edu.bsu.cs.LiveStatusService;
-import edu.bsu.cs.ProfilePictureService;
-import edu.bsu.cs.StreamerSearchService;
+import edu.bsu.cs.services.ChannelInfoService;
+import edu.bsu.cs.services.LiveStatusService;
+import edu.bsu.cs.services.ProfilePictureService;
+import edu.bsu.cs.services.StreamerSearchService;
 import edu.bsu.cs.api.ApiContext;
 import javafx.scene.control.Alert;
 import javafx.scene.image.Image;
@@ -70,7 +70,7 @@ public class YoutubeScreenController {
         YoutubeMediaScreenController mediaController = new YoutubeMediaScreenController(stage, model.rootLayout, context);
         model.getStreamsButton.setOnAction(e -> mediaController.showStreams(channelName));
         model.getUploadsButton.setOnAction(e -> mediaController.showRecentVideos(channelName));
-        model.getScheduledButton.setOnAction(e -> mediaController.showScheduledStreams(channelName)); // ✅
+        model.getScheduledButton.setOnAction(e -> mediaController.showScheduledStreams(channelName));
     }
 
     private void loadProfileImage(String channelName) {
