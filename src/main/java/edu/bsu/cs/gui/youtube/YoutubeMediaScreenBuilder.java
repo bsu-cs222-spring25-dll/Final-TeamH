@@ -63,7 +63,6 @@ public class YoutubeMediaScreenBuilder {
         return row;
     }
 
-
     private ScrollPane createScrollLayout(Pane content) {
         ScrollPane scrollPane = new ScrollPane(content);
         scrollPane.setFitToWidth(true);
