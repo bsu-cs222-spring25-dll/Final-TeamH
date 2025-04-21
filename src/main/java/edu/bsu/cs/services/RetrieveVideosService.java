@@ -67,4 +67,7 @@ public class RetrieveVideosService {
         return fetchRecentVideosById(userId);
     }
 
+    public ObtainStreamerID getObtainStreamerID() {
+        return obtainStreamerID;
+    }
 }

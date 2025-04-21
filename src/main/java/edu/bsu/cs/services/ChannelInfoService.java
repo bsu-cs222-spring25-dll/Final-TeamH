@@ -13,13 +13,20 @@ import java.util.Collections;
 
 public class ChannelInfoService {
     private final ApiContext context;
+    private final ObtainStreamerID obtainStreamerID;
 
     public ChannelInfoService(ApiContext context) {
         this.context = context;
+        this.obtainStreamerID = new ObtainStreamerID(context);
     }
 
     public String getYoutuberInfo(String username) throws IOException {
-        Channel channel = fetchYoutubeChannel(username);
+        String channelId = obtainStreamerID.getYoutubeUserId(username);
+        if (channelId == null) {
+            return "YouTube channel not found for: " + username;
+        }
+
+        Channel channel = fetchYoutubeChannelById(channelId);
         if (channel == null) {
             return "YouTube channel not found for: " + username;
         }
@@ -42,11 +49,11 @@ public class ChannelInfoService {
         return "Bio:\n" + bio + "\nFollowers: " + followerCount;
     }
 
-    private Channel fetchYoutubeChannel(String username) throws IOException {
+    private Channel fetchYoutubeChannelById(String channelId) throws IOException {
         YouTube.Channels.List request = context.youtubeService.channels()
                 .list(Arrays.asList("snippet", "statistics", "brandingSettings"))
                 .setKey(context.youtubeAuthToken)
-                .setForHandle("@" + username);
+                .setId(Collections.singletonList(channelId));
 
         ChannelListResponse response = request.execute();
 

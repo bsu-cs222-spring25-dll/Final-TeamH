@@ -38,7 +38,13 @@ public class YoutubeMediaScreenController {
 
     public void showRecentVideos(String channelName) {
         try {
-            List<SearchResult> videos = videosService.fetchRecentVideos(channelName);
+            String userId = videosService.getObtainStreamerID().getYoutubeUserId(channelName);
+            if (userId == null) {
+                showError("Error", "Could not retrieve YouTube Channel ID for " + channelName);
+                return;
+            }
+
+            List<SearchResult> videos = videosService.fetchRecentVideosById(userId);
             handleDisplayResults(videos, "No Videos Found", "No recent uploads available for this channel.");
         } catch (Exception e) {
             showError("Error", "Failed to load YouTube videos: " + e.getMessage());
@@ -62,7 +68,7 @@ public class YoutubeMediaScreenController {
             return;
         }
 
-        List<String> displayList = convertToDisplayList(results);
+        List<YoutubeVideoEntry> displayList = convertToDisplayList(results);
         if (displayList.isEmpty()) {
             showError(emptyTitle, emptyMessage);
             return;
@@ -71,18 +77,27 @@ public class YoutubeMediaScreenController {
         new YoutubeMediaScreenBuilder().display(stage, displayList, previousRoot);
     }
 
-    private List<String> convertToDisplayList(List<SearchResult> results) {
-        List<String> displayList = new ArrayList<>();
+    private List<YoutubeVideoEntry> convertToDisplayList(List<SearchResult> results) {
+        List<YoutubeVideoEntry> displayList = new ArrayList<>();
         for (SearchResult result : results) {
-            if (result.getId() == null || result.getSnippet() == null) continue;
+            if (result.getId() == null ||
+                    result.getId().getKind() == null ||
+                    !"youtube#video".equals(result.getId().getKind()) ||
+                    result.getId().getVideoId() == null ||
+                    result.getSnippet() == null ||
+                    result.getSnippet().getTitle() == null ||
+                    result.getSnippet().getThumbnails() == null ||
+                    result.getSnippet().getThumbnails().getDefault() == null ||
+                    result.getSnippet().getThumbnails().getDefault().getUrl() == null) {
+                continue;
+            }
 
             String title = result.getSnippet().getTitle();
             String videoId = result.getId().getVideoId();
             String thumbnail = result.getSnippet().getThumbnails().getDefault().getUrl();
 
-            if (videoId != null && thumbnail != null) {
-                displayList.add(title + "__" + videoId + "__" + thumbnail);
-            }
+            YoutubeVideoEntry entry = new YoutubeVideoEntry(title, videoId, thumbnail);
+            displayList.add(entry);
         }
         return displayList;
     }

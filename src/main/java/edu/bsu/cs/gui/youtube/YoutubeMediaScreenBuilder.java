@@ -18,11 +18,11 @@ public class YoutubeMediaScreenBuilder {
     private Stage stage;
     private Pane previousRoot;
 
-    public void display(Stage stage, List<String> youtubeVideoData, Pane previousRoot) {
+    public void display(Stage stage, List<YoutubeVideoEntry> entries, Pane previousRoot) {
         this.stage = stage;
         this.previousRoot = previousRoot;
 
-        VBox videoList = createVideoList(youtubeVideoData);
+        VBox videoList = createVideoList(entries);
 
         Button backButton = new Button("Back");
         backButton.setOnAction(e -> stage.getScene().setRoot(previousRoot));
@@ -34,26 +34,22 @@ public class YoutubeMediaScreenBuilder {
         stage.getScene().setRoot(new BorderPane(scrollPane));
     }
 
-    private VBox createVideoList(List<String> data) {
+    private VBox createVideoList(List<YoutubeVideoEntry> entries) {
         VBox list = new VBox(20);
         list.setPadding(new Insets(20));
-        for (String entry : data) {
-            String[] parts = entry.split("__");
-            if (parts.length < 3) continue;
-
-            YoutubeVideoEntry videoEntry = new YoutubeVideoEntry(parts[0], parts[1], parts[2]);
-            list.getChildren().add(createVideoRow(videoEntry, data));
+        for (YoutubeVideoEntry entry : entries) {
+            list.getChildren().add(createVideoRow(entry, entries));
         }
         return list;
     }
 
-    private HBox createVideoRow(YoutubeVideoEntry entry, List<String> allVideos) {
+    private HBox createVideoRow(YoutubeVideoEntry entry, List<YoutubeVideoEntry> allEntries) {
         ImageView thumbnail = new ImageView(new Image(entry.thumbnailUrl, 120, 90, true, true));
         Text label = new Text(entry.title);
         label.setWrappingWidth(400);
 
         Button watchButton = new Button("Watch");
-        watchButton.setOnAction(e -> displayVideo(entry.videoId, allVideos));
+        watchButton.setOnAction(e -> displayVideo(entry.videoId, allEntries));
 
         VBox infoBox = new VBox(5, label, watchButton);
         infoBox.setAlignment(Pos.CENTER_LEFT);
@@ -69,7 +65,7 @@ public class YoutubeMediaScreenBuilder {
         return scrollPane;
     }
 
-    private void displayVideo(String videoId, List<String> allVideos) {
+    private void displayVideo(String videoId, List<YoutubeVideoEntry> allEntries) {
         WebView webView = new WebView();
         webView.setPrefSize(800, 450);
         webView.getEngine().load("https://www.youtube.com/embed/" + videoId + "?autoplay=1");
@@ -77,7 +73,7 @@ public class YoutubeMediaScreenBuilder {
         Button backToList = new Button("Back to List");
         backToList.setOnAction(e -> {
             webView.getEngine().load(null);
-            display(stage, allVideos, previousRoot);
+            display(stage, allEntries, previousRoot);
         });
 
         VBox wrapper = new VBox(10, backToList, webView);

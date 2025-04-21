@@ -82,11 +82,13 @@ public class YoutubeScreenController {
 
     private void loadChannelDescription(String channelName) throws IOException {
         String description = channelInfoService.getYoutuberInfo(channelName);
+
         if (description == null || description.isBlank()) {
             model.channelDescriptionArea.setText("No channel description available.");
         } else {
             model.channelDescriptionArea.setText(description);
         }
+
         model.descriptionScrollPane.setVisible(true);
     }
 
