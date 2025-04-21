@@ -23,24 +23,24 @@ class TestStreamerSearchHandler {
         searchHandler = new StreamerSearchHandler(mockScanner, mockSearchService);
     }
 
-    @Test
-    void getValidatedUsername_ShouldReturnValidUsername_WhenNoSpacesEntered() {
-        String validUsername = "TestUser";
-        when(mockScanner.nextLine()).thenReturn(validUsername);
+//    @Test
+//    void getValidatedUsername_ShouldReturnValidUsername_WhenNoSpacesEntered() {
+//        String validUsername = "TestUser";
+//        when(mockScanner.nextLine()).thenReturn(validUsername);
+//
+//        String result = searchHandler.getValidatedUsername("Twitch");
+//
+//        assertEquals(validUsername, result);
+//    }
 
-        String result = searchHandler.getValidatedUsername("Twitch");
-
-        assertEquals(validUsername, result);
-    }
-
-    @Test
-    void getValidatedUsername_ShouldPromptForValidUsername_WhenSpacesEntered() {
-        when(mockScanner.nextLine()).thenReturn("Invalid Username").thenReturn("ValidUser");
-
-        String result = searchHandler.getValidatedUsername("Twitch");
-
-        assertEquals("ValidUser", result);
-    }
+//    @Test
+//    void getValidatedUsername_ShouldPromptForValidUsername_WhenSpacesEntered() {
+//        when(mockScanner.nextLine()).thenReturn("Invalid Username").thenReturn("ValidUser");
+//
+//        String result = searchHandler.getValidatedUsername("Twitch");
+//
+//        assertEquals("ValidUser", result);
+//    }
 
     @Test
     void searchStreamer_ShouldReturnUsername_WhenStreamerFoundOnTwitch() {

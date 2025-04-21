@@ -1,7 +1,7 @@
 package edu.bsu.cs.services;
 
-import java.util.Scanner;
 import java.util.List;
+import java.util.Scanner;
 
 public class StreamerSearchHandler {
 
@@ -13,45 +13,43 @@ public class StreamerSearchHandler {
         this.searchService = searchService;
     }
 
-    public String getValidatedUsername(String platform) {
-        scanner.nextLine();
-        String username;
+    public String searchStreamer(String platform) {
+        String username = promptForValidUsername(platform);
+        List<String> results = fetchSearchResults(platform, username);
 
+        return handleSearchResults(results, platform, username);
+    }
+
+    private String promptForValidUsername(String platform) {
+        scanner.nextLine();
         while (true) {
             System.out.print("Enter " + platform + " Username (no spaces allowed): \n>> ");
-            username = scanner.nextLine().trim();
+            String input = scanner.nextLine().trim();
+            if (!input.contains(" ")) return input;
 
-            if (username.contains(" ")) {
-                System.out.println("Error: Username cannot contain spaces. Please try again.");
-            } else {
-                return username;
-            }
+            System.out.println("Error: Username cannot contain spaces. Please try again.");
         }
     }
 
-    public String searchStreamer(String platform) {
-        String username = getValidatedUsername(platform);
-
-        List<String> result;
+    private List<String> fetchSearchResults(String platform, String username) {
         try {
-            if (platform.equalsIgnoreCase("Twitch")) {
-                result = searchService.searchTwitchStreamer(username);
-            } else if (platform.equalsIgnoreCase("YouTube")) {
-                result = searchService.searchYoutubeStreamer(username);
-            } else {
-                throw new IllegalArgumentException("Unsupported platform: " + platform);
-            }
-
-            if (result.isEmpty()) {
-                System.out.println(platform + " streamer not found.");
-                return "";
-            } else {
-                System.out.println(platform + " streamer found: " + result.get(0));
-                return username;
-            }
+            return switch (platform.toLowerCase()) {
+                case "twitch" -> searchService.searchTwitchStreamer(username);
+                case "youtube" -> searchService.searchYoutubeStreamer(username);
+                default -> throw new IllegalArgumentException("Unsupported platform: " + platform);
+            };
         } catch (Exception e) {
             System.err.println(platform + " user not found (crash prevention)");
+            return List.of();
+        }
+    }
+
+    private String handleSearchResults(List<String> results, String platform, String username) {
+        if (results.isEmpty()) {
+            System.out.println(platform + " streamer not found.");
             return "";
         }
+        System.out.println(platform + " streamer found: " + results.get(0));
+        return username;
     }
 }
