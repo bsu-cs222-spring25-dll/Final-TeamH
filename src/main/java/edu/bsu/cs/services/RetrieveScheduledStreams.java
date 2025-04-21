@@ -10,12 +10,10 @@ import com.google.api.services.youtube.model.SearchResult;
 import edu.bsu.cs.api.ApiContext;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 public class RetrieveScheduledStreams {
+
     private final ApiContext context;
     private final ObtainStreamerID obtainStreamerID;
 
@@ -23,52 +21,28 @@ public class RetrieveScheduledStreams {
         this.context = context;
         this.obtainStreamerID = new ObtainStreamerID(context);
     }
-    public ArrayList<String> getStreamSchedule (String username){
-        ArrayList<String> scheduleInfo = new ArrayList<>();
+
+    public List<String> getTwitchScheduledStreams(String username) {
         String broadcasterId = obtainStreamerID.getTwitchUserId(username);
+        if (broadcasterId == null || broadcasterId.isEmpty()) return null;
 
-        if (broadcasterId == null || broadcasterId.isEmpty()) {
-            System.out.println("Error: Could not retrieve user ID for " + username);
-            return null;
-        }
-        System.out.println("Fetched Broadcaster ID: " + broadcasterId);
-
-        try{
+        try {
             TwitchHelix helix = context.twitchClient.getHelix();
-            StreamScheduleResponse scheduleResponse = helix.getChannelStreamSchedule(
-                            context.twitchAuthToken,
-                            broadcasterId,
-                            null,
-                            null,
-                            null,
-                            null,
-                            5)
-                    .execute();
-            StreamSchedule schedule = scheduleResponse.getSchedule();
-            List<ScheduledSegment> segments = schedule.getSegments();
-            if (segments.isEmpty()){
-                return null;
-            }
-            StringBuilder segmentInfo = new StringBuilder();
-            for (ScheduledSegment segment: segments){
-                segmentInfo.append(segment.getTitle())
-                        .append("__")
-                        .append(segment.getId())
-                        .append("__")
-                        .append(segment.getStartTime())
-                        .append("__")
-                        .append(segment.getEndTime());
-                scheduleInfo.add(String.valueOf(segmentInfo));
-                segmentInfo.delete(0,1000);
-            }
-            return scheduleInfo;
-        }catch (Exception e) {
+            StreamScheduleResponse response = helix.getChannelStreamSchedule(
+                    context.twitchAuthToken, broadcasterId,
+                    null, null, null, null, 5
+            ).execute();
+
+            StreamSchedule schedule = response.getSchedule();
+            List<ScheduledSegment> segments = schedule != null ? schedule.getSegments() : Collections.emptyList();
+            return formatTwitchSegments(segments);
+        } catch (Exception e) {
             return null;
         }
     }
 
-    public List<SearchResult> fetchScheduledStreams(String username) throws IOException {
-        String userId = getUserIdForScheduled(username);
+    public List<SearchResult> fetchYoutubeScheduledStreams(String username) throws IOException {
+        String userId = obtainStreamerID.getYoutubeUserId(username);
         if (userId == null) return Collections.emptyList();
 
         YouTube.Search.List request = context.youtubeService.search()
@@ -81,10 +55,21 @@ public class RetrieveScheduledStreams {
                 .setMaxResults(10L);
 
         SearchListResponse response = request.execute();
-        return response.getItems();
+        return (response != null && response.getItems() != null) ? response.getItems() : Collections.emptyList();
     }
 
-    private String getUserIdForScheduled(String username) throws IOException {
-        return obtainStreamerID.getYoutubeUserId(username);
+    private List<String> formatTwitchSegments(List<ScheduledSegment> segments) {
+        if (segments == null || segments.isEmpty()) return null;
+
+        List<String> formatted = new ArrayList<>();
+        for (ScheduledSegment segment : segments) {
+            String entry = String.join("__",
+                    segment.getTitle(),
+                    segment.getId(),
+                    String.valueOf(segment.getStartTime()),
+                    String.valueOf(segment.getEndTime()));
+            formatted.add(entry);
+        }
+        return formatted;
     }
 }

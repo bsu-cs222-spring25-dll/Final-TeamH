@@ -45,7 +45,7 @@ public class TwitchMediaScreenController {
     }
 
     public void showScheduled(String username) {
-        List<String> scheduledData = scheduledService.getStreamSchedule(username);
+        List<String> scheduledData = scheduledService.getTwitchScheduledStreams(username);
         if (scheduledData != null && !scheduledData.isEmpty()) {
             new TwitchMediaScreenBuilder().display(stage, scheduledData, twitchRoot, "scheduled");
         } else {

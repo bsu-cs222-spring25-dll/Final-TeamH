@@ -49,7 +49,7 @@ public class YoutubeMediaScreenController {
         RetrieveScheduledStreams scheduler = new RetrieveScheduledStreams(ApiInitializer.initializeApiContext());
 
         try {
-            List<SearchResult> scheduled = scheduler.fetchScheduledStreams(username);
+            List<SearchResult> scheduled = scheduler.fetchYoutubeScheduledStreams(username);
             handleDisplayResults(scheduled, "No Scheduled Streams Found", "There are no upcoming YouTube streams.");
         } catch (Exception e) {
             showError("Error", "Failed to load scheduled streams: " + e.getMessage());

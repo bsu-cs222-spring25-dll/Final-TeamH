@@ -7,7 +7,7 @@ import edu.bsu.cs.api.ApiContext;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
-
+import java.util.List;
 
 public class RetrieveClips {
 
@@ -19,39 +19,32 @@ public class RetrieveClips {
         this.obtainStreamerID = new ObtainStreamerID(context);
     }
 
-    public ArrayList<String> getTwitchClipsInfo(String username) {
-        ArrayList<String> twitchClipsInfo = new ArrayList<>();
+    public List<String> getTwitchClipsInfo(String username) {
         String broadcasterId = obtainStreamerID.getTwitchUserId(username);
-        System.out.println("Fetched Broadcaster ID: " + broadcasterId);
+        if (broadcasterId == null) return null;
+
         try {
             TwitchHelix helix = context.twitchClient.getHelix();
             ClipList clips = helix.getClips(
                     context.twitchAuthToken,
-                    broadcasterId, null, null, null, null, 10, Instant.now().minus(Duration.ofDays(7)), null, false).execute();
-            StringBuilder clipInfo = new StringBuilder();
-            clips.getData().forEach(clip -> {
-                clipInfo.append(clip.getTitle())
-                        .append("__")
-                        .append(clip.getId())
-                        .append("__")
-                        .append(clip.getThumbnailUrl());
-                twitchClipsInfo.add(String.valueOf(clipInfo));
-                clipInfo.delete(0,1000);
-            });
-            if(twitchClipsInfo.isEmpty()){
-                return null;
-            }
-            return twitchClipsInfo;
+                    broadcasterId, null, null, null, null,
+                    10, Instant.now().minus(Duration.ofDays(7)), null, false
+            ).execute();
+
+            return clips == null || clips.getData().isEmpty()
+                    ? null
+                    : formatClips(clips);
         } catch (Exception e) {
             return null;
         }
     }
 
     public String getFormattedTwitchClips(String username) {
-        ArrayList<String> clips = getTwitchClipsInfo(username);
+        List<String> clips = getTwitchClipsInfo(username);
         if (clips == null || clips.isEmpty()) {
             return "No clips found for " + username;
         }
+
         StringBuilder builder = new StringBuilder("Recent Twitch Clips:\n");
         int index = 1;
         for (String entry : clips) {
@@ -63,5 +56,17 @@ public class RetrieveClips {
             }
         }
         return builder.toString();
+    }
+
+    private List<String> formatClips(ClipList clips) {
+        List<String> formatted = new ArrayList<>();
+        for (var clip : clips.getData()) {
+            String entry = String.join("__",
+                    clip.getTitle(),
+                    clip.getId(),
+                    clip.getThumbnailUrl());
+            formatted.add(entry);
+        }
+        return formatted;
     }
 }
