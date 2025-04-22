@@ -1,0 +1,22 @@
+{
+  "items": [
+    {
+      "id": {
+        "videoId": "abc123"
+      },
+      "snippet": {
+        "title": "Mock Video Title",
+        "publishedAt": "2024-12-01T12:00:00Z"
+      }
+    },
+    {
+      "id": {
+        "videoId": "def456"
+      },
+      "snippet": {
+        "title": "Another Video Title",
+        "publishedAt": "2024-11-28T08:30:00Z"
+      }
+    }
+  ]
+}
