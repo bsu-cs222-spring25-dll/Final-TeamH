@@ -9,7 +9,8 @@ public class ApiContext {
     public final String twitchAuthToken;
     public final String youtubeAuthToken;
 
-    public ApiContext(ITwitchClient twitchClient, YouTube youtubeService, String twitchAuthToken, String youtubeAuthToken) {
+    public ApiContext(ITwitchClient twitchClient, YouTube youtubeService,
+                      String twitchAuthToken, String youtubeAuthToken) {
         this.twitchClient = twitchClient;
         this.youtubeService = youtubeService;
         this.twitchAuthToken = twitchAuthToken;

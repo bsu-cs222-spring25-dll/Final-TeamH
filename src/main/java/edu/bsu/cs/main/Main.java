@@ -30,15 +30,18 @@ public class Main {
                 case 1 -> {
                     context.twitchClient = ApiInitializer.initializeTwitch();
                     username = searchHandler.searchStreamer("Twitch");
-
-                    if (!username.isEmpty()) {
+                    if (username.isEmpty()) System.out.println("Twitch streamer not found.");
+                    else {
+                        System.out.println("Twitch streamer found: " + username);
                         twitchAccess(username);
                     }
                 }
                 case 2 -> {
                     context.youtubeService = ApiInitializer.initializeYoutube();
                     username = searchHandler.searchStreamer("YouTube");
-                    if (!username.isEmpty()) {
+                    if (username.isEmpty()) System.out.println("YouTube streamer not found.");
+                    else {
+                        System.out.println("YouTube streamer found: " + username);
                         youtubeAccess(username);
                     }
                 }

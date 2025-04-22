@@ -55,9 +55,9 @@ public class TwitchScreenBuilder {
     }
 
     private Label createTitleLabel() {
-        Label label = new Label("Search Streamers!");
+        Label label = new Label("Search Twitch Streamers!");
         label.setFont(Font.font("System", FontWeight.BOLD, 30));
-        label.setTextFill(Color.web("#007bff"));
+        label.setTextFill(Color.web("#8956FB"));
         label.setAlignment(Pos.CENTER_LEFT);
         return label;
     }
