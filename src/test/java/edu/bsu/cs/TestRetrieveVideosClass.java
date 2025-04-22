@@ -51,6 +51,18 @@ class TestRetrieveVideosClass{
     }
 
     @Test
+    void fetchRecentVideos_ShouldReturnEmptyList_WhenVideoListIsEmpty() throws Exception {
+        when(mockObtainStreamerID.getYoutubeUserId("TestUser")).thenReturn("mockId");
+
+        RetrieveVideosService spyService = spy(service);
+        doReturn(List.of()).when(spyService).fetchRecentVideosById("mockId");
+
+        List<SearchResult> results = spyService.fetchRecentVideos("TestUser");
+
+        assertTrue(results.isEmpty());
+    }
+
+    @Test
     void fetchRecentVideos_ShouldReturnEmptyList_WhenUserIdIsNull() throws Exception {
         when(mockObtainStreamerID.getYoutubeUserId("NoUser")).thenReturn(null);
 
