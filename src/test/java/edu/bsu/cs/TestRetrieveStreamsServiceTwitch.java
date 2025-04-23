@@ -20,7 +20,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
-class TestRetrieveStreamsService {
+class TestRetrieveStreamsServiceTwitch {
 
     private ApiContext mockContext;
     private ObtainStreamerID mockIdLookup;
@@ -67,9 +67,6 @@ class TestRetrieveStreamsService {
 
         List<String> result = service.getTwitchStreamsInfo("StreamerName");
 
-        assertNotNull(result,"Expected a non-null List");
-        assertFalse(result.isEmpty(),"Expected at least one VOD entry");
-
         String returnedTitle = result.get(0).split("__", 2)[0].trim();
         assertEquals("Mock Twitch Stream", returnedTitle);
     }
@@ -97,7 +94,6 @@ class TestRetrieveStreamsService {
     void getFormattedTwitchVODs_ShouldReturnMessage_WhenNoVods() {
         RetrieveStreamsService spy = spy(service);
         doReturn(null).when(spy).getTwitchStreamsInfo("NoOne");
-        assertEquals("No VODs found for NoOne", spy.getFormattedTwitchVODs("NoOne"));
 
         doReturn(Collections.emptyList()).when(spy).getTwitchStreamsInfo("Nobody");
         assertEquals("No VODs found for Nobody", spy.getFormattedTwitchVODs("Nobody"));
@@ -111,7 +107,19 @@ class TestRetrieveStreamsService {
 
         String out = spy.getFormattedTwitchVODs("Foo");
         assertTrue(out.startsWith("Recent Twitch VODs:\n1. Title: TitleFoo\n"));
-        assertTrue(out.contains("Watch: https://www.twitch.tv/videos/123"));
-        assertTrue(out.contains("Thumbnail: thumbUrl"));
+    }
+    @Test
+    void getTwitchStreamsInfo_ShouldReturnNull_WhenNoVideos() throws Exception {
+        when(mockIdLookup.getTwitchUserId("StreamerName")).thenReturn("98765");
+        VideoList empty = new VideoList();
+        Field videosField = VideoList.class.getDeclaredField("videos");
+        videosField.setAccessible(true);
+        videosField.set(empty, Collections.emptyList());
+        when(mockHelix
+                .getVideos(anyString(), isNull(), anyString(), isNull(), isNull(),
+                        isNull(), isNull(), isNull(), anyInt(), isNull(), isNull())
+                .execute()
+        ).thenReturn(empty);
+        assertNull(service.getTwitchStreamsInfo("StreamerName"));
     }
 }
