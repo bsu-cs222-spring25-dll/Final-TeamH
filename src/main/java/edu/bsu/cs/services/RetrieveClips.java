@@ -31,9 +31,7 @@ public class RetrieveClips {
                     10, Instant.now().minus(Duration.ofDays(7)), null, false
             ).execute();
 
-            return clips == null || clips.getData().isEmpty()
-                    ? null
-                    : formatClips(clips);
+            return clips == null || clips.getData().isEmpty() ? null : formatClips(clips);
         } catch (Exception e) {
             return null;
         }
