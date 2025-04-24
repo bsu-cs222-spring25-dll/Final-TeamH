@@ -28,17 +28,17 @@ public class TwitchTopStreamsForCategoryController {
     }
 
     public String getTopStreamTitle(int streamNumber, List<String> topStreamsInfo){
-        String[] streamStrings = topStreamsInfo.get(streamNumber).split("]]");
+        String[] streamStrings = topStreamsInfo.get(streamNumber).split("__");
         return streamStrings[0];
     }
 
     public String getTopStreamerUsername(int streamNumber, List<String> topStreamsInfo){
-        String[] streamStrings = topStreamsInfo.get(streamNumber).split("]]");
+        String[] streamStrings = topStreamsInfo.get(streamNumber).split("__");
         return streamStrings[1];
     }
 
     public String getTopStreamThumbnailURL(int streamNumber, List<String> topStreamsInfo) {
-        String[] streamStrings = topStreamsInfo.get(streamNumber).split("]]");
+        String[] streamStrings = topStreamsInfo.get(streamNumber).split("__");
         return streamStrings[2];
     }
 

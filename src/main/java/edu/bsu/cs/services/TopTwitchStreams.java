@@ -64,7 +64,7 @@ public class TopTwitchStreams {
         List<String> formattedTopStreamsInfo = new ArrayList<>();
         int i=0;
         for (var stream : topStreams.getStreams()) {
-            String entry = String.join("]]",
+            String entry = String.join("__",
                     stream.getTitle(),
                     usernameList.get(i),
                     stream.getThumbnailUrl(170,96));
