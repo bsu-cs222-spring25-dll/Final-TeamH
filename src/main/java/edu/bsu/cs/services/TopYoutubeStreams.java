@@ -18,7 +18,7 @@ public class TopYoutubeStreams {
         this.context = context;
     }
 
-    public List<SearchResult> fetchRandomStreamsById() throws IOException {
+    public List<SearchResult> fetchTopStreams() throws IOException {
         YouTube.Search.List request = context.youtubeService.search()
                 .list(Arrays.asList("id", "snippet"))
                 .setKey(context.youtubeAuthToken)

@@ -68,21 +68,22 @@ public class YoutubeScreenBuilder {
 
         Label titleLabel = createTitleLabel("Choose a Category to Explore Livestreams!");
 
+        Button liveButton = createImageButton("Top Streams", "/images/live.png");
         Button musicButton = createImageButton("Music", "/images/music.png");
         Button gamingButton = createImageButton("Gaming", "/images/gaming.png");
         Button sportsButton = createImageButton("Sports", "/images/sports.png");
-        Button newsbutton = createImageButton("News", "/images/news.png");
+        Button newsButton = createImageButton("News", "/images/news.png");
 
         BorderPane layout = new BorderPane();
 
         YoutubeCategoryModel model = new YoutubeCategoryModel(musicButton, gamingButton,
-                sportsButton, newsbutton, layout);
+                sportsButton, newsButton, liveButton, layout);
         YoutubeCategoryController controller = new YoutubeCategoryController(context, model, stage);
         controller.updateCategoryDisplay();
 
         Button backButton = createBackButton();
 
-        HBox buttonBox = new HBox(20, musicButton, gamingButton, sportsButton, newsbutton);
+        HBox buttonBox = new HBox(20, liveButton,musicButton, gamingButton, sportsButton, newsButton);
         buttonBox.setAlignment(Pos.CENTER);
 
         VBox centerBox = new VBox(20, titleLabel, buttonBox, backButton);

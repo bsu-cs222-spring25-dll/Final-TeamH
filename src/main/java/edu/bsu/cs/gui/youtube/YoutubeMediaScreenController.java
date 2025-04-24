@@ -77,6 +77,21 @@ public class YoutubeMediaScreenController {
         }
     }
 
+    public void showTopLiveStreams() {
+        TopYoutubeStreams category  = new TopYoutubeStreams(ApiInitializer.initializeApiContext());
+
+        try {
+            List<SearchResult> liveStreams = category.fetchTopStreams();
+            handleDisplayResults(
+                    liveStreams,
+                    "No Live Streams Found",
+                    "There are currently no live streams for this category."
+            );
+        } catch (Exception e) {
+            showError("Error", "Failed to load live streams: " + e.getMessage());
+        }
+    }
+
     private void handleDisplayResults(List<SearchResult> results, String emptyTitle, String emptyMessage) {
         if (results == null || results.isEmpty()) {
             showError(emptyTitle, emptyMessage);
