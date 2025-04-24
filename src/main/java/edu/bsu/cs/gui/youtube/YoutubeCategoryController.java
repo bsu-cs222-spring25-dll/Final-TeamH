@@ -20,6 +20,5 @@ public class YoutubeCategoryController {
         model.getSportsButton.setOnAction(e -> mediaController.showTopLiveStreamsByCategory("17"));
         model.getNewsButton.setOnAction(e -> mediaController.showTopLiveStreamsByCategory("25"));
         model.getLiveButton.setOnAction(e -> mediaController.showTopLiveStreams());
-
     }
 }

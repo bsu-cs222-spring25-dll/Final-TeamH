@@ -19,7 +19,11 @@ public class ProfilePictureService {
 
     public String getProfilePicture(String username, String platform) {
         if (platform.equalsIgnoreCase("Twitch")) {
-            return getTwitchProfilePicture(username);
+            try {
+                return getTwitchProfilePicture(username);
+            } catch (Exception e) {
+                return null;
+            }
         } else if (platform.equalsIgnoreCase("YouTube")) {
             try {
                 return getYouTubeProfilePicture(username);
@@ -63,14 +67,19 @@ public class ProfilePictureService {
                 .setKey(context.youtubeAuthToken)
                 .execute();
 
-        return (searchResponse != null && searchResponse.getItems() != null && !searchResponse.getItems().isEmpty())
+        return (searchResponse != null
+                && searchResponse.getItems() != null
+                && !searchResponse.getItems().isEmpty())
                 ? searchResponse.getItems().get(0).getId().getChannelId()
                 : null;
     }
 
     private String extractHighThumbnailUrl(ChannelListResponse response) {
-        if (response == null || response.getItems() == null || response.getItems().isEmpty()) return null;
-
+        if (response == null
+                || response.getItems() == null
+                || response.getItems().isEmpty()) {
+            return null;
+        }
         return response.getItems().get(0)
                 .getSnippet()
                 .getThumbnails()
