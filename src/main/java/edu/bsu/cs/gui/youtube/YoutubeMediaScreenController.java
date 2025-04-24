@@ -6,6 +6,7 @@ import edu.bsu.cs.services.RetrieveStreamsService;
 import edu.bsu.cs.services.RetrieveVideosService;
 import edu.bsu.cs.api.ApiContext;
 import edu.bsu.cs.api.ApiInitializer;
+import edu.bsu.cs.services.TopYoutubeStreams;
 import javafx.scene.control.Alert;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
@@ -59,6 +60,20 @@ public class YoutubeMediaScreenController {
             handleDisplayResults(scheduled, "No Scheduled Streams Found", "There are no upcoming YouTube streams.");
         } catch (Exception e) {
             showError("Error", "Failed to load scheduled streams: " + e.getMessage());
+        }
+    }
+    public void showTopLiveStreamsByCategory(String categoryId) {
+        TopYoutubeStreams category  = new TopYoutubeStreams(ApiInitializer.initializeApiContext());
+
+        try {
+            List<SearchResult> liveStreams = category.fetchTopLiveStreamsByCategory(categoryId);
+            handleDisplayResults(
+                    liveStreams,
+                    "No Live Streams Found",
+                    "There are currently no live streams for this category."
+            );
+        } catch (Exception e) {
+            showError("Error", "Failed to load live streams: " + e.getMessage());
         }
     }
 

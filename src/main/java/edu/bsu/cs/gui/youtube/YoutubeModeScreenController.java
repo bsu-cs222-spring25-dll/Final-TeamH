@@ -4,6 +4,8 @@ import edu.bsu.cs.api.ApiContext;
 import javafx.scene.control.Alert;
 import javafx.stage.Stage;
 
+import java.io.IOException;
+
 public class YoutubeModeScreenController {
 
     private final ApiContext context;
@@ -19,15 +21,8 @@ public class YoutubeModeScreenController {
         stage.getScene().setRoot(builder.buildYoutubeScreen(context, stage));
     }
 
-    public void handleCategoryClick() {
-        showPlaceholderAlert("YouTube category screen is coming soon.");
-    }
-
-    private void showPlaceholderAlert(String message) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Coming Soon");
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
+    public void handleCategoryClick() throws IOException {
+        YoutubeScreenBuilder builder = new YoutubeScreenBuilder();
+        stage.getScene().setRoot(builder.buildCategorySelectScreen(context, stage));
     }
 }

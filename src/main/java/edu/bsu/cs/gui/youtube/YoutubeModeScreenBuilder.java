@@ -12,6 +12,8 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
 
+import java.io.IOException;
+
 public class YoutubeModeScreenBuilder {
 
     private Stage stage;
@@ -77,7 +79,13 @@ public class YoutubeModeScreenBuilder {
 
     private HBox createCategorySection() {
         Button categoryButton = createImageButton("/images/youtubeCategories.png", 220, 180);
-        categoryButton.setOnAction(e -> new YoutubeModeScreenController(context, stage).handleCategoryClick());
+        categoryButton.setOnAction(e -> {
+            try {
+                new YoutubeModeScreenController(context, stage).handleCategoryClick();
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
+            }
+        });
 
         VBox info = new VBox(12,
                 createStyledLabel("YouTube Categories!", 20, true),

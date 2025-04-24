@@ -60,6 +60,38 @@ public class YoutubeScreenBuilder {
         return layout;
     }
 
+    public BorderPane buildCategorySelectScreen(ApiContext context, Stage stage) throws IOException {
+        this.context = context;
+        this.stage = stage;
+
+        Label titleLabel = new Label("Choose a YouTube Category");
+        titleLabel.setFont(Font.font("System", FontWeight.BOLD, 26));
+        titleLabel.setTextFill(Color.DARKRED);
+
+        Button musicButton = new Button("Music");
+        Button gamingButton = new Button("Gaming");
+        Button sportsButton = new Button("Sports");
+        Button newsbutton = new Button("News");
+
+        BorderPane layout = new BorderPane();
+
+        YoutubeCategoryModel model = new YoutubeCategoryModel(musicButton, gamingButton, sportsButton, newsbutton, layout);
+        YoutubeCategoryController controller = new YoutubeCategoryController(context, model, stage);
+        controller.updateCategoryDisplay();
+
+        Button backButton = createBackButton();
+
+        VBox buttonBox = new VBox(10, musicButton, gamingButton, sportsButton, newsbutton);
+        buttonBox.setAlignment(Pos.CENTER);
+
+        VBox centerBox = new VBox(20, titleLabel, buttonBox, backButton);
+        centerBox.setAlignment(Pos.CENTER);
+        centerBox.setPadding(new Insets(40));
+
+        layout.setCenter(centerBox);
+        return layout;
+    }
+
     private HBox buildSearchRow() {
         searchField = new TextField();
         searchField.setPromptText("Enter channel name...");

@@ -30,4 +30,18 @@ public class TopYoutubeStreams {
         SearchListResponse response = request.execute();
         return response.getItems() != null ? response.getItems() : Collections.emptyList();
     }
+
+    public List<SearchResult> fetchTopLiveStreamsByCategory(String categoryId) throws IOException {
+        YouTube.Search.List request = context.youtubeService.search()
+                .list(Arrays.asList("id", "snippet"))
+                .setKey(context.youtubeAuthToken)
+                .setType(Collections.singletonList("video"))
+                .setEventType("live")
+                .setOrder("viewCount")
+                .setVideoCategoryId(categoryId)
+                .setMaxResults(10L);
+
+        SearchListResponse response = request.execute();
+        return response.getItems() != null ? response.getItems() : Collections.emptyList();
+    }
 }
