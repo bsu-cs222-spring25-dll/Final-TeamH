@@ -6,8 +6,8 @@ import com.google.api.services.youtube.YouTube;
 public class ApiContext {
     public ITwitchClient twitchClient;
     public YouTube youtubeService;
-    public final String twitchAuthToken;
-    public final String youtubeAuthToken;
+    public String twitchAuthToken;
+    public String youtubeAuthToken;
 
     public ApiContext(ITwitchClient twitchClient, YouTube youtubeService,
                       String twitchAuthToken, String youtubeAuthToken) {
