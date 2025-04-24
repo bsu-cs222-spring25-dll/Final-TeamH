@@ -69,7 +69,8 @@ public class TwitchTopCategoriesScreenBuilder {
                 btn.setMinSize(100, 100);
                 btn.setStyle("-fx-content-display: graphic-only;");
 
-                btn.setOnAction(e -> controller.handleCategoryClick());
+                int finalCategoryNumber = categoryNumber;
+                btn.setOnAction(e -> controller.handleCategoryClick(finalCategoryNumber));
 
                 rowBox.getChildren().add(btn);
                 categoryNumber++;

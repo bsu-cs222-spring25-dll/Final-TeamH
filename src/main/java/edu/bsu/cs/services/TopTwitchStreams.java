@@ -2,7 +2,9 @@ package edu.bsu.cs.services;
 
 import com.github.twitch4j.helix.TwitchHelix;
 import com.github.twitch4j.helix.domain.GameTopList;
+import com.github.twitch4j.helix.domain.Stream;
 import com.github.twitch4j.helix.domain.StreamList;
+import com.github.twitch4j.helix.domain.User;
 import edu.bsu.cs.api.ApiContext;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,7 +34,7 @@ public class TopTwitchStreams {
         for (var game: topGames.getGames()) {
             gamesIDString.append(game.getId()).append("__");
             gamesNameString.append(game.getName()).append("__");
-            gamesURLString.append(game.getBoxArtUrl(142,189)).append("__");
+            gamesURLString.append(game.getBoxArtUrl(180,240)).append("__");
         }
         formattedTopGamesInfo.add(String.valueOf(gamesIDString));
         formattedTopGamesInfo.add(String.valueOf(gamesNameString));
@@ -40,18 +42,47 @@ public class TopTwitchStreams {
         return formattedTopGamesInfo;
     }
 
-    public void getTopStreamsForCategory(String gameId){
-        List<String> gameIDList = new ArrayList<>();
-        gameIDList.add(gameId);
+    public List<String> getTopStreamsForCategoryInfo(String gameId){
+        List<String> gameIDList = List.of(gameId);
         try {
+            List<String> topStreamerUsernames = new ArrayList<>();
             TwitchHelix helix = context.twitchClient.getHelix();
             StreamList topStreams = helix.getStreams(null, null, null,
-                    5, gameIDList, null, null, null).execute();
-            for (var stream: topStreams.getStreams()) {
-                System.out.println("ID: " + stream.getId() + " - Title: " + stream.getTitle()+ " - Game: " + stream.getGameId());
+                    10, gameIDList, null, null, null).execute();
+            List<String> userIds = topStreams.getStreams().stream()
+                    .map(Stream::getUserId)
+                    .toList();
+            for (String user: userIds){
+                topStreamerUsernames.add(getTwitchUsername(user));
             }
+            return formatTopStreamsInfo(topStreams,topStreamerUsernames);
         } catch (Exception e) {
-            e.printStackTrace();
+            return null;
+        }
+    }
+    private List<String> formatTopStreamsInfo(StreamList topStreams,List<String> usernameList) {
+        List<String> formattedTopStreamsInfo = new ArrayList<>();
+        int i=0;
+        for (var stream : topStreams.getStreams()) {
+            String entry = String.join("]]",
+                    stream.getTitle(),
+                    usernameList.get(i),
+                    stream.getThumbnailUrl(170,96));
+            i++;
+            formattedTopStreamsInfo.add(entry);
+        }
+        System.out.println(formattedTopStreamsInfo);
+        return formattedTopStreamsInfo;
+    }
+    public String getTwitchUsername(String userID){
+        TwitchHelix helix = context.twitchClient.getHelix();
+        List<User> users = helix.getUsers(null, List.of(userID), null)
+                .execute()
+                .getUsers();
+        if (!users.isEmpty()) {
+            return users.get(0).getLogin();
+        } else {
+            return null;
         }
     }
 }

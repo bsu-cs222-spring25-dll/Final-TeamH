@@ -16,9 +16,9 @@ public class TwitchTopCategoriesScreenController {
         this.topTwitchStreams = new TopTwitchStreams(context);
     }
 
-    public void handleCategoryClick() {
-        TwitchTopCategoriesScreenBuilder builder = new TwitchTopCategoriesScreenBuilder();
-        stage.getScene().setRoot(builder.buildTopCategoriesScreen(context, stage));
+    public void handleCategoryClick(int categoryNumber) {
+        TwitchTopStreamsForCategoryBuilder builder = new TwitchTopStreamsForCategoryBuilder();
+        stage.getScene().setRoot(builder.buildTopStreamsForCategoryScreen(context, stage, getTopCategoryNames(categoryNumber), getTopCategoryIDs(categoryNumber),getTopCategoryURLs(categoryNumber)));
     }
 
     public String getTopCategoryIDs(int categoryNumber){
