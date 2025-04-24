@@ -14,19 +14,13 @@ public class TwitchModeSelectionScreenController {
     }
 
     public void handleSearchClick() {
-        TwitchScreenBuilder builder = new TwitchScreenBuilder();
+        TwitchStreamerScreenBuilder builder = new TwitchStreamerScreenBuilder();
         stage.getScene().setRoot(builder.buildTwitchScreen(context, stage));
     }
 
     public void handleCategoryClick() {
-        showPlaceholderAlert("Twitch category screen is coming soon.");
+        TwitchTopCategoriesScreenBuilder builder = new TwitchTopCategoriesScreenBuilder();
+        stage.getScene().setRoot(builder.buildTopCategoriesScreen(context, stage));
     }
 
-    private void showPlaceholderAlert(String message) {
-        javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.INFORMATION);
-        alert.setTitle("Coming Soon");
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
-    }
 }

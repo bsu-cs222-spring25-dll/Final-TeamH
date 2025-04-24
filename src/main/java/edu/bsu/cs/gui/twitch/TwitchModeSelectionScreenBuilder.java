@@ -13,7 +13,6 @@ import javafx.scene.layout.*;
 import javafx.stage.Stage;
 
 public class TwitchModeSelectionScreenBuilder {
-
     public BorderPane build(ApiContext context, javafx.stage.Stage stage) {
         Label titleLabel = createTitleLabel();
         TwitchModeSelectionScreenController controller = new TwitchModeSelectionScreenController(context, stage);

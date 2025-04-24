@@ -13,7 +13,7 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
 
-public class TwitchScreenBuilder {
+public class TwitchStreamerScreenBuilder {
 
     public BorderPane buildTwitchScreen(ApiContext context, Stage stage) {
         Label titleLabel = createTitleLabel();
@@ -48,7 +48,7 @@ public class TwitchScreenBuilder {
 
         layout.setTop(topBar);
 
-        TwitchScreenController controller = new TwitchScreenController(context, model, stage);
+        TwitchStreamerScreenController controller = new TwitchStreamerScreenController(context, model, stage);
         searchButton.setOnAction(e -> controller.handleSearch(searchField.getText()));
 
         return layout;

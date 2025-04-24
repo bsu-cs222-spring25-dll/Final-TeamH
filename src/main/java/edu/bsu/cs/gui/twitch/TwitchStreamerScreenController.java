@@ -11,7 +11,7 @@ import javafx.stage.Stage;
 
 import java.util.List;
 
-public class TwitchScreenController {
+public class TwitchStreamerScreenController {
 
     private final ApiContext context;
     private final Stage stage;
@@ -21,7 +21,7 @@ public class TwitchScreenController {
     private final ChannelInfoService channelInfoService;
     private final LiveStatusService liveStatusService;
 
-    public TwitchScreenController(ApiContext context, TwitchViewModel model, Stage stage) {
+    public TwitchStreamerScreenController(ApiContext context, TwitchViewModel model, Stage stage) {
         this.context = context;
         this.model = model;
         this.stage = stage;
