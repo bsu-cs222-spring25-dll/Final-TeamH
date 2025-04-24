@@ -2,7 +2,10 @@ package edu.bsu.cs.gui.youtube;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
+import javafx.scene.control.Hyperlink;
+import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -66,6 +69,7 @@ public class YoutubeMediaScreenBuilder {
     }
 
     private void displayVideo(String videoId, List<YoutubeVideoEntry> allEntries) {
+        Node fallbackPlayer = createFallPlayer(videoId);
         WebView webView = new WebView();
         webView.setPrefSize(800, 450);
         webView.getEngine().load("https://www.youtube.com/embed/" + videoId + "?autoplay=1");
@@ -76,9 +80,31 @@ public class YoutubeMediaScreenBuilder {
             display(stage, allEntries, previousRoot);
         });
 
-        VBox wrapper = new VBox(10, backToList, webView);
+
+        VBox wrapper = new VBox(10, webView, fallbackPlayer, backToList);
         wrapper.setPadding(new Insets(20));
+        wrapper.setAlignment(Pos.CENTER);
 
         stage.getScene().setRoot(new BorderPane(wrapper));
     }
+
+    private Node createFallPlayer(String videoId) {
+        String videoUrl = "https://www.youtube.com/watch?v=" + videoId;
+        Label fallbackLabel = new Label("If the video doesn't work, ");
+        Hyperlink openLink = new Hyperlink("click here to watch it on YouTube.");
+
+        openLink.setOnAction(e -> {
+            try {
+                java.awt.Desktop.getDesktop().browse(new java.net.URI(videoUrl));
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        });
+
+        HBox fallbackBox = new HBox(5, fallbackLabel, openLink);
+        fallbackBox.setAlignment(Pos.CENTER);
+        fallbackBox.setPadding(new Insets(10, 0, 0, 0));
+        return fallbackBox;
+    }
+
 }

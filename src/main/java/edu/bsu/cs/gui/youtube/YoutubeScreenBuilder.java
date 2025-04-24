@@ -6,6 +6,7 @@ import edu.bsu.cs.gui.GUIScreenController;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
@@ -14,6 +15,7 @@ import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
 
 import java.io.IOException;
+import java.util.Objects;
 
 public class YoutubeScreenBuilder {
 
@@ -34,7 +36,7 @@ public class YoutubeScreenBuilder {
         this.context = context;
         this.stage = stage;
 
-        Label titleLabel = createTitleLabel();
+        Label titleLabel = createTitleLabel("Search YouTube Channels!");
         HBox searchRow = buildSearchRow();
         HBox profileRow = buildProfileRow();
         VBox contentBox = buildContentBox(titleLabel, searchRow, profileRow);
@@ -64,24 +66,23 @@ public class YoutubeScreenBuilder {
         this.context = context;
         this.stage = stage;
 
-        Label titleLabel = new Label("Choose a YouTube Category");
-        titleLabel.setFont(Font.font("System", FontWeight.BOLD, 26));
-        titleLabel.setTextFill(Color.DARKRED);
+        Label titleLabel = createTitleLabel("Choose a Category to Explore Livestreams!");
 
-        Button musicButton = new Button("Music");
-        Button gamingButton = new Button("Gaming");
-        Button sportsButton = new Button("Sports");
-        Button newsbutton = new Button("News");
+        Button musicButton = createImageButton("Music", "/images/music.png");
+        Button gamingButton = createImageButton("Gaming", "/images/gaming.png");
+        Button sportsButton = createImageButton("Sports", "/images/sports.png");
+        Button newsbutton = createImageButton("News", "/images/news.png");
 
         BorderPane layout = new BorderPane();
 
-        YoutubeCategoryModel model = new YoutubeCategoryModel(musicButton, gamingButton, sportsButton, newsbutton, layout);
+        YoutubeCategoryModel model = new YoutubeCategoryModel(musicButton, gamingButton,
+                sportsButton, newsbutton, layout);
         YoutubeCategoryController controller = new YoutubeCategoryController(context, model, stage);
         controller.updateCategoryDisplay();
 
         Button backButton = createBackButton();
 
-        VBox buttonBox = new VBox(10, musicButton, gamingButton, sportsButton, newsbutton);
+        HBox buttonBox = new HBox(20, musicButton, gamingButton, sportsButton, newsbutton);
         buttonBox.setAlignment(Pos.CENTER);
 
         VBox centerBox = new VBox(20, titleLabel, buttonBox, backButton);
@@ -90,6 +91,16 @@ public class YoutubeScreenBuilder {
 
         layout.setCenter(centerBox);
         return layout;
+    }
+
+    private Button createImageButton(String text, String imagePath) {
+        ImageView icon = new ImageView(new Image(Objects.requireNonNull(getClass().getResourceAsStream(imagePath))));
+        icon.setFitWidth(150);
+        icon.setFitHeight(150);
+
+        Button button = new Button(text, icon);
+        button.setContentDisplay(ContentDisplay.TOP);
+        return button;
     }
 
     private HBox buildSearchRow() {
@@ -192,8 +203,8 @@ public class YoutubeScreenBuilder {
         return backButton;
     }
 
-    private Label createTitleLabel() {
-        Label label = new Label("Search YouTube Channels!");
+    private Label createTitleLabel(String text) {
+        Label label = new Label(text);
         label.setFont(Font.font("System", FontWeight.BOLD, 30));
         label.setTextFill(Color.DARKRED);
         return label;

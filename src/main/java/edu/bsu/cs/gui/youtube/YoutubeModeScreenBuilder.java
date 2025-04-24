@@ -90,7 +90,7 @@ public class YoutubeModeScreenBuilder {
         VBox info = new VBox(12,
                 createStyledLabel("YouTube Categories!", 20, true),
                 createStyledLabel("- Explore trending content", 16, false),
-                createStyledLabel("- Discover Random Streams", 16, false)
+                createStyledLabel("- Discover new Streams", 16, false)
         );
         info.setAlignment(Pos.TOP_RIGHT);
 
