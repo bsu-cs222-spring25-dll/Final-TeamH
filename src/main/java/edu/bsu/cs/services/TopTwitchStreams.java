@@ -43,12 +43,24 @@ public class TopTwitchStreams {
     }
 
     public List<String> getTopStreamsForCategoryInfo(String gameId){
-        List<String> gameIDList = List.of(gameId);
-        try {
-            List<String> topStreamerUsernames = new ArrayList<>();
+        List<String> topStreamerUsernames = new ArrayList<>();
+        if (gameId == null){
             TwitchHelix helix = context.twitchClient.getHelix();
             StreamList topStreams = helix.getStreams(null, null, null,
-                    10, gameIDList, null, null, null).execute();
+                    10, null, null, null, null).execute();
+            List<String> userIds = topStreams.getStreams().stream()
+                    .map(Stream::getUserId)
+                    .toList();
+            for (String user: userIds){
+                topStreamerUsernames.add(getTwitchUsername(user));
+            }
+            return formatTopStreamsInfo(topStreams,topStreamerUsernames);
+        }
+        List<String> gameIDList = List.of(gameId);
+        try {
+            TwitchHelix helix = context.twitchClient.getHelix();
+                StreamList topStreams = helix.getStreams(null, null, null,
+                        10, gameIDList, null, null, null).execute();
             List<String> userIds = topStreams.getStreams().stream()
                     .map(Stream::getUserId)
                     .toList();
@@ -71,7 +83,6 @@ public class TopTwitchStreams {
             i++;
             formattedTopStreamsInfo.add(entry);
         }
-        System.out.println(formattedTopStreamsInfo);
         return formattedTopStreamsInfo;
     }
     public String getTwitchUsername(String userID){

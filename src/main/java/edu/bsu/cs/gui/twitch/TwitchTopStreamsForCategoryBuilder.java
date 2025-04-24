@@ -49,7 +49,7 @@ public class TwitchTopStreamsForCategoryBuilder {
 
         VBox centerContent = createStreamButtons(controller, topCategoryID);
         centerContent.setAlignment(Pos.CENTER);
-        centerContent.setPadding(new Insets(10, 0, 0, 0)); // Spacing from top bar
+        centerContent.setPadding(new Insets(10, 0, 0, 0));
 
         BorderPane layout = new BorderPane();
         layout.setTop(topBar);
