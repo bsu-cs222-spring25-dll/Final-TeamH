@@ -32,6 +32,7 @@ class TestRetrieveVideosClass{
     }
 
     @Test
+    @SuppressWarnings("deprecation")
     void fetchRecentVideos_ShouldReturnVideos_WhenDataExists() throws Exception {
         InputStream json = getClass().getResourceAsStream("/youtube-videos.json");
 

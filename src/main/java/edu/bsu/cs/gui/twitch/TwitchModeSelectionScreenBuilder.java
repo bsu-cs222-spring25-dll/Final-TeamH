@@ -12,6 +12,8 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
 
+import java.util.Objects;
+
 public class TwitchModeSelectionScreenBuilder {
     public BorderPane build(ApiContext context, javafx.stage.Stage stage) {
         Label titleLabel = createTitleLabel();
@@ -44,8 +46,8 @@ public class TwitchModeSelectionScreenBuilder {
     }
 
     private HBox buildSearchSection(TwitchModeSelectionScreenController controller) {
-        Button searchButton = createImageButton("/images/twitchSearch.png", 220, 180);
-        searchButton.setOnAction(e -> controller.handleSearchClick());
+        Button searchButton = createImageButton("/images/twitchSearch.png");
+        searchButton.setOnAction(_ -> controller.handleSearchClick());
 
         VBox info = buildSearchInfoText();
 
@@ -57,8 +59,8 @@ public class TwitchModeSelectionScreenBuilder {
     }
 
     private HBox buildCategorySection(TwitchModeSelectionScreenController controller) {
-        Button categoryButton = createImageButton("/images/twitchCategories.png", 220, 180);
-        categoryButton.setOnAction(e -> controller.handleCategoryClick());
+        Button categoryButton = createImageButton("/images/twitchCategories.png");
+        categoryButton.setOnAction(_ -> controller.handleCategoryClick());
 
         VBox info = buildCategoryInfoText();
 
@@ -100,21 +102,14 @@ public class TwitchModeSelectionScreenBuilder {
         return label;
     }
 
-    private VBox buildPageLayout(Label titleLabel, StackPane stack) {
-        VBox layout = new VBox(30, titleLabel, stack);
-        layout.setAlignment(Pos.TOP_CENTER);
-        layout.setPadding(new Insets(40, 0, 0, 0));
-        return layout;
-    }
-
-    private Button createImageButton(String imagePath, int width, int height) {
+    private Button createImageButton(String imagePath) {
         ImageView imageView = new ImageView(
-                new Image(getClass().getResource(imagePath).toExternalForm(), width, height, false, true)
+                new Image(Objects.requireNonNull(getClass().getResource(imagePath)).toExternalForm(), 220, 180, false, true)
         );
         imageView.setPreserveRatio(false);
 
         Button button = new Button();
-        button.setPrefSize(width, height);
+        button.setPrefSize(220, 180);
         button.setGraphic(imageView);
         button.setStyle(
                 "-fx-background-color: transparent;" +
@@ -130,7 +125,7 @@ public class TwitchModeSelectionScreenBuilder {
     private Button createBackButton(Stage stage) {
         Button backButton = new Button("Back");
         backButton.setStyle("-fx-font-size: 14px;");
-        backButton.setOnAction(e -> {
+        backButton.setOnAction(_ -> {
             GUIScreenBuilder builder = new GUIScreenBuilder();
             GUIScreenController controller = new GUIScreenController(stage);
             stage.getScene().setRoot(builder.buildMainScreen(controller));

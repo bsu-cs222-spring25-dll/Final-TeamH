@@ -91,7 +91,7 @@ public class TopTwitchStreams {
                 .execute()
                 .getUsers();
         if (!users.isEmpty()) {
-            return users.get(0).getLogin();
+            return users.getFirst().getLogin();
         } else {
             return null;
         }

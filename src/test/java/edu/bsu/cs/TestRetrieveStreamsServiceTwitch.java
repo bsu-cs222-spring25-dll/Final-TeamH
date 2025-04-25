@@ -22,104 +22,97 @@ import static org.mockito.Mockito.*;
 
 class TestRetrieveStreamsServiceTwitch {
 
-    private ApiContext mockContext;
-    private ObtainStreamerID mockIdLookup;
-    private RetrieveStreamsService service;
-    private TwitchHelix mockHelix;
+    private ObtainStreamerID idService;
+    private RetrieveStreamsService streamService;
+    private TwitchHelix twitchHelix;
 
     @BeforeEach
     void setUp() throws Exception {
-        mockContext = mock(ApiContext.class);
-        TwitchClient mockClient = mock(TwitchClient.class);
-        mockHelix = mock(TwitchHelix.class, RETURNS_DEEP_STUBS);
+        ApiContext apiContext = mock(ApiContext.class);
+        TwitchClient twitchClient = mock(TwitchClient.class);
+        twitchHelix = mock(TwitchHelix.class, RETURNS_DEEP_STUBS);
 
-        Field clientF = ApiContext.class.getDeclaredField("twitchClient");
-        clientF.setAccessible(true);
-        clientF.set(mockContext, mockClient);
+        Field clientField = ApiContext.class.getDeclaredField("twitchClient");
+        clientField.setAccessible(true);
+        clientField.set(apiContext, twitchClient);
 
-        Field tokenF = ApiContext.class.getDeclaredField("twitchAuthToken");
-        tokenF.setAccessible(true);
-        tokenF.set(mockContext, "dummy-token");
+        Field tokenField = ApiContext.class.getDeclaredField("twitchAuthToken");
+        tokenField.setAccessible(true);
+        tokenField.set(apiContext, "dummy-token");
 
-        when(mockClient.getHelix()).thenReturn(mockHelix);
+        when(twitchClient.getHelix()).thenReturn(twitchHelix);
 
-        mockIdLookup = mock(ObtainStreamerID.class);
+        idService = mock(ObtainStreamerID.class);
+        streamService = new RetrieveStreamsService(apiContext);
 
-        service = new RetrieveStreamsService(mockContext);
-        Field idF = RetrieveStreamsService.class.getDeclaredField("obtainStreamerID");
-        idF.setAccessible(true);
-        idF.set(service, mockIdLookup);
+        Field idField = RetrieveStreamsService.class.getDeclaredField("obtainStreamerID");
+        idField.setAccessible(true);
+        idField.set(streamService, idService);
     }
 
     @Test
-    void getTwitchStreamsInfo_ShouldReturnStreamTitle_WhenDataExists() throws Exception {
-        when(mockIdLookup.getTwitchUserId("StreamerName")).thenReturn("98765");
+    void returnsStreamTitle_whenValidDataExists() throws Exception {
+        when(idService.getTwitchUserId("StreamerName")).thenReturn("98765");
 
-        try (InputStream is = getClass().getResourceAsStream("/twitch-vods.json")) {
-            VideoList videos = new ObjectMapper()
+        try (InputStream json = getClass().getResourceAsStream("/twitch-vods.json")) {
+            VideoList videoList = new ObjectMapper()
                     .registerModule(new JavaTimeModule())
-                    .readValue(is, VideoList.class);
+                    .readValue(json, VideoList.class);
 
-            when(mockHelix
-                    .getVideos(anyString(), any(), anyString(), any(), any(),
-                            any(), any(), any(), anyInt(), any(), any()).execute()).thenReturn(videos);
+            when(twitchHelix.getVideos(anyString(), any(), anyString(), any(), any(), any(), any(), any(), anyInt(), any(), any())
+                    .execute()).thenReturn(videoList);
         }
 
-        List<String> result = service.getTwitchStreamsInfo("StreamerName");
-
-        String returnedTitle = result.get(0).split("__", 2)[0].trim();
-        assertEquals("Mock Twitch Stream", returnedTitle);
+        List<String> results = streamService.getTwitchStreamsInfo("StreamerName");
+        assertTrue(results.getFirst().startsWith("Mock Twitch Stream"));
     }
 
     @Test
-    void getTwitchStreamsInfo_ShouldReturnNull_WhenUserIdIsNull() {
-        when(mockIdLookup.getTwitchUserId("Nobody")).thenReturn(null);
-        assertNull(service.getTwitchStreamsInfo("Nobody"));
+    void returnsNull_whenUserIdIsNull() {
+        when(idService.getTwitchUserId("Nobody")).thenReturn(null);
+        assertNull(streamService.getTwitchStreamsInfo("Nobody"));
     }
 
     @Test
-    void getTwitchStreamsInfo_ShouldReturnNull_WhenHelixThrows() {
-        when(mockIdLookup.getTwitchUserId("BadGuy")).thenReturn("98765");
+    void returnsNull_whenHelixThrowsException() {
+        when(idService.getTwitchUserId("BadGuy")).thenReturn("98765");
 
-        when(mockHelix
-                .getVideos(
-                        anyString(), any(), anyString(),
-                        any(), any(), any(), any(), any(), anyInt(), any(), any()).execute()
-        ).thenThrow(new RuntimeException("boom"));
+        when(twitchHelix.getVideos(anyString(), any(), anyString(), any(), any(), any(), any(), any(), anyInt(), any(), any())
+                .execute()).thenThrow(new RuntimeException("fail"));
 
-        assertNull(service.getTwitchStreamsInfo("BadGuy"));
+        assertNull(streamService.getTwitchStreamsInfo("BadGuy"));
     }
 
     @Test
-    void getFormattedTwitchVODs_ShouldReturnMessage_WhenNoVods() {
-        RetrieveStreamsService spy = spy(service);
-        doReturn(null).when(spy).getTwitchStreamsInfo("NoOne");
+    void returnsNoVODsMessage_whenStreamListIsEmpty() {
+        RetrieveStreamsService spyService = spy(streamService);
+        doReturn(null).when(spyService).getTwitchStreamsInfo("NoOne");
 
-        doReturn(Collections.emptyList()).when(spy).getTwitchStreamsInfo("Nobody");
-        assertEquals("No VODs found for Nobody", spy.getFormattedTwitchVODs("Nobody"));
+        doReturn(Collections.emptyList()).when(spyService).getTwitchStreamsInfo("Nobody");
+        assertEquals("No VODs found for Nobody", spyService.getFormattedTwitchVODs("Nobody"));
     }
 
     @Test
-    void getFormattedTwitchVODs_ShouldFormatCorrectly() {
-        List<String> fake = List.of("TitleFoo__123__thumbUrl");
-        RetrieveStreamsService spy = spy(service);
-        doReturn(fake).when(spy).getTwitchStreamsInfo("Foo");
+    void formatsOutputCorrectly_whenVODsExist() {
+        RetrieveStreamsService spyService = spy(streamService);
+        doReturn(List.of("TitleFoo__123__thumbUrl")).when(spyService).getTwitchStreamsInfo("Foo");
 
-        String out = spy.getFormattedTwitchVODs("Foo");
-        assertTrue(out.startsWith("Recent Twitch VODs:\n1. Title: TitleFoo\n"));
+        String output = spyService.getFormattedTwitchVODs("Foo");
+        assertTrue(output.startsWith("Recent Twitch VODs:\n1. Title: TitleFoo\n"));
     }
+
     @Test
-    void getTwitchStreamsInfo_ShouldReturnNull_WhenNoVideos() throws Exception {
-        when(mockIdLookup.getTwitchUserId("StreamerName")).thenReturn("98765");
-        VideoList empty = new VideoList();
-        Field videosField = VideoList.class.getDeclaredField("videos");
-        videosField.setAccessible(true);
-        videosField.set(empty, Collections.emptyList());
-        when(mockHelix
-                .getVideos(anyString(), isNull(), anyString(), isNull(), isNull(),
-                        isNull(), isNull(), isNull(), anyInt(), isNull(), isNull())
-                .execute()
-        ).thenReturn(empty);
-        assertNull(service.getTwitchStreamsInfo("StreamerName"));
+    void returnsNull_whenNoVideosExist() throws Exception {
+        when(idService.getTwitchUserId("StreamerName")).thenReturn("98765");
+
+        VideoList emptyList = new VideoList();
+        Field videoField = VideoList.class.getDeclaredField("videos");
+        videoField.setAccessible(true);
+        videoField.set(emptyList, Collections.emptyList());
+
+        when(twitchHelix.getVideos(anyString(), isNull(), anyString(), isNull(), isNull(), isNull(), isNull(), isNull(), anyInt(), isNull(), isNull())
+                .execute()).thenReturn(emptyList);
+
+        assertNull(streamService.getTwitchStreamsInfo("StreamerName"));
     }
 }

@@ -15,11 +15,14 @@ import javafx.scene.web.WebView;
 import javafx.stage.Stage;
 
 import java.util.List;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 
 public class YoutubeMediaScreenBuilder {
 
     private Stage stage;
     private Pane previousRoot;
+    private static final Logger LOGGER = Logger.getLogger(YoutubeMediaScreenBuilder.class.getName());
 
     public void display(Stage stage, List<YoutubeVideoEntry> entries, Pane previousRoot) {
         this.stage = stage;
@@ -28,7 +31,7 @@ public class YoutubeMediaScreenBuilder {
         VBox videoList = createVideoList(entries);
 
         Button backButton = new Button("Back");
-        backButton.setOnAction(e -> stage.getScene().setRoot(previousRoot));
+        backButton.setOnAction(_ -> stage.getScene().setRoot(previousRoot));
 
         VBox wrapper = new VBox(20, backButton, videoList);
         wrapper.setPadding(new Insets(20));
@@ -47,12 +50,12 @@ public class YoutubeMediaScreenBuilder {
     }
 
     private HBox createVideoRow(YoutubeVideoEntry entry, List<YoutubeVideoEntry> allEntries) {
-        ImageView thumbnail = new ImageView(new Image(entry.thumbnailUrl, 120, 90, true, true));
-        Text label = new Text(entry.title);
+        ImageView thumbnail = new ImageView(new Image(entry.thumbnailUrl(), 120, 90, true, true));
+        Text label = new Text(entry.title());
         label.setWrappingWidth(400);
 
         Button watchButton = new Button("Watch");
-        watchButton.setOnAction(e -> displayVideo(entry.videoId, allEntries));
+        watchButton.setOnAction(_ -> displayVideo(entry.videoId(), allEntries));
 
         VBox infoBox = new VBox(5, label, watchButton);
         infoBox.setAlignment(Pos.CENTER_LEFT);
@@ -75,7 +78,7 @@ public class YoutubeMediaScreenBuilder {
         webView.getEngine().load("https://www.youtube.com/embed/" + videoId + "?autoplay=1");
 
         Button backToList = new Button("Back to List");
-        backToList.setOnAction(e -> {
+        backToList.setOnAction(_ -> {
             webView.getEngine().load(null);
             display(stage, allEntries, previousRoot);
         });
@@ -93,11 +96,11 @@ public class YoutubeMediaScreenBuilder {
         Label fallbackLabel = new Label("If the video doesn't work, ");
         Hyperlink openLink = new Hyperlink("click here to watch it on YouTube.");
 
-        openLink.setOnAction(e -> {
+        openLink.setOnAction(_ -> {
             try {
                 java.awt.Desktop.getDesktop().browse(new java.net.URI(videoUrl));
             } catch (Exception ex) {
-                ex.printStackTrace();
+                LOGGER.log(Level.SEVERE, "Failed to open browser link: " + videoUrl, ex);
             }
         });
 
@@ -106,5 +109,4 @@ public class YoutubeMediaScreenBuilder {
         fallbackBox.setPadding(new Insets(10, 0, 0, 0));
         return fallbackBox;
     }
-
 }

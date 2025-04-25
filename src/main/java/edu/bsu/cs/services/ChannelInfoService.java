@@ -60,7 +60,7 @@ public class ChannelInfoService {
         if (response == null || response.getItems() == null || response.getItems().isEmpty()) {
             return null;
         }
-        return response.getItems().get(0);
+        return response.getItems().getFirst();
     }
 
     private String extractYoutubeBio(Channel channel) {

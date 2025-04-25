@@ -59,7 +59,7 @@ class TopTwitchStreamsTest {
         when(topGames.getGames()).thenReturn(List.of(game1, game2));
 
         List<String> result = streamService.getTopGamesInfo();
-        assertEquals("id1__id2__", result.get(0));
+        assertEquals("id1__id2__", result.getFirst());
     }
 
     @Test
@@ -79,7 +79,7 @@ class TopTwitchStreamsTest {
                 .thenReturn(List.of(user));
 
         List<String> result = streamService.getTopStreamsForCategoryInfo(null);
-        assertEquals("T1__login1__thumb1", result.get(0));
+        assertEquals("T1__login1__thumb1", result.getFirst());
     }
 
     @Test
@@ -99,7 +99,7 @@ class TopTwitchStreamsTest {
                 .thenReturn(List.of(user));
 
         List<String> result = streamService.getTopStreamsForCategoryInfo("gameX");
-        assertEquals("T2__login2__thumb2", result.get(0));
+        assertEquals("T2__login2__thumb2", result.getFirst());
     }
 
     @Test

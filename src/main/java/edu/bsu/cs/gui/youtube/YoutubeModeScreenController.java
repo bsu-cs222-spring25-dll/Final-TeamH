@@ -1,7 +1,6 @@
 package edu.bsu.cs.gui.youtube;
 
 import edu.bsu.cs.api.ApiContext;
-import javafx.scene.control.Alert;
 import javafx.stage.Stage;
 
 import java.io.IOException;

@@ -27,7 +27,7 @@ public class ObtainStreamerID {
                     .execute();
 
             return userList != null && !userList.getUsers().isEmpty()
-                    ? userList.getUsers().get(0).getId()
+                    ? userList.getUsers().getFirst().getId()
                     : null;
         } catch (Exception e) {
             return null;
@@ -44,7 +44,7 @@ public class ObtainStreamerID {
 
         SearchListResponse response = request.execute();
         if (response.getItems() != null && !response.getItems().isEmpty()) {
-            return response.getItems().get(0).getSnippet().getChannelId();
+            return response.getItems().getFirst().getSnippet().getChannelId();
         }
 
         YouTube.Channels.List handleRequest = context.youtubeService.channels()
@@ -54,9 +54,8 @@ public class ObtainStreamerID {
 
         ChannelListResponse handleResponse = handleRequest.execute();
         if (handleResponse.getItems() != null && !handleResponse.getItems().isEmpty()) {
-            return handleResponse.getItems().get(0).getId();
+            return handleResponse.getItems().getFirst().getId();
         }
-
         return null;
     }
 

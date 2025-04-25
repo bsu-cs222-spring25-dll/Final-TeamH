@@ -23,7 +23,7 @@ public class TwitchTopCategoriesScreenController {
     }
 
     public String getTopCategoryIDs(int categoryNumber){
-        String topCategoryIDsString = topTwitchStreams.getTopGamesInfo().get(0);
+        String topCategoryIDsString = topTwitchStreams.getTopGamesInfo().getFirst();
         String[] topCategoryIDsArray = topCategoryIDsString.split("__");
         return topCategoryIDsArray[categoryNumber];
     }

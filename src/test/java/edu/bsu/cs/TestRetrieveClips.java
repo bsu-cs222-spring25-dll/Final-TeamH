@@ -20,104 +20,103 @@ import static org.mockito.Mockito.*;
 
 class TestRetrieveClips {
 
-    private ApiContext contextMock;
-    private ObtainStreamerID idLookupMock;
-    private RetrieveClips service;
-    private TwitchHelix helixMock;
+    private ObtainStreamerID mockIdService;
+    private RetrieveClips clipService;
+    private TwitchHelix helix;
 
     @BeforeEach
     void setUp() throws Exception {
-        contextMock = mock(ApiContext.class);
-        TwitchClient clientMock = mock(TwitchClient.class);
-        helixMock = mock(TwitchHelix.class, RETURNS_DEEP_STUBS);
+        ApiContext context = mock(ApiContext.class);
+        TwitchClient mockClient = mock(TwitchClient.class);
+        helix = mock(TwitchHelix.class, RETURNS_DEEP_STUBS);
 
         Field clientField = ApiContext.class.getDeclaredField("twitchClient");
         clientField.setAccessible(true);
-        clientField.set(contextMock, clientMock);
+        clientField.set(context, mockClient);
 
         Field tokenField = ApiContext.class.getDeclaredField("twitchAuthToken");
         tokenField.setAccessible(true);
-        tokenField.set(contextMock, "dummy-token");
+        tokenField.set(context, "dummy-token");
 
-        when(clientMock.getHelix()).thenReturn(helixMock);
+        when(mockClient.getHelix()).thenReturn(helix);
 
-        idLookupMock = mock(ObtainStreamerID.class);
-        service = new RetrieveClips(contextMock);
+        mockIdService = mock(ObtainStreamerID.class);
+        clipService = new RetrieveClips(context);
+
         Field idField = RetrieveClips.class.getDeclaredField("obtainStreamerID");
         idField.setAccessible(true);
-        idField.set(service, idLookupMock);
+        idField.set(clipService, mockIdService);
     }
 
     @Test
-    void getClips_returnsNull_whenUserIdIsNull() {
-        when(idLookupMock.getTwitchUserId("unknown")).thenReturn(null);
-        assertNull(service.getTwitchClipsInfo("unknown"));
+    void returnsNull_whenUserIdIsNull() {
+        when(mockIdService.getTwitchUserId("unknown")).thenReturn(null);
+        assertNull(clipService.getTwitchClipsInfo("unknown"));
     }
 
     @Test
-    void getClips_returnsNull_whenHelixThrows() {
-        when(idLookupMock.getTwitchUserId("errorUser")).thenReturn("ID0");
-        when(helixMock.getClips(
-                anyString(), anyString(), any(), any(), any(), any(),
-                anyInt(), any(), any(), anyBoolean()
-        ).execute()).thenThrow(new RuntimeException("boom"));
-        assertNull(service.getTwitchClipsInfo("errorUser"));
+    void returnsNull_whenHelixThrowsException() {
+        when(mockIdService.getTwitchUserId("errorUser")).thenReturn("ID0");
+        when(helix.getClips(anyString(), anyString(), any(), any(), any(), any(), anyInt(), any(), any(), anyBoolean())
+                .execute()).thenThrow(new RuntimeException("fail"));
+        assertNull(clipService.getTwitchClipsInfo("errorUser"));
     }
 
     @Test
-    void getClips_returnsNull_whenNoClips() throws Exception {
-        when(idLookupMock.getTwitchUserId("noClips")).thenReturn("ID1");
-        ClipList emptyList = new ClipList();
+    void returnsNull_whenNoClipsExist() throws Exception {
+        when(mockIdService.getTwitchUserId("noClips")).thenReturn("ID1");
+
+        ClipList emptyClips = new ClipList();
         Field dataField = ClipList.class.getDeclaredField("data");
         dataField.setAccessible(true);
-        dataField.set(emptyList, Collections.emptyList());
-        when(helixMock.getClips(
-                anyString(), anyString(), any(), any(), any(), any(),
-                anyInt(), any(), any(), anyBoolean()
-        ).execute()).thenReturn(emptyList);
-        assertNull(service.getTwitchClipsInfo("noClips"));
+        dataField.set(emptyClips, Collections.emptyList());
+
+        when(helix.getClips(anyString(), anyString(), any(), any(), any(), any(), anyInt(), any(), any(), anyBoolean())
+                .execute()).thenReturn(emptyClips);
+
+        assertNull(clipService.getTwitchClipsInfo("noClips"));
     }
 
     @Test
-    void getClips_returnsList_whenClipsExist() throws Exception {
-        when(idLookupMock.getTwitchUserId("someUser")).thenReturn("ID2");
-        ClipList clipList = new ClipList();
+    void returnsClipList_whenClipsAreAvailable() throws Exception {
+        when(mockIdService.getTwitchUserId("someUser")).thenReturn("ID2");
+
         Clip clip = new Clip();
+        Field title = Clip.class.getDeclaredField("title");
+        Field id = Clip.class.getDeclaredField("id");
+        Field thumb = Clip.class.getDeclaredField("thumbnailUrl");
+        title.setAccessible(true);
+        id.setAccessible(true);
+        thumb.setAccessible(true);
+        title.set(clip, "ClipTitle");
+        id.set(clip, "ClipID");
+        thumb.set(clip, "ThumbURL");
 
-        Field titleF = Clip.class.getDeclaredField("title");
-        titleF.setAccessible(true);
-        titleF.set(clip, "ClipTitle");
-        Field idF = Clip.class.getDeclaredField("id");
-        idF.setAccessible(true);
-        idF.set(clip, "ClipID");
-        Field thumbF = Clip.class.getDeclaredField("thumbnailUrl");
-        thumbF.setAccessible(true);
-        thumbF.set(clip, "ThumbURL");
-        Field listF = ClipList.class.getDeclaredField("data");
-        listF.setAccessible(true);
-        listF.set(clipList, List.of(clip));
+        ClipList clipList = new ClipList();
+        Field data = ClipList.class.getDeclaredField("data");
+        data.setAccessible(true);
+        data.set(clipList, List.of(clip));
 
-        when(helixMock.getClips(
-                anyString(), anyString(), any(), any(), any(), any(),
-                anyInt(), any(), any(), anyBoolean()
-        ).execute()).thenReturn(clipList);
+        when(helix.getClips(anyString(), anyString(), any(), any(), any(), any(), anyInt(), any(), any(), anyBoolean())
+                .execute()).thenReturn(clipList);
 
-        List<String> result = service.getTwitchClipsInfo("someUser");
-        assertEquals(1, result.size());
+        List<String> results = clipService.getTwitchClipsInfo("someUser");
+        assertEquals(1, results.size());
     }
 
     @Test
-    void getClips_returnsNoClipsMessage_whenEmpty() {
-        RetrieveClips spy = spy(service);
-        doReturn(null).when(spy).getTwitchClipsInfo("none");
-        assertEquals("No clips found for none", spy.getFormattedTwitchClips("none"));
+    void returnsNoClipsMessage_whenFormattedResultIsNull() {
+        RetrieveClips spyService = spy(clipService);
+        doReturn(null).when(spyService).getTwitchClipsInfo("none");
+        assertEquals("No clips found for none", spyService.getFormattedTwitchClips("none"));
     }
 
     @Test
-    void getClips_formatsCorrectly() {
-        RetrieveClips spy = spy(service);
-        doReturn(List.of("TitleFoo__123__thumbUrl")).when(spy).getTwitchClipsInfo("Foo");
-        String output = spy.getFormattedTwitchClips("Foo");
-        assertTrue(output.contains("1. Title: TitleFoo"));
+    void formatsClipOutputCorrectly_whenClipsExist() {
+        RetrieveClips spyService = spy(clipService);
+        doReturn(List.of("TitleFoo__123__thumbUrl")).when(spyService).getTwitchClipsInfo("Foo");
+
+        String result = spyService.getFormattedTwitchClips("Foo");
+        assertTrue(result.contains("1. Title: TitleFoo"));
     }
 }

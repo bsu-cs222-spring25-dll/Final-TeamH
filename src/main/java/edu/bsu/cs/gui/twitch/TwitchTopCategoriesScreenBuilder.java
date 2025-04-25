@@ -10,7 +10,6 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
@@ -36,7 +35,7 @@ public class TwitchTopCategoriesScreenBuilder {
         HBox categoryButtons = createCategoryButtons(controller);
         Label topStreamsLabel = createTitle("Top 10 Currently Live Streams:");
 
-        VBox buttonGrid = createStreamButtons(new TwitchTopStreamsForCategoryController(context,stage), null);
+        VBox buttonGrid = createStreamButtons(new TwitchTopStreamsForCategoryController(context,stage));
         buttonGrid.setAlignment(Pos.CENTER);
         buttonGrid.setPadding(new Insets(10, 0, 0, 0));
 
@@ -84,7 +83,7 @@ public class TwitchTopCategoriesScreenBuilder {
                 btn.setStyle("-fx-content-display: graphic-only;");
 
                 int finalCategoryNumber = categoryNumber;
-                btn.setOnAction(e -> controller.handleCategoryClick(finalCategoryNumber));
+                btn.setOnAction(_ -> controller.handleCategoryClick(finalCategoryNumber));
 
                 rowBox.getChildren().add(btn);
                 categoryNumber++;
@@ -98,8 +97,8 @@ public class TwitchTopCategoriesScreenBuilder {
         return wrapper;
     }
 
-    private VBox createStreamButtons(TwitchTopStreamsForCategoryController controller, String topCategoryID){
-        List<String> topStreamsInfo = controller.getTopStreamsForCategoryInfo(topCategoryID);
+    private VBox createStreamButtons(TwitchTopStreamsForCategoryController controller){
+        List<String> topStreamsInfo = controller.getTopStreamsForCategoryInfo(null);
         VBox buttonGrid = new VBox(15);
         buttonGrid.setAlignment(Pos.CENTER);
         int streamNumber=0;
@@ -131,7 +130,7 @@ public class TwitchTopCategoriesScreenBuilder {
                 playStreamButton.setMinSize(100, 100);
 
                 int finalCategoryNumber = streamNumber;
-                playStreamButton.setOnAction(e -> controller.handlePlayButtonClick(finalCategoryNumber,topStreamsInfo));
+                playStreamButton.setOnAction(_ -> controller.handlePlayButtonClick(finalCategoryNumber,topStreamsInfo));
 
                 rowBox.getChildren().add(playStreamButton);
                 streamNumber++;
@@ -144,7 +143,7 @@ public class TwitchTopCategoriesScreenBuilder {
 
     private Button createHomeButton(Stage stage) {
         Button homeButton = new Button("Home");
-        homeButton.setOnAction(e -> {
+        homeButton.setOnAction(_ -> {
             GUIScreenBuilder guiBuilder = new GUIScreenBuilder();
             GUIScreenController guiController = new GUIScreenController(stage);
             stage.getScene().setRoot(guiBuilder.buildMainScreen(guiController));
@@ -154,7 +153,7 @@ public class TwitchTopCategoriesScreenBuilder {
 
     private Button createBackButton(Stage stage, ApiContext context) {
         Button backButton = new Button("Back");
-        backButton.setOnAction(e -> {
+        backButton.setOnAction(_ -> {
             TwitchModeSelectionScreenBuilder modeBuilder = new TwitchModeSelectionScreenBuilder();
             stage.getScene().setRoot(modeBuilder.build(context, stage));
         });

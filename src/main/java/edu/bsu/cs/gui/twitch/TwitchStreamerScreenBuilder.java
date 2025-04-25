@@ -49,7 +49,7 @@ public class TwitchStreamerScreenBuilder {
         layout.setTop(topBar);
 
         TwitchStreamerScreenController controller = new TwitchStreamerScreenController(context, model, stage);
-        searchButton.setOnAction(e -> controller.handleSearch(searchField.getText()));
+        searchButton.setOnAction(_ -> controller.handleSearch(searchField.getText()));
 
         return layout;
     }
@@ -167,7 +167,7 @@ public class TwitchStreamerScreenBuilder {
 
     private Button createHomeButton(Stage stage, TwitchViewModel model) {
         Button homeButton = new Button("Home");
-        homeButton.setOnAction(e -> {
+        homeButton.setOnAction(_ -> {
             model.resetView();
             GUIScreenBuilder guiBuilder = new GUIScreenBuilder();
             GUIScreenController guiController = new GUIScreenController(stage);
@@ -178,7 +178,7 @@ public class TwitchStreamerScreenBuilder {
 
     private Button createBackButton(Stage stage, ApiContext context, TwitchViewModel model) {
         Button backButton = new Button("Back");
-        backButton.setOnAction(e -> {
+        backButton.setOnAction(_ -> {
             model.resetView();
             TwitchModeSelectionScreenBuilder modeBuilder = new TwitchModeSelectionScreenBuilder();
             stage.getScene().setRoot(modeBuilder.build(context, stage));

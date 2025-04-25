@@ -5,9 +5,7 @@ import com.github.twitch4j.helix.TwitchHelix;
 import com.github.twitch4j.helix.domain.User;
 import com.github.twitch4j.helix.domain.UserList;
 import com.google.api.services.youtube.YouTube;
-import com.google.api.services.youtube.model.ChannelListResponse;
-import com.google.api.services.youtube.model.SearchListResponse;
-import com.google.api.services.youtube.model.SearchResult;
+import com.google.api.services.youtube.model.*;
 import edu.bsu.cs.api.ApiContext;
 import edu.bsu.cs.services.ObtainStreamerID;
 import org.junit.jupiter.api.BeforeEach;
@@ -19,144 +17,125 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 class TestObtainStreamerId {
 
-    private ApiContext mockContext;
     private ObtainStreamerID idService;
-    private TwitchClient mockTwitchClient;
-    private TwitchHelix   mockHelix;
-    private YouTube mockYouTube;
-    private YouTube.Search mockSearch;
-    private YouTube.Search.List mockSearchForChannel;
-    private YouTube.Channels mockChannels;
-    private YouTube.Channels.List mockChannelListRequest;
+    private TwitchHelix twitchHelix;
+    private YouTube.Search.List searchList;
+    private YouTube.Channels.List channelList;
 
     @BeforeEach
     void setUp() throws Exception {
-        mockContext = mock(ApiContext.class);
+        ApiContext context = mock(ApiContext.class);
 
-        mockTwitchClient = mock(TwitchClient.class, RETURNS_DEEP_STUBS);
-        mockHelix = mock(TwitchHelix.class, RETURNS_DEEP_STUBS);
-        when(mockTwitchClient.getHelix()).thenReturn(mockHelix);
-        injectField(mockContext, "twitchClient", mockTwitchClient);
-        injectField(mockContext, "twitchAuthToken", "dummy-token");
+        TwitchClient twitchClient = mock(TwitchClient.class, RETURNS_DEEP_STUBS);
+        twitchHelix = mock(TwitchHelix.class, RETURNS_DEEP_STUBS);
+        when(twitchClient.getHelix()).thenReturn(twitchHelix);
+        injectField(context, "twitchClient", twitchClient);
+        injectField(context, "twitchAuthToken", "dummy-token");
 
-        mockYouTube = mock(YouTube.class);
-        mockSearch = mock(YouTube.Search.class);
-        mockSearchForChannel  = mock(YouTube.Search.List.class, RETURNS_DEEP_STUBS);
-        when(mockYouTube.search()).thenReturn(mockSearch);
-        when(mockSearch.list(anyList())).thenReturn(mockSearchForChannel);
-        when(mockSearchForChannel.setQ(anyString())).thenReturn(mockSearchForChannel);
-        when(mockSearchForChannel.setType(anyList())).thenReturn(mockSearchForChannel);
-        when(mockSearchForChannel.setMaxResults(anyLong())).thenReturn(mockSearchForChannel);
-        when(mockSearchForChannel.setKey(anyString())).thenReturn(mockSearchForChannel);
+        YouTube youtube = mock(YouTube.class);
+        searchList = mock(YouTube.Search.List.class, RETURNS_DEEP_STUBS);
+        channelList = mock(YouTube.Channels.List.class, RETURNS_DEEP_STUBS);
 
-        mockChannels = mock(YouTube.Channels.class);
-        mockChannelListRequest = mock(YouTube.Channels.List.class, RETURNS_DEEP_STUBS);
-        when(mockYouTube.channels()).thenReturn(mockChannels);
-        when(mockChannels.list(anyList())).thenReturn(mockChannelListRequest);
+        YouTube.Search search = mock(YouTube.Search.class);
+        when(youtube.search()).thenReturn(search);
+        when(search.list(anyList())).thenReturn(searchList);
+        when(searchList.setQ(anyString())).thenReturn(searchList);
+        when(searchList.setType(anyList())).thenReturn(searchList);
+        when(searchList.setMaxResults(anyLong())).thenReturn(searchList);
+        when(searchList.setKey(anyString())).thenReturn(searchList);
 
-        when(mockChannelListRequest.setKey(anyString())).thenReturn(mockChannelListRequest);
-        when(mockChannelListRequest.setForUsername(anyString())).thenReturn(mockChannelListRequest);
+        YouTube.Channels channels = mock(YouTube.Channels.class);
+        when(youtube.channels()).thenReturn(channels);
+        when(channels.list(anyList())).thenReturn(channelList);
+        when(channelList.setKey(anyString())).thenReturn(channelList);
+        when(channelList.setForUsername(anyString())).thenReturn(channelList);
 
-        injectField(mockContext, "youtubeService",    mockYouTube);
-        injectField(mockContext, "youtubeAuthToken", "dummy-token");
+        injectField(context, "youtubeService", youtube);
+        injectField(context, "youtubeAuthToken", "dummy-token");
 
-        idService = new ObtainStreamerID(mockContext);
+        idService = new ObtainStreamerID(context);
     }
 
     private void injectField(Object target, String fieldName, Object value) throws Exception {
-        Field f = ApiContext.class.getDeclaredField(fieldName);
-        f.setAccessible(true);
-        f.set(target, value);
+        Field field = ApiContext.class.getDeclaredField(fieldName);
+        field.setAccessible(true);
+        field.set(target, value);
     }
 
     @Test
-    void getTwitchUserId_returnsNull_forNullUsername() {
+    void returnsNullForNullTwitchUsername() {
         assertNull(idService.getTwitchUserId(null));
     }
 
     @Test
-    void getTwitchUserId_returnsNull_onHelixError() {
-        when(mockHelix
-                .getUsers(anyString(), any(), anyList())
-                .execute()
-        ).thenThrow(new RuntimeException("boom"));
-        assertNull(idService.getTwitchUserId("someUser"));
+    void returnsNullWhenTwitchHelixThrows() {
+        when(twitchHelix.getUsers(anyString(), any(), anyList()).execute())
+                .thenThrow(new RuntimeException("fail"));
+        assertNull(idService.getTwitchUserId("failUser"));
     }
 
     @Test
-    void getTwitchUserId_returnsNull_whenNoUserFound() throws Exception {
+    void returnsNullWhenTwitchUserListIsEmpty() throws Exception {
         UserList emptyList = new UserList();
-        Field usersField = UserList.class.getDeclaredField("users");
-        usersField.setAccessible(true);
-        usersField.set(emptyList, Collections.emptyList());
-        when(mockHelix
-                .getUsers(anyString(), any(), anyList())
-                .execute()
-        ).thenReturn(emptyList);
+        Field field = UserList.class.getDeclaredField("users");
+        field.setAccessible(true);
+        field.set(emptyList, Collections.emptyList());
+
+        when(twitchHelix.getUsers(anyString(), any(), anyList()).execute()).thenReturn(emptyList);
         assertNull(idService.getTwitchUserId("unknownUser"));
     }
 
     @Test
-    void getTwitchUserId_returnsUserId_whenUserExists() throws Exception {
-        User singleUser = new User();
+    void returnsTwitchUserIdWhenUserFound() throws Exception {
+        User user = new User();
         Field idField = User.class.getDeclaredField("id");
         idField.setAccessible(true);
-        idField.set(singleUser, "user-123");
+        idField.set(user, "user-123");
 
-        UserList oneEntry = new UserList();
-        Field usersField = UserList.class.getDeclaredField("users");
-        usersField.setAccessible(true);
-        usersField.set(oneEntry, List.of(singleUser));
+        UserList userList = new UserList();
+        Field listField = UserList.class.getDeclaredField("users");
+        listField.setAccessible(true);
+        listField.set(userList, List.of(user));
 
-        when(mockHelix
-                .getUsers(anyString(), any(), anyList())
-                .execute()
-        ).thenReturn(oneEntry);
-
+        when(twitchHelix.getUsers(anyString(), any(), anyList()).execute()).thenReturn(userList);
         assertEquals("user-123", idService.getTwitchUserId("knownUser"));
     }
 
     @Test
-    void getYoutubeUserId_throwsIOException_onSearchError() throws Exception {
-        when(mockSearchForChannel.execute()).thenThrow(new IOException("search failed"));
-        assertThrows(IOException.class, () -> idService.getYoutubeUserId("anyChannel"));
+    void throwsIOExceptionWhenYoutubeSearchFails() throws Exception {
+        when(searchList.execute()).thenThrow(new IOException("fail"));
+        assertThrows(IOException.class, () -> idService.getYoutubeUserId("failSearch"));
     }
 
     @Test
-    void getYoutubeUserId_returnsChannelId_fromSearchResults() throws Exception {
-        SearchResult sr = new SearchResult()
-                .setSnippet(new com.google.api.services.youtube.model.SearchResultSnippet()
-                        .setChannelId("chan-789"));
-        SearchListResponse searchResponse = new SearchListResponse().setItems(List.of(sr));
-        when(mockSearchForChannel.execute()).thenReturn(searchResponse);
+    void returnsYoutubeChannelIdFromSearch() throws Exception {
+        SearchResult result = new SearchResult()
+                .setSnippet(new SearchResultSnippet().setChannelId("chan-789"));
+        SearchListResponse searchResp = new SearchListResponse().setItems(List.of(result));
+        when(searchList.execute()).thenReturn(searchResp);
 
-        assertEquals("chan-789", idService.getYoutubeUserId("someChannel"));
+        assertEquals("chan-789", idService.getYoutubeUserId("foundInSearch"));
     }
 
     @Test
-    void getYoutubeUserId_returnsChannelId_fromChannelsList_whenSearchEmpty() throws Exception {
-        when(mockSearchForChannel.execute())
-                .thenReturn(new SearchListResponse().setItems(Collections.emptyList()));
+    void returnsYoutubeChannelIdFromChannelsListFallback() throws Exception {
+        when(searchList.execute()).thenReturn(new SearchListResponse().setItems(Collections.emptyList()));
 
-        ChannelListResponse channelResp = new ChannelListResponse()
-                .setItems(List.of(new com.google.api.services.youtube.model.Channel().setId("chan-456")));
-        when(mockChannelListRequest.execute()).thenReturn(channelResp);
+        ChannelListResponse fallbackResp = new ChannelListResponse()
+                .setItems(List.of(new Channel().setId("chan-456")));
+        when(channelList.execute()).thenReturn(fallbackResp);
 
-        assertEquals("chan-456", idService.getYoutubeUserId("userName"));
+        assertEquals("chan-456", idService.getYoutubeUserId("foundInChannelsList"));
     }
 
     @Test
-    void getYoutubeUserId_returnsNull_whenNoChannelFound() throws Exception {
-        when(mockSearchForChannel.execute())
-                .thenReturn(new SearchListResponse().setItems(Collections.emptyList()));
-        when(mockChannelListRequest.execute())
-                .thenReturn(new ChannelListResponse().setItems(Collections.emptyList()));
-
-        assertNull(idService.getYoutubeUserId("noChannel"));
+    void returnsNullWhenYoutubeSearchAndChannelsFail() throws Exception {
+        when(searchList.execute()).thenReturn(new SearchListResponse().setItems(Collections.emptyList()));
+        when(channelList.execute()).thenReturn(new ChannelListResponse().setItems(Collections.emptyList()));
+        assertNull(idService.getYoutubeUserId("notFound"));
     }
 }

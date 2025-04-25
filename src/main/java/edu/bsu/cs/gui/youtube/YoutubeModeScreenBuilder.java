@@ -13,6 +13,7 @@ import javafx.scene.layout.*;
 import javafx.stage.Stage;
 
 import java.io.IOException;
+import java.util.Objects;
 
 public class YoutubeModeScreenBuilder {
 
@@ -32,7 +33,7 @@ public class YoutubeModeScreenBuilder {
     private HBox createTopBar() {
         Button backButton = new Button("Back");
         backButton.setStyle("-fx-font-size: 14px;");
-        backButton.setOnAction(e -> {
+        backButton.setOnAction(_ -> {
             GUIScreenBuilder builder = new GUIScreenBuilder();
             GUIScreenController controller = new GUIScreenController(stage);
             stage.getScene().setRoot(builder.buildMainScreen(controller));
@@ -59,8 +60,8 @@ public class YoutubeModeScreenBuilder {
     }
 
     private HBox createSearchSection() {
-        Button searchButton = createImageButton("/images/youtubeSearch.png", 220, 180);
-        searchButton.setOnAction(e -> new YoutubeModeScreenController(context, stage).handleSearchClick());
+        Button searchButton = createImageButton("/images/youtubeSearch.png");
+        searchButton.setOnAction(_ -> new YoutubeModeScreenController(context, stage).handleSearchClick());
 
         VBox info = new VBox(12,
                 createStyledLabel("Search YouTube Channels!", 20, true),
@@ -78,8 +79,8 @@ public class YoutubeModeScreenBuilder {
     }
 
     private HBox createCategorySection() {
-        Button categoryButton = createImageButton("/images/youtubeCategories.png", 220, 180);
-        categoryButton.setOnAction(e -> {
+        Button categoryButton = createImageButton("/images/youtubeCategories.png");
+        categoryButton.setOnAction(_ -> {
             try {
                 new YoutubeModeScreenController(context, stage).handleCategoryClick();
             } catch (IOException ex) {
@@ -101,12 +102,12 @@ public class YoutubeModeScreenBuilder {
         return section;
     }
 
-    private Button createImageButton(String imagePath, int width, int height) {
-        ImageView imageView = new ImageView(new Image(getClass().getResource(imagePath).toExternalForm(), width, height, false, true));
+    private Button createImageButton(String imagePath) {
+        ImageView imageView = new ImageView(new Image(Objects.requireNonNull(getClass().getResource(imagePath)).toExternalForm(), 220, 180, false, true));
         imageView.setPreserveRatio(false);
 
         Button button = new Button();
-        button.setPrefSize(width, height);
+        button.setPrefSize(220, 180);
         button.setGraphic(imageView);
         button.setStyle(
                 "-fx-background-color: transparent;" +

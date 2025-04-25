@@ -1,7 +1,6 @@
 package edu.bsu.cs.services;
 
 import com.github.twitch4j.helix.domain.UserList;
-import com.google.api.services.youtube.YouTube;
 import com.google.api.services.youtube.model.ChannelListResponse;
 import com.google.api.services.youtube.model.Channel;
 import edu.bsu.cs.api.ApiContext;
@@ -24,7 +23,7 @@ public class StreamerSearchService {
             if (userList == null || userList.getUsers() == null || userList.getUsers().isEmpty()) {
                 return Collections.emptyList();
             }
-            return Collections.singletonList(userList.getUsers().get(0).getDisplayName());
+            return Collections.singletonList(userList.getUsers().getFirst().getDisplayName());
         } catch (Exception e) {
             return Collections.emptyList();
         }
@@ -36,14 +35,14 @@ public class StreamerSearchService {
             if (response == null || response.getItems() == null || response.getItems().isEmpty()) {
                 return Collections.emptyList();
             }
-            Channel channel = response.getItems().get(0);
+            Channel channel = response.getItems().getFirst();
             return Collections.singletonList(channel.getSnippet().getTitle());
         } catch (IOException e) {
             return Collections.emptyList();
         }
     }
 
-    private UserList fetchTwitchUsers(String username) throws IOException {
+    private UserList fetchTwitchUsers(String username) {
         return context.twitchClient.getHelix()
                 .getUsers(context.twitchAuthToken, null, Collections.singletonList(username))
                 .execute();

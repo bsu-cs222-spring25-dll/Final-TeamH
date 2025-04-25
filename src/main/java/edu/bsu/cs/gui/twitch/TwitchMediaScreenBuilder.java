@@ -51,7 +51,7 @@ public class TwitchMediaScreenBuilder {
         label.setWrappingWidth(400);
 
         Button watchButton = new Button("Watch");
-        watchButton.setOnAction(e -> openInBrowser(type, id));
+        watchButton.setOnAction(_ -> openInBrowser(type, id));
 
         VBox infoBox = new VBox(5, label, watchButton);
         infoBox.setAlignment(Pos.CENTER_LEFT);
@@ -69,7 +69,7 @@ public class TwitchMediaScreenBuilder {
 
     private Button createBackButton(Stage stage, Pane previousRoot) {
         Button backButton = new Button("Back");
-        backButton.setOnAction(e -> stage.getScene().setRoot(previousRoot));
+        backButton.setOnAction(_ -> stage.getScene().setRoot(previousRoot));
         return backButton;
     }
 

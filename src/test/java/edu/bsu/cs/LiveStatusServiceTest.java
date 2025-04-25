@@ -33,106 +33,108 @@ import static org.mockito.Mockito.*;
 class LiveStatusServiceTest {
 
     @Mock
-    private ApiContext context;
+    private ApiContext apiContext;
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
-    private TwitchHelix helix;
+    private TwitchHelix twitchHelix;
     @Mock
     private com.github.twitch4j.TwitchClient twitchClient;
     @Mock
-    private ObtainStreamerID obtainStreamerID;
+    private ObtainStreamerID idService;
     @Mock
     private YouTube youtubeService;
     @Mock
     private YouTube.Search youtubeSearch;
     @Mock
-    private YouTube.Search.List searchListRequest;
-    private LiveStatusService service;
+    private YouTube.Search.List youtubeSearchRequest;
+    private LiveStatusService statusService;
 
     @BeforeEach
     void setUp() throws Exception {
-        service = new LiveStatusService(context);
+        statusService = new LiveStatusService(apiContext);
 
-        Field f = LiveStatusService.class.getDeclaredField("obtainStreamerID");
-        f.setAccessible(true);
-        f.set(service, obtainStreamerID);
+        Field idField = LiveStatusService.class.getDeclaredField("obtainStreamerID");
+        idField.setAccessible(true);
+        idField.set(statusService, idService);
 
-        context.twitchClient = twitchClient;
-        context.twitchAuthToken = "fakeTwitchToken";
-        when(twitchClient.getHelix()).thenReturn(helix);
+        apiContext.twitchClient = twitchClient;
+        apiContext.twitchAuthToken = "fakeTwitchToken";
+        when(twitchClient.getHelix()).thenReturn(twitchHelix);
 
-        context.youtubeService = youtubeService;
-        context.youtubeAuthToken = "fakeYouTubeToken";
+        apiContext.youtubeService = youtubeService;
+        apiContext.youtubeAuthToken = "fakeYouTubeToken";
         when(youtubeService.search()).thenReturn(youtubeSearch);
-        when(youtubeSearch.list(anyList())).thenReturn(searchListRequest);
-        when(searchListRequest.setKey(anyString())).thenReturn(searchListRequest);
-        when(searchListRequest.setChannelId(anyString())).thenReturn(searchListRequest);
-        when(searchListRequest.setEventType(anyString())).thenReturn(searchListRequest);
-        when(searchListRequest.setType(anyList())).thenReturn(searchListRequest);
+        when(youtubeSearch.list(anyList())).thenReturn(youtubeSearchRequest);
+        when(youtubeSearchRequest.setKey(anyString())).thenReturn(youtubeSearchRequest);
+        when(youtubeSearchRequest.setChannelId(anyString())).thenReturn(youtubeSearchRequest);
+        when(youtubeSearchRequest.setEventType(anyString())).thenReturn(youtubeSearchRequest);
+        when(youtubeSearchRequest.setType(anyList())).thenReturn(youtubeSearchRequest);
     }
 
     @Test
-    void getTwitchLiveStatus_shouldError_whenHelixNotInitialized() {
+    void returnsError_whenTwitchHelixNotInitialized() {
         when(twitchClient.getHelix()).thenReturn(null);
-        String status = service.getTwitchLiveStatus("alice");
-        assertEquals("Error: TwitchHelix API client not initialized.", status);
+        String result = statusService.getTwitchLiveStatus("alice");
+        assertEquals("Error: TwitchHelix API client not initialized.", result);
     }
 
     @Test
-    void getTwitchLiveStatus_shouldReportNotLive_whenNoStreamsReturned() throws Exception {
-        when(helix.getStreams(any(), any(), any(), anyInt(), any(), any(), any(), anyList())
+    void returnsNotLive_whenNoTwitchStreamsExist() {
+        when(twitchHelix.getStreams(any(), any(), any(), anyInt(), any(), any(), any(), anyList())
                 .execute()).thenReturn(null);
-        String status = service.getTwitchLiveStatus("bob");
-        assertEquals("bob is NOT live on Twitch.", status);
+
+        String result = statusService.getTwitchLiveStatus("bob");
+        assertEquals("bob is NOT live on Twitch.", result);
     }
 
     @Test
-    void getTwitchLiveStatus_shouldFormatLiveStream_whenStreamPresent() throws Exception {
-        StreamList mockList = mock(StreamList.class);
-        Stream    mockStream = mock(Stream.class);
-        when(mockStream.getTitle()).thenReturn("Game Time");
-        when(mockList.getStreams()).thenReturn(Collections.singletonList(mockStream));
-        when(helix.getStreams(any(), any(), any(), anyInt(), any(), any(), any(), anyList())
-                .execute()).thenReturn(mockList);
+    void returnsTwitchLiveStatus_whenStreamPresent() {
+        StreamList streamList = mock(StreamList.class);
+        Stream stream = mock(Stream.class);
+        when(stream.getTitle()).thenReturn("Game Time");
+        when(streamList.getStreams()).thenReturn(Collections.singletonList(stream));
 
-        String status = service.getTwitchLiveStatus("charlie");
-        assertTrue(status.contains("Watch: https://www.twitch.tv/charlie"));
+        when(twitchHelix.getStreams(any(), any(), any(), anyInt(), any(), any(), any(), anyList())
+                .execute()).thenReturn(streamList);
+
+        String result = statusService.getTwitchLiveStatus("charlie");
+        assertTrue(result.contains("Watch: https://www.twitch.tv/charlie"));
     }
 
     @Test
-    void getYoutubeLiveStatus_shouldError_whenChannelIdMissing() throws IOException {
-        when(obtainStreamerID.getYoutubeUserId("dave")).thenReturn(null);
-        String status = service.getYoutubeLiveStatus("dave");
-        assertEquals("Error: Could not retrieve YouTube Channel ID for dave", status);
+    void returnsError_whenYoutubeChannelIdIsMissing() throws IOException {
+        when(idService.getYoutubeUserId("dave")).thenReturn(null);
+        String result = statusService.getYoutubeLiveStatus("dave");
+        assertEquals("Error: Could not retrieve YouTube Channel ID for dave", result);
     }
 
     @Test
-    void getYoutubeLiveStatus_shouldReportNotLive_whenNoResults() throws IOException {
-        when(obtainStreamerID.getYoutubeUserId("eve")).thenReturn("channelId");
-        SearchListResponse emptyResp = mock(SearchListResponse.class);
-        when(searchListRequest.execute()).thenReturn(emptyResp);
-        when(emptyResp.getItems()).thenReturn(null);
+    void returnsNotLive_whenYoutubeSearchHasNoResults() throws IOException {
+        when(idService.getYoutubeUserId("eve")).thenReturn("channelId");
+        SearchListResponse emptyResponse = mock(SearchListResponse.class);
+        when(youtubeSearchRequest.execute()).thenReturn(emptyResponse);
+        when(emptyResponse.getItems()).thenReturn(null);
 
-        String status = service.getYoutubeLiveStatus("eve");
-        assertEquals("This YouTuber is NOT live.", status);
+        String result = statusService.getYoutubeLiveStatus("eve");
+        assertEquals("This YouTuber is NOT live.", result);
     }
 
     @Test
-    void getYoutubeLiveStatus_shouldFormatLiveStream_whenResultsPresent() throws IOException {
-        when(obtainStreamerID.getYoutubeUserId("frank")).thenReturn("channelId");
+    void returnsYoutubeLiveStatus_whenResultPresent() throws IOException {
+        when(idService.getYoutubeUserId("frank")).thenReturn("channelId");
 
-        SearchResult sr = mock(SearchResult.class);
+        SearchResult resultItem = mock(SearchResult.class);
         SearchResultSnippet snippet = mock(SearchResultSnippet.class);
-        ResourceId rid = mock(ResourceId.class);
+        ResourceId resourceId = mock(ResourceId.class);
         when(snippet.getTitle()).thenReturn("Live Now!");
-        when(rid.getVideoId()).thenReturn("vid123");
-        when(sr.getSnippet()).thenReturn(snippet);
-        when(sr.getId()).thenReturn(rid);
+        when(resourceId.getVideoId()).thenReturn("vid123");
+        when(resultItem.getSnippet()).thenReturn(snippet);
+        when(resultItem.getId()).thenReturn(resourceId);
 
-        SearchListResponse liveResp = mock(SearchListResponse.class);
-        when(searchListRequest.execute()).thenReturn(liveResp);
-        when(liveResp.getItems()).thenReturn(Collections.singletonList(sr));
+        SearchListResponse response = mock(SearchListResponse.class);
+        when(youtubeSearchRequest.execute()).thenReturn(response);
+        when(response.getItems()).thenReturn(Collections.singletonList(resultItem));
 
-        String status = service.getYoutubeLiveStatus("frank");
-        assertTrue(status.contains("Watch here: https://www.youtube.com/watch?v=vid123"));
+        String result = statusService.getYoutubeLiveStatus("frank");
+        assertTrue(result.contains("Watch here: https://www.youtube.com/watch?v=vid123"));
     }
 }
