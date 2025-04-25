@@ -8,8 +8,6 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 
-import java.util.Objects;
-
 public class GUIScreenBuilder {
 
     public BorderPane buildMainScreen(GUIScreenController controller) {
@@ -26,7 +24,7 @@ public class GUIScreenBuilder {
     }
 
     private ImageView createLogoView() {
-        ImageView logoImageView = new ImageView(new Image(Objects.requireNonNull(getClass().getResource("/images/projectLogo.png")).toExternalForm()));
+        ImageView logoImageView = new ImageView(new Image(getClass().getResource("/images/projectLogo.png").toExternalForm()));
         logoImageView.setFitWidth(150);
         logoImageView.setPreserveRatio(true);
         logoImageView.setScaleX(7.0);
@@ -45,7 +43,7 @@ public class GUIScreenBuilder {
     }
 
     private Button createPlatformButton(String imagePath, Runnable action) {
-        ImageView imageView = new ImageView(new Image(Objects.requireNonNull(getClass().getResource(imagePath)).toExternalForm()));
+        ImageView imageView = new ImageView(new Image(getClass().getResource(imagePath).toExternalForm()));
         imageView.setFitWidth(150);
         imageView.setFitHeight(150);
         imageView.setPreserveRatio(true);

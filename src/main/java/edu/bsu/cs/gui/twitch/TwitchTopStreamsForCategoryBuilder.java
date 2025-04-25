@@ -58,27 +58,39 @@ public class TwitchTopStreamsForCategoryBuilder {
         return layout;
     }
 
-    private VBox createStreamButtons(TwitchTopStreamsForCategoryController controller, String topCategoryID){
+    private VBox createStreamButtons(TwitchTopStreamsForCategoryController controller, String topCategoryID) {
         List<String> topStreamsInfo = controller.getTopStreamsForCategoryInfo(topCategoryID);
         VBox buttonGrid = new VBox(15);
         buttonGrid.setAlignment(Pos.CENTER);
-        int streamNumber=0;
+        int streamNumber = 0;
+
         for (int row = 0; row < 2; row++) {
             HBox rowBox = new HBox(20);
             rowBox.setAlignment(Pos.CENTER);
 
             for (int col = 0; col < 5; col++) {
-                ImageView thumbnail = new ImageView(controller.getTopStreamThumbnailURL(streamNumber, topStreamsInfo));
+                String imageUrl = controller.getTopStreamThumbnailURL(streamNumber, topStreamsInfo);
+                ImageView thumbnail;
+
+                try {
+                    thumbnail = new ImageView(new Image(imageUrl, 170, 96, true, true));
+                } catch (IllegalArgumentException ex) {
+                    System.err.println("Invalid stream thumbnail URL: " + imageUrl);
+                    thumbnail = new ImageView();
+                    thumbnail.setFitWidth(170);
+                    thumbnail.setFitHeight(96);
+                }
+
                 thumbnail.setFitWidth(170);
                 thumbnail.setFitHeight(96);
                 thumbnail.setPreserveRatio(true);
 
-                Label streamLabel = new Label(controller.getTopStreamTitle(streamNumber,topStreamsInfo));
+                Label streamLabel = new Label(controller.getTopStreamTitle(streamNumber, topStreamsInfo));
                 streamLabel.setFont(Font.font(12));
                 streamLabel.setAlignment(Pos.CENTER);
                 streamLabel.setMaxWidth(170);
 
-                Label streamerNameLabel = new Label(controller.getTopStreamerUsername(streamNumber,topStreamsInfo));
+                Label streamerNameLabel = new Label(controller.getTopStreamerUsername(streamNumber, topStreamsInfo));
                 streamerNameLabel.setFont(Font.font(12));
                 streamerNameLabel.setAlignment(Pos.CENTER);
                 streamerNameLabel.setMaxWidth(170);
@@ -91,14 +103,16 @@ public class TwitchTopStreamsForCategoryBuilder {
                 playStreamButton.setMinSize(100, 100);
 
                 int finalCategoryNumber = streamNumber;
-                playStreamButton.setOnAction(e -> controller.handlePlayButtonClick(finalCategoryNumber,topStreamsInfo));
+                playStreamButton.setOnAction(e -> controller.handlePlayButtonClick(finalCategoryNumber, topStreamsInfo));
 
                 rowBox.getChildren().add(playStreamButton);
                 streamNumber++;
             }
+
             buttonGrid.getChildren().add(rowBox);
-            streamNumber=5;
+            streamNumber = 5;
         }
+
         return buttonGrid;
     }
 

@@ -31,14 +31,23 @@ public class TopTwitchStreams {
         StringBuilder gamesIDString = new StringBuilder();
         StringBuilder gamesNameString = new StringBuilder();
         StringBuilder gamesURLString = new StringBuilder();
-        for (var game: topGames.getGames()) {
+
+        for (var game : topGames.getGames()) {
             gamesIDString.append(game.getId()).append("__");
             gamesNameString.append(game.getName()).append("__");
-            gamesURLString.append(game.getBoxArtUrl(180,240)).append("__");
+
+            String rawUrl = game.getBoxArtUrl();
+            String fixedUrl = rawUrl
+                    .replace("{width}", "180")
+                    .replace("{height}", "240");
+
+            gamesURLString.append(fixedUrl).append("__");
         }
-        formattedTopGamesInfo.add(String.valueOf(gamesIDString));
-        formattedTopGamesInfo.add(String.valueOf(gamesNameString));
-        formattedTopGamesInfo.add(String.valueOf(gamesURLString));
+
+        formattedTopGamesInfo.add(gamesIDString.toString());
+        formattedTopGamesInfo.add(gamesNameString.toString());
+        formattedTopGamesInfo.add(gamesURLString.toString());
+
         return formattedTopGamesInfo;
     }
 
@@ -59,8 +68,8 @@ public class TopTwitchStreams {
         List<String> gameIDList = List.of(gameId);
         try {
             TwitchHelix helix = context.twitchClient.getHelix();
-                StreamList topStreams = helix.getStreams(null, null, null,
-                        10, gameIDList, null, null, null).execute();
+            StreamList topStreams = helix.getStreams(null, null, null,
+                    10, gameIDList, null, null, null).execute();
             List<String> userIds = topStreams.getStreams().stream()
                     .map(Stream::getUserId)
                     .toList();
@@ -91,7 +100,7 @@ public class TopTwitchStreams {
                 .execute()
                 .getUsers();
         if (!users.isEmpty()) {
-            return users.getFirst().getLogin();
+            return users.get(0).getLogin();
         } else {
             return null;
         }

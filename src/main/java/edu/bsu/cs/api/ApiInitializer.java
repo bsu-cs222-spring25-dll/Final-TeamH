@@ -33,7 +33,7 @@ public class ApiInitializer {
         }
         try {
             JacksonFactory jsonFactory = JacksonFactory.getDefaultInstance();
-            return new YouTube.Builder(GoogleNetHttpTransport.newTrustedTransport(), jsonFactory, _ -> {})
+            return new YouTube.Builder(GoogleNetHttpTransport.newTrustedTransport(), jsonFactory, request -> {})
                     .setApplicationName("StreamerSearchApp")
                     .build();
         } catch (GeneralSecurityException | IOException e) {

@@ -1,6 +1,7 @@
 package edu.bsu.cs.services;
 
 import com.github.twitch4j.helix.domain.User;
+import com.google.api.services.youtube.YouTube;
 import com.google.api.services.youtube.model.ChannelListResponse;
 import edu.bsu.cs.api.ApiContext;
 
@@ -69,7 +70,7 @@ public class ProfilePictureService {
         return (searchResponse != null
                 && searchResponse.getItems() != null
                 && !searchResponse.getItems().isEmpty())
-                ? searchResponse.getItems().getFirst().getId().getChannelId()
+                ? searchResponse.getItems().get(0).getId().getChannelId()
                 : null;
     }
 
@@ -79,7 +80,7 @@ public class ProfilePictureService {
                 || response.getItems().isEmpty()) {
             return null;
         }
-        return response.getItems().getFirst()
+        return response.getItems().get(0)
                 .getSnippet()
                 .getThumbnails()
                 .getHigh()

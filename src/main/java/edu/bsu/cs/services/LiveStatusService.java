@@ -7,6 +7,7 @@ import com.google.api.services.youtube.model.SearchResult;
 import edu.bsu.cs.api.ApiContext;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -33,7 +34,7 @@ public class LiveStatusService {
                 return username + " is NOT live on Twitch.";
             }
 
-            return formatTwitchLiveStream(username, response.getStreams().getFirst());
+            return formatTwitchLiveStream(username, response.getStreams().get(0));
         } catch (Exception e) {
             return "Error checking Twitch live status: " + e.getMessage();
         }
@@ -44,7 +45,7 @@ public class LiveStatusService {
         if (userId == null) return "Error: Could not retrieve YouTube Channel ID for " + username;
 
         YouTube.Search.List request = context.youtubeService.search()
-                .list(List.of("id,snippet"))
+                .list(Arrays.asList("id,snippet"))
                 .setKey(context.youtubeAuthToken)
                 .setChannelId(userId)
                 .setEventType("live")

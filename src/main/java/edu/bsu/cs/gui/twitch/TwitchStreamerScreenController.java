@@ -52,48 +52,48 @@ public class TwitchStreamerScreenController {
 
     private String findStreamer(String username) {
         List<String> result = searchService.searchTwitchStreamer(username);
-        return (result == null || result.isEmpty()) ? null : result.getFirst();
+        return (result == null || result.isEmpty()) ? null : result.get(0);
     }
 
     private void updateStreamerDisplay(String displayName) {
-        model.resultLabel().setText("Current Streamer: " + displayName);
-        model.resultLabel().setVisible(true);
+        model.resultLabel.setText("Current Streamer: " + displayName);
+        model.resultLabel.setVisible(true);
 
         String imageUrl = pictureService.getProfilePicture(displayName, "Twitch");
         if (imageUrl != null && !imageUrl.isEmpty()) {
-            model.profileImageView().setImage(new Image(imageUrl, 100, 100, true, true));
+            model.profileImageView.setImage(new Image(imageUrl, 100, 100, true, true));
         }
 
         String info = channelInfoService.getTwitchStreamerInfo(displayName);
-        model.bioTextArea().setText(info);
-        model.bioScrollPane().setVisible(true);
+        model.bioTextArea.setText(info);
+        model.bioScrollPane.setVisible(true);
 
         String status = liveStatusService.getTwitchLiveStatus(displayName);
-        model.liveStatusLabel().setText(status);
-        model.liveStatusLabel().setVisible(true);
+        model.liveStatusLabel.setText(status);
+        model.liveStatusLabel.setVisible(true);
 
-        model.getStreamsButton().setVisible(true);
-        model.getStreamsButton().setOnAction(_ -> openStreamsScreen(displayName));
+        model.getStreamsButton.setVisible(true);
+        model.getStreamsButton.setOnAction(e -> openStreamsScreen(displayName));
 
-        model.getClipsButton().setVisible(true);
-        model.getClipsButton().setOnAction(_ -> openClipsScreen(displayName));
+        model.getClipsButton.setVisible(true);
+        model.getClipsButton.setOnAction(e -> openClipsScreen(displayName));
 
-        model.getScheduledButton().setVisible(true);
-        model.getScheduledButton().setOnAction(_ -> openScheduledScreen(displayName));
+        model.getScheduledButton.setVisible(true);
+        model.getScheduledButton.setOnAction(e -> openScheduledScreen(displayName));
     }
 
     private void openScheduledScreen(String displayName) {
-        TwitchMediaScreenController controller = new TwitchMediaScreenController(context, stage, model.twitchRoot());
+        TwitchMediaScreenController controller = new TwitchMediaScreenController(context, stage, model.twitchRoot);
         controller.showScheduled(displayName);
     }
 
     private void openClipsScreen(String displayName) {
-        TwitchMediaScreenController clipsController = new TwitchMediaScreenController(context, stage, model.twitchRoot());
+        TwitchMediaScreenController clipsController = new TwitchMediaScreenController(context, stage, model.twitchRoot);
         clipsController.showClips(displayName);
     }
 
     private void openStreamsScreen(String displayName) {
-        TwitchMediaScreenController controller = new TwitchMediaScreenController(context, stage, model.twitchRoot());
+        TwitchMediaScreenController controller = new TwitchMediaScreenController(context, stage, model.twitchRoot);
         controller.showStreams(displayName);
     }
 

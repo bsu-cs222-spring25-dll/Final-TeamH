@@ -51,7 +51,7 @@ public class YoutubeScreenBuilder {
         );
 
         YoutubeScreenController controller = new YoutubeScreenController(context, model, stage);
-        searchButton.setOnAction(_ -> {
+        searchButton.setOnAction(e -> {
             try {
                 controller.handleSearch(searchField.getText());
             } catch (IOException ex) {
@@ -62,7 +62,7 @@ public class YoutubeScreenBuilder {
         return layout;
     }
 
-    public BorderPane buildCategorySelectScreen(ApiContext context, Stage stage) {
+    public BorderPane buildCategorySelectScreen(ApiContext context, Stage stage) throws IOException {
         this.context = context;
         this.stage = stage;
 
@@ -187,7 +187,7 @@ public class YoutubeScreenBuilder {
 
     private Button createHomeButton() {
         Button homeButton = new Button("Home");
-        homeButton.setOnAction(_ -> {
+        homeButton.setOnAction(e -> {
             GUIScreenBuilder builder = new GUIScreenBuilder();
             GUIScreenController controller = new GUIScreenController(stage);
             stage.getScene().setRoot(builder.buildMainScreen(controller));
@@ -197,7 +197,7 @@ public class YoutubeScreenBuilder {
 
     private Button createBackButton() {
         Button backButton = new Button("Back");
-        backButton.setOnAction(_ -> {
+        backButton.setOnAction(e -> {
             YoutubeModeScreenBuilder modeBuilder = new YoutubeModeScreenBuilder();
             stage.getScene().setRoot(modeBuilder.build(context, stage));
         });

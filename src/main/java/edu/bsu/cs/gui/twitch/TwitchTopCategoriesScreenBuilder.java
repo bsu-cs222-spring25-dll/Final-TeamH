@@ -8,8 +8,10 @@ import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
@@ -35,7 +37,7 @@ public class TwitchTopCategoriesScreenBuilder {
         HBox categoryButtons = createCategoryButtons(controller);
         Label topStreamsLabel = createTitle("Top 10 Currently Live Streams:");
 
-        VBox buttonGrid = createStreamButtons(new TwitchTopStreamsForCategoryController(context,stage));
+        VBox buttonGrid = createStreamButtons(new TwitchTopStreamsForCategoryController(context,stage), null);
         buttonGrid.setAlignment(Pos.CENTER);
         buttonGrid.setPadding(new Insets(10, 0, 0, 0));
 
@@ -59,12 +61,22 @@ public class TwitchTopCategoriesScreenBuilder {
         VBox buttonGrid = new VBox(10);
         buttonGrid.setAlignment(Pos.CENTER);
         int categoryNumber = 0;
+
         for (int row = 0; row < 2; row++) {
             HBox rowBox = new HBox(10);
             rowBox.setAlignment(Pos.CENTER);
 
             for (int column = 0; column < 5; column++) {
-                ImageView imageView = new ImageView(controller.getTopCategoryURLs(categoryNumber));
+                String imageUrl = controller.getTopCategoryURLs(categoryNumber);
+                ImageView imageView;
+
+                try {
+                    imageView = new ImageView(new Image(imageUrl, 142, 189, false, true));
+                } catch (IllegalArgumentException e) {
+                    System.err.println("Invalid category image URL: " + imageUrl);
+                    imageView = new ImageView();
+                }
+
                 imageView.setFitWidth(142);
                 imageView.setFitHeight(189);
                 imageView.setPreserveRatio(true);
@@ -83,7 +95,7 @@ public class TwitchTopCategoriesScreenBuilder {
                 btn.setStyle("-fx-content-display: graphic-only;");
 
                 int finalCategoryNumber = categoryNumber;
-                btn.setOnAction(_ -> controller.handleCategoryClick(finalCategoryNumber));
+                btn.setOnAction(e -> controller.handleCategoryClick(finalCategoryNumber));
 
                 rowBox.getChildren().add(btn);
                 categoryNumber++;
@@ -97,8 +109,8 @@ public class TwitchTopCategoriesScreenBuilder {
         return wrapper;
     }
 
-    private VBox createStreamButtons(TwitchTopStreamsForCategoryController controller){
-        List<String> topStreamsInfo = controller.getTopStreamsForCategoryInfo(null);
+    private VBox createStreamButtons(TwitchTopStreamsForCategoryController controller, String topCategoryID){
+        List<String> topStreamsInfo = controller.getTopStreamsForCategoryInfo(topCategoryID);
         VBox buttonGrid = new VBox(15);
         buttonGrid.setAlignment(Pos.CENTER);
         int streamNumber=0;
@@ -130,7 +142,7 @@ public class TwitchTopCategoriesScreenBuilder {
                 playStreamButton.setMinSize(100, 100);
 
                 int finalCategoryNumber = streamNumber;
-                playStreamButton.setOnAction(_ -> controller.handlePlayButtonClick(finalCategoryNumber,topStreamsInfo));
+                playStreamButton.setOnAction(e -> controller.handlePlayButtonClick(finalCategoryNumber,topStreamsInfo));
 
                 rowBox.getChildren().add(playStreamButton);
                 streamNumber++;
@@ -143,7 +155,7 @@ public class TwitchTopCategoriesScreenBuilder {
 
     private Button createHomeButton(Stage stage) {
         Button homeButton = new Button("Home");
-        homeButton.setOnAction(_ -> {
+        homeButton.setOnAction(e -> {
             GUIScreenBuilder guiBuilder = new GUIScreenBuilder();
             GUIScreenController guiController = new GUIScreenController(stage);
             stage.getScene().setRoot(guiBuilder.buildMainScreen(guiController));
@@ -153,7 +165,7 @@ public class TwitchTopCategoriesScreenBuilder {
 
     private Button createBackButton(Stage stage, ApiContext context) {
         Button backButton = new Button("Back");
-        backButton.setOnAction(_ -> {
+        backButton.setOnAction(e -> {
             TwitchModeSelectionScreenBuilder modeBuilder = new TwitchModeSelectionScreenBuilder();
             stage.getScene().setRoot(modeBuilder.build(context, stage));
         });

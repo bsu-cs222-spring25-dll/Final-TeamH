@@ -54,29 +54,29 @@ public class YoutubeScreenController {
 
     private String findChannel(String username) {
         List<String> result = searchService.searchYoutubeStreamer(username);
-        return (result == null || result.isEmpty()) ? null : result.getFirst();
+        return (result == null || result.isEmpty()) ? null : result.get(0);
     }
 
     private void updateChannelDisplay(String channelName) throws IOException {
-        model.resultLabel().setText("Current Channel: " + channelName);
-        model.resultLabel().setVisible(true);
+        model.resultLabel.setText("Current Channel: " + channelName);
+        model.resultLabel.setVisible(true);
         loadProfileImage(channelName);
         loadChannelDescription(channelName);
         updateLiveStatus(channelName);
-        model.getStreamsButton().setVisible(true);
-        model.getUploadsButton().setVisible(true);
-        model.getScheduledButton().setVisible(true);
+        model.getStreamsButton.setVisible(true);
+        model.getUploadsButton.setVisible(true);
+        model.getScheduledButton.setVisible(true);
 
-        YoutubeMediaScreenController mediaController = new YoutubeMediaScreenController(stage, model.rootLayout(), context);
-        model.getStreamsButton().setOnAction(_ -> mediaController.showStreams(channelName));
-        model.getUploadsButton().setOnAction(_ -> mediaController.showRecentVideos(channelName));
-        model.getScheduledButton().setOnAction(_ -> mediaController.showScheduledStreams(channelName));
+        YoutubeMediaScreenController mediaController = new YoutubeMediaScreenController(stage, model.rootLayout, context);
+        model.getStreamsButton.setOnAction(e -> mediaController.showStreams(channelName));
+        model.getUploadsButton.setOnAction(e -> mediaController.showRecentVideos(channelName));
+        model.getScheduledButton.setOnAction(e -> mediaController.showScheduledStreams(channelName));
     }
 
     private void loadProfileImage(String channelName) {
         String imageUrl = pictureService.getProfilePicture(channelName, "YouTube");
         if (imageUrl != null && !imageUrl.isEmpty()) {
-            model.profileImageView().setImage(new Image(imageUrl, 100, 100, true, true));
+            model.profileImageView.setImage(new Image(imageUrl, 100, 100, true, true));
         }
     }
 
@@ -84,18 +84,18 @@ public class YoutubeScreenController {
         String description = channelInfoService.getYoutuberInfo(channelName);
 
         if (description == null || description.isBlank()) {
-            model.channelDescriptionArea().setText("No channel description available.");
+            model.channelDescriptionArea.setText("No channel description available.");
         } else {
-            model.channelDescriptionArea().setText(description);
+            model.channelDescriptionArea.setText(description);
         }
 
-        model.descriptionScrollPane().setVisible(true);
+        model.descriptionScrollPane.setVisible(true);
     }
 
     private void updateLiveStatus(String channelName) throws IOException {
         String status = liveStatusService.getYoutubeLiveStatus(channelName);
-        model.liveStatusLabel().setText(status);
-        model.liveStatusLabel().setVisible(true);
+        model.liveStatusLabel.setText(status);
+        model.liveStatusLabel.setVisible(true);
     }
 
     private void showError(String title, String message) {
