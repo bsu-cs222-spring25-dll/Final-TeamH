@@ -8,8 +8,7 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 import java.util.Scanner;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class TestStreamerSearchHandler {
@@ -26,70 +25,62 @@ class TestStreamerSearchHandler {
     }
 
     @Test
-    void promptForValidUsername_ShouldReturnValidUsername_WhenNoSpacesEntered() {
-        String validUsername = "ValidUser";
-
-        when(mockScanner.nextLine()).thenReturn(validUsername);
-        when(mockSearchService.searchTwitchStreamer(validUsername))
-                .thenReturn(List.of(validUsername));
-
-        String result = searchHandler.searchStreamer("Twitch");
-
-        assertEquals(validUsername, result);
-    }
-
-    @Test
-    void searchStreamer_ShouldReturnUsername_WhenStreamerFoundOnTwitch() {
-        String username = "TestTwitchStreamer";
+    void returnsValidUsername_whenInputIsClean() {
+        String username = "ValidUser";
         when(mockScanner.nextLine()).thenReturn(username);
         when(mockSearchService.searchTwitchStreamer(username)).thenReturn(List.of(username));
 
         String result = searchHandler.searchStreamer("Twitch");
-
         assertEquals(username, result);
     }
 
     @Test
-    void searchStreamer_ShouldReturnEmpty_WhenStreamerNotFoundOnTwitch() {
-        String username = "UnknownTwitchUser";
+    void returnsUsername_whenFoundOnTwitch() {
+        String username = "TwitchUser";
+        when(mockScanner.nextLine()).thenReturn(username);
+        when(mockSearchService.searchTwitchStreamer(username)).thenReturn(List.of(username));
+
+        String result = searchHandler.searchStreamer("Twitch");
+        assertEquals(username, result);
+    }
+
+    @Test
+    void returnsEmpty_whenNotFoundOnTwitch() {
+        String username = "UnknownTwitch";
         when(mockScanner.nextLine()).thenReturn(username);
         when(mockSearchService.searchTwitchStreamer(username)).thenReturn(List.of());
 
         String result = searchHandler.searchStreamer("Twitch");
-
         assertTrue(result.isEmpty());
     }
 
     @Test
-    void searchStreamer_ShouldReturnUsername_WhenStreamerFoundOnYouTube() {
-        String username = "TestYouTubeStreamer";
+    void returnsUsername_whenFoundOnYouTube() {
+        String username = "YouTubeUser";
         when(mockScanner.nextLine()).thenReturn(username);
         when(mockSearchService.searchYoutubeStreamer(username)).thenReturn(List.of(username));
 
         String result = searchHandler.searchStreamer("YouTube");
-
         assertEquals(username, result);
     }
 
     @Test
-    void searchStreamer_ShouldReturnEmpty_WhenStreamerNotFoundOnYouTube() {
-        String username = "UnknownYouTubeUser";
+    void returnsEmpty_whenNotFoundOnYouTube() {
+        String username = "UnknownYouTube";
         when(mockScanner.nextLine()).thenReturn(username);
         when(mockSearchService.searchYoutubeStreamer(username)).thenReturn(List.of());
 
         String result = searchHandler.searchStreamer("YouTube");
-
         assertTrue(result.isEmpty());
     }
 
     @Test
-    void searchStreamer_ShouldReturnEmpty_WhenExceptionIsThrown() {
-        String username = "ErrorUser";
+    void returnsEmpty_whenSearchThrowsException() {
+        String username = "ProblemUser";
         when(mockScanner.nextLine()).thenReturn(username);
         when(mockSearchService.searchTwitchStreamer(username)).thenThrow(new RuntimeException("API error"));
 
         String result = searchHandler.searchStreamer("Twitch");
-
         assertTrue(result.isEmpty());
     }
 }

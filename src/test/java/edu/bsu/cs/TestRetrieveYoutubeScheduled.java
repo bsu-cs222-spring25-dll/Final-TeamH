@@ -19,80 +19,78 @@ import static org.mockito.Mockito.*;
 
 class TestRetrieveYoutubeScheduled {
 
-    private ApiContext contextMock;
-    private ObtainStreamerID idLookupMock;
-    private RetrieveScheduledStreams streamsMock;
-    private YouTube youtubeMock;
-    private YouTube.Search searchMock;
-    private YouTube.Search.List listRequestMock;
+    private ObtainStreamerID mockIdService;
+    private RetrieveScheduledStreams scheduledStreamsService;
+    private YouTube.Search.List mockSearchList;
 
     @BeforeEach
     void setUp() throws Exception {
-        contextMock = mock(ApiContext.class);
-        youtubeMock = mock(YouTube.class, RETURNS_DEEP_STUBS);
-        searchMock = mock(YouTube.Search.class);
-        listRequestMock = mock(YouTube.Search.List.class);
+        ApiContext apiContext = mock(ApiContext.class);
+        YouTube mockYoutube = mock(YouTube.class, RETURNS_DEEP_STUBS);
+        YouTube.Search mockSearch = mock(YouTube.Search.class);
+        mockSearchList = mock(YouTube.Search.List.class);
 
         Field serviceField = ApiContext.class.getDeclaredField("youtubeService");
         serviceField.setAccessible(true);
-        serviceField.set(contextMock, youtubeMock);
+        serviceField.set(apiContext, mockYoutube);
 
         Field tokenField = ApiContext.class.getDeclaredField("youtubeAuthToken");
         tokenField.setAccessible(true);
-        tokenField.set(contextMock, "dummy-key");
+        tokenField.set(apiContext, "dummy-key");
 
-        when(youtubeMock.search()).thenReturn(searchMock);
-        when(searchMock.list(anyList())).thenReturn(listRequestMock);
-        when(listRequestMock.setKey(anyString())).thenReturn(listRequestMock);
-        when(listRequestMock.setChannelId(anyString())).thenReturn(listRequestMock);
-        when(listRequestMock.setType(any())).thenReturn(listRequestMock);
-        when(listRequestMock.setEventType(anyString())).thenReturn(listRequestMock);
-        when(listRequestMock.setOrder(anyString())).thenReturn(listRequestMock);
-        when(listRequestMock.setMaxResults(anyLong())).thenReturn(listRequestMock);
+        when(mockYoutube.search()).thenReturn(mockSearch);
+        when(mockSearch.list(anyList())).thenReturn(mockSearchList);
+        when(mockSearchList.setKey(anyString())).thenReturn(mockSearchList);
+        when(mockSearchList.setChannelId(anyString())).thenReturn(mockSearchList);
+        when(mockSearchList.setType(any())).thenReturn(mockSearchList);
+        when(mockSearchList.setEventType(anyString())).thenReturn(mockSearchList);
+        when(mockSearchList.setOrder(anyString())).thenReturn(mockSearchList);
+        when(mockSearchList.setMaxResults(anyLong())).thenReturn(mockSearchList);
 
-        idLookupMock = mock(ObtainStreamerID.class);
-        streamsMock = new RetrieveScheduledStreams(contextMock);
+        mockIdService = mock(ObtainStreamerID.class);
+        scheduledStreamsService = new RetrieveScheduledStreams(apiContext);
+
         Field idField = RetrieveScheduledStreams.class.getDeclaredField("obtainStreamerID");
         idField.setAccessible(true);
-        idField.set(streamsMock, idLookupMock);
+        idField.set(scheduledStreamsService, mockIdService);
     }
 
     @Test
-    void youtubeScheduled_returnsEmpty_whenUserIdNull() throws Exception {
-        when(idLookupMock.getYoutubeUserId("noone")).thenReturn(null);
-        List<SearchResult> result = streamsMock.fetchYoutubeScheduledStreams("noone");
-        assertTrue(result.isEmpty());
+    void returnsEmptyList_whenUserIdIsNull() throws Exception {
+        when(mockIdService.getYoutubeUserId("noone")).thenReturn(null);
+        List<SearchResult> results = scheduledStreamsService.fetchYoutubeScheduledStreams("noone");
+        assertTrue(results.isEmpty());
     }
 
     @Test
-    void youtubeScheduled_returnsEmpty_whenResponseNull() throws Exception {
-        when(idLookupMock.getYoutubeUserId("alice")).thenReturn("UID1");
-        when(listRequestMock.execute()).thenReturn(null);
-        List<SearchResult> result = streamsMock.fetchYoutubeScheduledStreams("alice");
-        assertTrue(result.isEmpty());
+    void returnsEmptyList_whenResponseIsNull() throws Exception {
+        when(mockIdService.getYoutubeUserId("alice")).thenReturn("UID1");
+        when(mockSearchList.execute()).thenReturn(null);
+        List<SearchResult> results = scheduledStreamsService.fetchYoutubeScheduledStreams("alice");
+        assertTrue(results.isEmpty());
     }
 
     @Test
-    void youtubeScheduled_returnsEmpty_whenItemsNull() throws Exception {
-        when(idLookupMock.getYoutubeUserId("bob")).thenReturn("UID2");
-        SearchListResponse emptyResponse = new SearchListResponse();
-        emptyResponse.setItems(null);
-        when(listRequestMock.execute()).thenReturn(emptyResponse);
-        List<SearchResult> result = streamsMock.fetchYoutubeScheduledStreams("bob");
-        assertTrue(result.isEmpty());
-    }
-
-    @Test
-    void youtubeScheduled_returnsList_whenItemsPresent() throws Exception {
-        when(idLookupMock.getYoutubeUserId("carol")).thenReturn("UID3");
+    void returnsEmptyList_whenItemsAreNull() throws Exception {
+        when(mockIdService.getYoutubeUserId("bob")).thenReturn("UID2");
         SearchListResponse response = new SearchListResponse();
-        SearchResult result = new SearchResult();
-        ResourceId resource = new ResourceId();
-        resource.setVideoId("VID123");
-        result.setId(resource);
-        response.setItems(List.of(result));
-        when(listRequestMock.execute()).thenReturn(response);
-        List<SearchResult> searchResults = streamsMock.fetchYoutubeScheduledStreams("carol");
-        assertEquals(1, searchResults.size());
+        response.setItems(null);
+        when(mockSearchList.execute()).thenReturn(response);
+        List<SearchResult> results = scheduledStreamsService.fetchYoutubeScheduledStreams("bob");
+        assertTrue(results.isEmpty());
+    }
+
+    @Test
+    void returnsResults_whenItemsArePresent() throws Exception {
+        when(mockIdService.getYoutubeUserId("carol")).thenReturn("UID3");
+
+        ResourceId resourceId = new ResourceId().setVideoId("VID123");
+        SearchResult result = new SearchResult().setId(resourceId);
+        SearchListResponse response = new SearchListResponse().setItems(List.of(result));
+
+        when(mockSearchList.execute()).thenReturn(response);
+
+        List<SearchResult> results = scheduledStreamsService.fetchYoutubeScheduledStreams("carol");
+        assertEquals(1, results.size());
     }
 }

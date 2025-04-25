@@ -20,73 +20,61 @@ import static org.mockito.Mockito.*;
 
 class TestTwitchPicture {
 
-    private ApiContext mockContext;
     private TwitchHelix mockHelix;
-    private ProfilePictureService service;
+    private ProfilePictureService pictureService;
 
     @BeforeEach
     void setUp() throws Exception {
-        mockContext = mock(ApiContext.class);
+        ApiContext apiContext = mock(ApiContext.class);
         TwitchClient mockClient = mock(TwitchClient.class);
         mockHelix = mock(TwitchHelix.class, RETURNS_DEEP_STUBS);
 
         Field clientField = ApiContext.class.getDeclaredField("twitchClient");
         clientField.setAccessible(true);
-        clientField.set(mockContext, mockClient);
+        clientField.set(apiContext, mockClient);
 
         when(mockClient.getHelix()).thenReturn(mockHelix);
 
-        service = new ProfilePictureService(mockContext);
+        pictureService = new ProfilePictureService(apiContext);
     }
 
     @Test
-    void returnsProfileImageUrl_whenUserExists() throws Exception {
-        User fakeUser = new User();
-        Field urlField = User.class.getDeclaredField("profileImageUrl");
-        urlField.setAccessible(true);
-        urlField.set(fakeUser, "http://example.com/avatar.png");
+    void returnsProfileUrl_whenUserExists() throws Exception {
+        User user = new User();
+        Field profileField = User.class.getDeclaredField("profileImageUrl");
+        profileField.setAccessible(true);
+        profileField.set(user, "http://example.com/avatar.png");
 
-        UserList fakeList = new UserList();
+        UserList userList = new UserList();
         Field usersField = UserList.class.getDeclaredField("users");
         usersField.setAccessible(true);
-        usersField.set(fakeList, List.of(fakeUser));
+        usersField.set(userList, List.of(user));
 
-        when(mockHelix
-                .getUsers(any(), any(), anyList())
-                .execute()
-        ).thenReturn(fakeList);
+        when(mockHelix.getUsers(any(), any(), anyList()).execute()).thenReturn(userList);
 
-        String result = service.getProfilePicture("alice", "Twitch");
+        String result = pictureService.getProfilePicture("alice", "Twitch");
         assertEquals("http://example.com/avatar.png", result);
     }
 
     @Test
-    void returnsNull_whenNoUsersReturned() throws Exception {
-        UserList emptyList = new UserList();
+    void returnsNull_whenUserListIsEmpty() throws Exception {
+        UserList userList = new UserList();
         Field usersField = UserList.class.getDeclaredField("users");
         usersField.setAccessible(true);
-        usersField.set(emptyList, Collections.emptyList());
+        usersField.set(userList, Collections.emptyList());
 
-        when(mockHelix
-                .getUsers(any(), any(), anyList())
-                .execute()
-        ).thenReturn(emptyList);
-
-        assertNull(service.getProfilePicture("bob", "Twitch"));
+        when(mockHelix.getUsers(any(), any(), anyList()).execute()).thenReturn(userList);
+        assertNull(pictureService.getProfilePicture("bob", "Twitch"));
     }
 
     @Test
-    void returnsNull_whenHelixThrows() {
-        when(mockHelix
-                .getUsers(any(), any(), anyList())
-                .execute()
-        ).thenThrow(new RuntimeException("failure"));
-
-        assertNull(service.getProfilePicture("carol", "Twitch"));
+    void returnsNull_whenExceptionIsThrown() {
+        when(mockHelix.getUsers(any(), any(), anyList()).execute()).thenThrow(new RuntimeException("fail"));
+        assertNull(pictureService.getProfilePicture("carol", "Twitch"));
     }
 
     @Test
-    void returnsNull_forNonTwitchPlatform() {
-        assertNull(service.getProfilePicture("doesntmatter", "NotTwitch"));
+    void returnsNull_whenPlatformIsNotTwitch() {
+        assertNull(pictureService.getProfilePicture("irrelevant", "OtherPlatform"));
     }
 }
