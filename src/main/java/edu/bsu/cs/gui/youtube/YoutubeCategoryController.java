@@ -15,10 +15,10 @@ public class YoutubeCategoryController {
     }
     public void updateCategoryDisplay(){
         YoutubeMediaScreenController mediaController = new YoutubeMediaScreenController(stage, model.rootLayout(), context);
-        model.getMusicButton().setOnAction(e -> mediaController.showTopLiveStreamsByCategory("10"));
-        model.getGamingButton().setOnAction(e -> mediaController.showTopLiveStreamsByCategory("20"));
-        model.getSportsButton().setOnAction(e -> mediaController.showTopLiveStreamsByCategory("17"));
-        model.getNewsButton().setOnAction(e -> mediaController.showTopLiveStreamsByCategory("25"));
-        model.getLiveButton().setOnAction(e -> mediaController.showTopLiveStreams());
+        model.getMusicButton().setOnAction(_ -> mediaController.showTopLiveStreamsByCategory("10"));
+        model.getGamingButton().setOnAction(_ -> mediaController.showTopLiveStreamsByCategory("20"));
+        model.getSportsButton().setOnAction(_ -> mediaController.showTopLiveStreamsByCategory("17"));
+        model.getNewsButton().setOnAction(_ -> mediaController.showTopLiveStreamsByCategory("25"));
+        model.getLiveButton().setOnAction(_ -> mediaController.showTopLiveStreams());
     }
 }

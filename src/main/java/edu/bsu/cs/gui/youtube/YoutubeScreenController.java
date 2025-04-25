@@ -54,7 +54,7 @@ public class YoutubeScreenController {
 
     private String findChannel(String username) {
         List<String> result = searchService.searchYoutubeStreamer(username);
-        return (result == null || result.isEmpty()) ? null : result.get(0);
+        return (result == null || result.isEmpty()) ? null : result.getFirst();
     }
 
     private void updateChannelDisplay(String channelName) throws IOException {
@@ -68,9 +68,9 @@ public class YoutubeScreenController {
         model.getScheduledButton().setVisible(true);
 
         YoutubeMediaScreenController mediaController = new YoutubeMediaScreenController(stage, model.rootLayout(), context);
-        model.getStreamsButton().setOnAction(e -> mediaController.showStreams(channelName));
-        model.getUploadsButton().setOnAction(e -> mediaController.showRecentVideos(channelName));
-        model.getScheduledButton().setOnAction(e -> mediaController.showScheduledStreams(channelName));
+        model.getStreamsButton().setOnAction(_ -> mediaController.showStreams(channelName));
+        model.getUploadsButton().setOnAction(_ -> mediaController.showRecentVideos(channelName));
+        model.getScheduledButton().setOnAction(_ -> mediaController.showScheduledStreams(channelName));
     }
 
     private void loadProfileImage(String channelName) {
