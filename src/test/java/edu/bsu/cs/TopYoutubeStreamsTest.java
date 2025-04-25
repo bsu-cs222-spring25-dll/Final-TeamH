@@ -18,78 +18,75 @@ import static org.mockito.Mockito.*;
 
 class TopYoutubeStreamsTest {
 
-    private YouTube mockYouTube;
-    private YouTube.Search mockSearch;
-    private YouTube.Search.List mockList;
-    private ApiContext context;
-    private TopYoutubeStreams service;
+    private YouTube.Search.List searchListRequest;
+    private TopYoutubeStreams youtubeStreamsService;
 
     @BeforeEach
     void setUp() throws IOException {
-        mockYouTube = mock(YouTube.class, RETURNS_DEEP_STUBS);
-        mockSearch  = mock(YouTube.Search.class);
-        mockList    = mock(YouTube.Search.List.class);
+        YouTube youtubeService = mock(YouTube.class, RETURNS_DEEP_STUBS);
+        YouTube.Search youtubeSearch = mock(YouTube.Search.class);
+        searchListRequest = mock(YouTube.Search.List.class);
 
-        when(mockYouTube.search()).thenReturn(mockSearch);
-        when(mockSearch.list(anyList())).thenReturn(mockList);
-        when(mockList.setKey(anyString())).thenReturn(mockList);
-        when(mockList.setType(anyList())).thenReturn(mockList);
-        when(mockList.setEventType(anyString())).thenReturn(mockList);
-        when(mockList.setOrder(anyString())).thenReturn(mockList);
-        when(mockList.setMaxResults(anyLong())).thenReturn(mockList);
-        when(mockList.setVideoCategoryId(anyString())).thenReturn(mockList);
+        when(youtubeService.search()).thenReturn(youtubeSearch);
+        when(youtubeSearch.list(anyList())).thenReturn(searchListRequest);
+        when(searchListRequest.setKey(anyString())).thenReturn(searchListRequest);
+        when(searchListRequest.setType(anyList())).thenReturn(searchListRequest);
+        when(searchListRequest.setEventType(anyString())).thenReturn(searchListRequest);
+        when(searchListRequest.setOrder(anyString())).thenReturn(searchListRequest);
+        when(searchListRequest.setMaxResults(anyLong())).thenReturn(searchListRequest);
+        when(searchListRequest.setVideoCategoryId(anyString())).thenReturn(searchListRequest);
 
-        context = new ApiContext(null, mockYouTube, "", "fakeYoutubeKey");
-        service = new TopYoutubeStreams(context);
+        ApiContext apiContext = new ApiContext(null, youtubeService, "", "fakeYoutubeKey");
+        youtubeStreamsService = new TopYoutubeStreams(apiContext);
     }
 
     @Test
-    void fetchTopStreams_returnsEmpty_whenItemsNull() throws IOException {
-        SearchListResponse resp = mock(SearchListResponse.class);
-        when(mockList.execute()).thenReturn(resp);
-        when(resp.getItems()).thenReturn(null);
+    void fetchTopStreams_returnsEmptyList_whenItemsAreNull() throws IOException {
+        SearchListResponse searchResponse = mock(SearchListResponse.class);
+        when(searchListRequest.execute()).thenReturn(searchResponse);
+        when(searchResponse.getItems()).thenReturn(null);
 
-        List<SearchResult> out = service.fetchTopStreams();
-        assertTrue(out.isEmpty());
+        List<SearchResult> results = youtubeStreamsService.fetchTopStreams();
+        assertTrue(results.isEmpty());
     }
 
     @Test
-    void fetchTopStreams_returnsItems_whenPresent() throws IOException {
-        SearchListResponse resp = mock(SearchListResponse.class);
-        SearchResult sr = mock(SearchResult.class);
-        when(mockList.execute()).thenReturn(resp);
-        when(resp.getItems()).thenReturn(List.of(sr));
+    void fetchTopStreams_returnsList_whenItemsPresent() throws IOException {
+        SearchListResponse searchResponse = mock(SearchListResponse.class);
+        SearchResult result = mock(SearchResult.class);
+        when(searchListRequest.execute()).thenReturn(searchResponse);
+        when(searchResponse.getItems()).thenReturn(List.of(result));
 
-        List<SearchResult> out = service.fetchTopStreams();
-        assertEquals(1, out.size());
+        List<SearchResult> results = youtubeStreamsService.fetchTopStreams();
+        assertEquals(1, results.size());
     }
 
     @Test
-    void fetchTopStreams_propagatesIOException() {
+    void fetchTopStreams_throwsException_whenExecuteFails() {
         assertThrows(IOException.class, () -> {
-            when(mockList.execute()).thenThrow(new IOException("fail"));
-            service.fetchTopStreams();
+            when(searchListRequest.execute()).thenThrow(new IOException("fail"));
+            youtubeStreamsService.fetchTopStreams();
         });
     }
 
     @Test
-    void fetchTopLiveStreamsByCategory_returnsEmpty_whenItemsNull() throws IOException {
-        SearchListResponse resp = mock(SearchListResponse.class);
-        when(mockList.execute()).thenReturn(resp);
-        when(resp.getItems()).thenReturn(null);
+    void fetchTopLiveStreamsByCategory_returnsEmptyList_whenItemsAreNull() throws IOException {
+        SearchListResponse searchResponse = mock(SearchListResponse.class);
+        when(searchListRequest.execute()).thenReturn(searchResponse);
+        when(searchResponse.getItems()).thenReturn(null);
 
-        List<SearchResult> out = service.fetchTopLiveStreamsByCategory("cat1");
-        assertTrue(out.isEmpty());
+        List<SearchResult> results = youtubeStreamsService.fetchTopLiveStreamsByCategory("cat1");
+        assertTrue(results.isEmpty());
     }
 
     @Test
-    void fetchTopLiveStreamsByCategory_returnsItems_whenPresent() throws IOException {
-        SearchListResponse resp = mock(SearchListResponse.class);
-        SearchResult sr = mock(SearchResult.class);
-        when(mockList.execute()).thenReturn(resp);
-        when(resp.getItems()).thenReturn(List.of(sr));
+    void fetchTopLiveStreamsByCategory_returnsList_whenItemsPresent() throws IOException {
+        SearchListResponse searchResponse = mock(SearchListResponse.class);
+        SearchResult result = mock(SearchResult.class);
+        when(searchListRequest.execute()).thenReturn(searchResponse);
+        when(searchResponse.getItems()).thenReturn(List.of(result));
 
-        List<SearchResult> out = service.fetchTopLiveStreamsByCategory("cat1");
-        assertEquals(1, out.size());
+        List<SearchResult> results = youtubeStreamsService.fetchTopLiveStreamsByCategory("cat1");
+        assertEquals(1, results.size());
     }
 }

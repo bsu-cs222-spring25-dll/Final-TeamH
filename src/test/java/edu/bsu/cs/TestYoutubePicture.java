@@ -17,93 +17,83 @@ import static org.mockito.Mockito.*;
 
 class TestYoutubePicture {
 
-    private ApiContext mockContext;
-    private YouTube mockYouTube;
-    private YouTube.Search mockSearch;
-    private YouTube.Search.List mockSearchList;
-    private YouTube.Channels mockChannels;
-    private YouTube.Channels.List mockChannelsList;
-    private ProfilePictureService service;
+    private YouTube.Search.List searchListRequest;
+    private YouTube.Channels.List channelsListRequest;
+    private ProfilePictureService pictureService;
 
     @BeforeEach
     void setUp() throws Exception {
-        mockContext    = mock(ApiContext.class);
-        mockYouTube    = mock(YouTube.class);
-        mockSearch     = mock(YouTube.Search.class);
-        mockSearchList = mock(YouTube.Search.List.class);
-        mockChannels   = mock(YouTube.Channels.class);
-        mockChannelsList = mock(YouTube.Channels.List.class);
+        ApiContext apiContext = mock(ApiContext.class);
+        YouTube youtubeService = mock(YouTube.class);
+        YouTube.Search youtubeSearch = mock(YouTube.Search.class);
+        searchListRequest = mock(YouTube.Search.List.class);
+        YouTube.Channels youtubeChannels = mock(YouTube.Channels.class);
+        channelsListRequest = mock(YouTube.Channels.List.class);
 
-        Field svcField = ApiContext.class.getDeclaredField("youtubeService");
-        svcField.setAccessible(true);
-        svcField.set(mockContext, mockYouTube);
+        Field youtubeField = ApiContext.class.getDeclaredField("youtubeService");
+        youtubeField.setAccessible(true);
+        youtubeField.set(apiContext, youtubeService);
 
-        Field tokField = ApiContext.class.getDeclaredField("youtubeAuthToken");
-        tokField.setAccessible(true);
-        tokField.set(mockContext, "dummy-key");
+        Field tokenField = ApiContext.class.getDeclaredField("youtubeAuthToken");
+        tokenField.setAccessible(true);
+        tokenField.set(apiContext, "dummy-key");
 
-        when(mockYouTube.search()).thenReturn(mockSearch);
-        when(mockSearch.list(anyList())).thenReturn(mockSearchList);
-        when(mockSearchList.setQ(anyString())).thenReturn(mockSearchList);
-        when(mockSearchList.setType(anyList())).thenReturn(mockSearchList);
-        when(mockSearchList.setMaxResults(anyLong())).thenReturn(mockSearchList);
-        when(mockSearchList.setKey(anyString())).thenReturn(mockSearchList);
+        when(youtubeService.search()).thenReturn(youtubeSearch);
+        when(youtubeSearch.list(anyList())).thenReturn(searchListRequest);
+        when(searchListRequest.setQ(anyString())).thenReturn(searchListRequest);
+        when(searchListRequest.setType(anyList())).thenReturn(searchListRequest);
+        when(searchListRequest.setMaxResults(anyLong())).thenReturn(searchListRequest);
+        when(searchListRequest.setKey(anyString())).thenReturn(searchListRequest);
 
-        when(mockYouTube.channels()).thenReturn(mockChannels);
-        when(mockChannels.list(anyList())).thenReturn(mockChannelsList);
-        when(mockChannelsList.setId(anyList())).thenReturn(mockChannelsList);
-        when(mockChannelsList.setKey(anyString())).thenReturn(mockChannelsList);
+        when(youtubeService.channels()).thenReturn(youtubeChannels);
+        when(youtubeChannels.list(anyList())).thenReturn(channelsListRequest);
+        when(channelsListRequest.setId(anyList())).thenReturn(channelsListRequest);
+        when(channelsListRequest.setKey(anyString())).thenReturn(channelsListRequest);
 
-        service = new ProfilePictureService(mockContext);
+        pictureService = new ProfilePictureService(apiContext);
     }
 
     @Test
     void returnsThumbnailUrl_whenSearchAndChannelsSucceed() throws Exception {
-        SearchListResponse searchResp = new SearchListResponse()
+        SearchListResponse searchResponse = new SearchListResponse()
                 .setItems(Collections.singletonList(
                         new SearchResult()
                                 .setId(new ResourceId().setChannelId("chan123"))
                                 .setSnippet(new SearchResultSnippet().setChannelId("chan123"))
                 ));
-        when(mockSearchList.execute()).thenReturn(searchResp);
+        when(searchListRequest.execute()).thenReturn(searchResponse);
 
-        ChannelSnippet cs = new ChannelSnippet();
-        ThumbnailDetails td = new ThumbnailDetails();
-        td.setHigh(new Thumbnail().setUrl("http://img/hi"));
-        cs.setThumbnails(td);
-        ChannelListResponse chanResp = new ChannelListResponse()
-                .setItems(Collections.singletonList(new Channel().setSnippet(cs)));
-        when(mockChannelsList.execute()).thenReturn(chanResp);
+        Thumbnail highThumb = new Thumbnail().setUrl("http://img/hi");
+        ThumbnailDetails thumbnails = new ThumbnailDetails().setHigh(highThumb);
+        ChannelSnippet channelSnippet = new ChannelSnippet().setThumbnails(thumbnails);
+        ChannelListResponse channelResponse = new ChannelListResponse()
+                .setItems(Collections.singletonList(new Channel().setSnippet(channelSnippet)));
+        when(channelsListRequest.execute()).thenReturn(channelResponse);
 
-        String result = service.getProfilePicture("any", "YouTube");
+        String result = pictureService.getProfilePicture("any", "YouTube");
         assertEquals("http://img/hi", result);
     }
 
     @Test
     void returnsNull_whenSearchFindsNoChannel() throws Exception {
-        when(mockSearchList.execute())
-                .thenReturn(new SearchListResponse().setItems(Collections.emptyList()));
-
-        assertNull(service.getProfilePicture("none", "YouTube"));
+        when(searchListRequest.execute()).thenReturn(new SearchListResponse().setItems(Collections.emptyList()));
+        assertNull(pictureService.getProfilePicture("none", "YouTube"));
     }
 
     @Test
     void returnsNull_whenChannelsFindNoItems() throws Exception {
-        SearchListResponse sr = new SearchListResponse()
-                .setItems(Collections.singletonList(
-                        new SearchResult().setId(new ResourceId().setChannelId("chan"))
-                ));
-        when(mockSearchList.execute()).thenReturn(sr);
+        SearchListResponse searchResponse = new SearchListResponse().setItems(Collections.singletonList(
+                new SearchResult().setId(new ResourceId().setChannelId("chan"))
+        ));
+        when(searchListRequest.execute()).thenReturn(searchResponse);
 
-        when(mockChannelsList.execute())
-                .thenReturn(new ChannelListResponse().setItems(Collections.emptyList()));
-
-        assertNull(service.getProfilePicture("any", "YouTube"));
+        when(channelsListRequest.execute()).thenReturn(new ChannelListResponse().setItems(Collections.emptyList()));
+        assertNull(pictureService.getProfilePicture("any", "YouTube"));
     }
 
     @Test
     void returnsNull_whenSearchThrowsIOException() throws Exception {
-        when(mockSearchList.execute()).thenThrow(new IOException("fail"));
-        assertNull(service.getProfilePicture("error", "YouTube"));
+        when(searchListRequest.execute()).thenThrow(new IOException("fail"));
+        assertNull(pictureService.getProfilePicture("error", "YouTube"));
     }
 }
