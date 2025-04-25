@@ -20,79 +20,80 @@ import static org.mockito.Mockito.*;
 
 class TestRetrieveStreamsServiceYoutube {
 
-    private ApiContext mockContext;
-    private ObtainStreamerID mockIdLookup;
-    private RetrieveStreamsService service;
+    private ObtainStreamerID mockIdService;
+    private RetrieveStreamsService streamService;
 
     @BeforeEach
     void setUp() throws Exception {
-        mockContext = mock(ApiContext.class);
+        ApiContext apiContext = mock(ApiContext.class);
         YouTube mockYouTube = mock(YouTube.class, RETURNS_DEEP_STUBS);
-        Field ytServiceField = ApiContext.class.getDeclaredField("youtubeService");
-        ytServiceField.setAccessible(true);
-        ytServiceField.set(mockContext, mockYouTube);
 
-        Field authTokenField = ApiContext.class.getDeclaredField("youtubeAuthToken");
-        authTokenField.setAccessible(true);
-        authTokenField.set(mockContext, "fake-key");
+        Field ytField = ApiContext.class.getDeclaredField("youtubeService");
+        ytField.setAccessible(true);
+        ytField.set(apiContext, mockYouTube);
 
-        mockIdLookup = mock(ObtainStreamerID.class);
-        service = new RetrieveStreamsService(mockContext);
-        Field idLookupField = RetrieveStreamsService.class.getDeclaredField("obtainStreamerID");
-        idLookupField.setAccessible(true);
-        idLookupField.set(service, mockIdLookup);
+        Field authField = ApiContext.class.getDeclaredField("youtubeAuthToken");
+        authField.setAccessible(true);
+        authField.set(apiContext, "fake-key");
+
+        mockIdService = mock(ObtainStreamerID.class);
+        streamService = new RetrieveStreamsService(apiContext);
+
+        Field idField = RetrieveStreamsService.class.getDeclaredField("obtainStreamerID");
+        idField.setAccessible(true);
+        idField.set(streamService, mockIdService);
     }
 
     @Test
-    void getYoutubeStreams_returnsError_whenUserIdNull() throws Exception {
-        when(mockIdLookup.getYoutubeUserId("Nobody")).thenReturn(null);
-        String out = service.getYoutubeStreams("Nobody");
-        assertEquals("Error: Could not retrieve YouTube Channel ID for Nobody", out);
+    void returnsError_whenUserIdIsNull() throws Exception {
+        when(mockIdService.getYoutubeUserId("Nobody")).thenReturn(null);
+        String result = streamService.getYoutubeStreams("Nobody");
+        assertEquals("Error: Could not retrieve YouTube Channel ID for Nobody", result);
     }
 
     @Test
-    void fetchCompletedStreams_returnsEmpty_whenUserIdNull() throws Exception {
-        when(mockIdLookup.getYoutubeUserId("Nobody")).thenReturn(null);
-        List<SearchResult> list = service.fetchCompletedStreams("Nobody");
-        assertTrue(list.isEmpty());
+    void fetchCompletedStreams_returnsEmptyList_whenUserIdIsNull() throws Exception {
+        when(mockIdService.getYoutubeUserId("Nobody")).thenReturn(null);
+        List<SearchResult> results = streamService.fetchCompletedStreams("Nobody");
+        assertTrue(results.isEmpty());
     }
 
     @Test
-    void getYoutubeStreams_returnsNoStreamsMessage_whenEmpty() throws Exception {
-        when(mockIdLookup.getYoutubeUserId("Alice")).thenReturn("ID123");
-        RetrieveStreamsService spy = spy(service);
-        doReturn(Collections.emptyList()).when(spy).fetchCompletedStreamsById("ID123");
-        String out = spy.getYoutubeStreams("Alice");
-        assertEquals("No recent streams found for Alice", out);
+    void returnsNoStreamsMessage_whenStreamListIsEmpty() throws Exception {
+        when(mockIdService.getYoutubeUserId("Alice")).thenReturn("ID123");
+        RetrieveStreamsService spyService = spy(streamService);
+        doReturn(Collections.emptyList()).when(spyService).fetchCompletedStreamsById("ID123");
+
+        String result = spyService.getYoutubeStreams("Alice");
+        assertEquals("No recent streams found for Alice", result);
     }
 
     @Test
     void fetchCompletedStreams_delegatesToById_whenUserIdExists() throws Exception {
-        when(mockIdLookup.getYoutubeUserId("Bob")).thenReturn("ID456");
-        RetrieveStreamsService spy = spy(service);
-        doReturn(List.of(new SearchResult())).when(spy).fetchCompletedStreamsById("ID456");
-        List<SearchResult> list = spy.fetchCompletedStreams("Bob");
-        assertFalse(list.isEmpty());
+        when(mockIdService.getYoutubeUserId("Bob")).thenReturn("ID456");
+        RetrieveStreamsService spyService = spy(streamService);
+        doReturn(List.of(new SearchResult())).when(spyService).fetchCompletedStreamsById("ID456");
+
+        List<SearchResult> results = spyService.fetchCompletedStreams("Bob");
+        assertFalse(results.isEmpty());
     }
 
     @Test
-    void getYoutubeStreams_formatsCorrectly_whenDataExists() throws Exception {
-        when(mockIdLookup.getYoutubeUserId("Carol")).thenReturn("ID789");
+    void formatsCorrectOutput_whenStreamDataExists() throws Exception {
+        when(mockIdService.getYoutubeUserId("Carol")).thenReturn("ID789");
 
-        SearchResult fake = new SearchResult();
-        ResourceId rid = new ResourceId();
-        rid.setVideoId("VID1");
-        fake.setId(rid);
+        SearchResult video = new SearchResult();
+        ResourceId id = new ResourceId().setVideoId("VID1");
+        SearchResultSnippet snippet = new SearchResultSnippet()
+                .setTitle("Title1")
+                .setPublishedAt(new DateTime("2023-10-01T18:00:00Z"));
+        video.setId(id);
+        video.setSnippet(snippet);
 
-        SearchResultSnippet snippet = new SearchResultSnippet();
-        snippet.setTitle("Title1");
-        snippet.setPublishedAt(new DateTime("2023-10-01T18:00:00Z"));
-        fake.setSnippet(snippet);
+        RetrieveStreamsService spyService = spy(streamService);
+        doReturn(List.of(video)).when(spyService).fetchCompletedStreamsById("ID789");
 
-        RetrieveStreamsService spy = spy(service);
-        doReturn(List.of(fake)).when(spy).fetchCompletedStreamsById("ID789");
-
-        String out = spy.getYoutubeStreams("Carol");
-        assertTrue(out.contains("1. Title1"));
+        String result = spyService.getYoutubeStreams("Carol");
+        assertTrue(result.contains("1. Title1"));
     }
 }

@@ -17,13 +17,12 @@ import static org.mockito.Mockito.*;
 
 class TestRetrieveVideosClass{
 
-    private ApiContext mockContext;
     private ObtainStreamerID mockObtainStreamerID;
     private RetrieveVideosService service;
 
     @BeforeEach
     void setUp() throws Exception {
-        mockContext = mock(ApiContext.class);
+        ApiContext mockContext = mock(ApiContext.class);
         mockObtainStreamerID = mock(ObtainStreamerID.class);
         service = new RetrieveVideosService(mockContext);
 
@@ -47,7 +46,7 @@ class TestRetrieveVideosClass{
 
         List<SearchResult> results = spyService.fetchRecentVideos("TestUser");
 
-        assertEquals("Mock Video Title", results.get(0).getSnippet().getTitle());
+        assertEquals("Mock Video Title", results.getFirst().getSnippet().getTitle());
     }
 
     @Test
