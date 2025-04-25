@@ -56,7 +56,6 @@ public class TwitchTopCategoriesScreenBuilder {
         return layout;
     }
 
-
     private HBox createCategoryButtons(TwitchTopCategoriesScreenController controller) {
         VBox buttonGrid = new VBox(10);
         buttonGrid.setAlignment(Pos.CENTER);
