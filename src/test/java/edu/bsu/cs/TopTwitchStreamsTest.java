@@ -47,19 +47,22 @@ class TopTwitchStreamsTest {
         GameTopList topGames = mock(GameTopList.class);
         when(twitchHelix.getTopGames(null, null, null, "10").execute()).thenReturn(topGames);
 
-        Game game1 = mock(Game.class);
-        Game game2 = mock(Game.class);
-        when(game1.getId()).thenReturn("id1");
-        when(game1.getName()).thenReturn("Name1");
-        when(game1.getBoxArtUrl(180, 240)).thenReturn("url1");
-        when(game2.getId()).thenReturn("id2");
-        when(game2.getName()).thenReturn("Name2");
-        when(game2.getBoxArtUrl(180, 240)).thenReturn("url2");
+        Game g1 = mock(Game.class), g2 = mock(Game.class);
+        when(g1.getId()).thenReturn("id1");
+        when(g1.getName()).thenReturn("Name1");
 
-        when(topGames.getGames()).thenReturn(List.of(game1, game2));
+        when(g1.getBoxArtUrl()).thenReturn("url1_{width}_{height}");
+        when(g2.getId()).thenReturn("id2");
+        when(g2.getName()).thenReturn("Name2");
+        when(g2.getBoxArtUrl()).thenReturn("url2_{width}_{height}");
+
+        when(topGames.getGames()).thenReturn(List.of(g1, g2));
 
         List<String> result = streamService.getTopGamesInfo();
-        assertEquals("id1__id2__", result.getFirst());
+
+        assertEquals("id1__id2__",            result.get(0));
+        assertEquals("Name1__Name2__",        result.get(1));
+        assertEquals("url1_180_240__url2_180_240__", result.get(2));
     }
 
     @Test
